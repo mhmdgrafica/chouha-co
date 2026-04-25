@@ -17,6 +17,12 @@ import { ProductLivePreview } from "./product-live-preview";
 
 export function ProductFormShell() {
   const [form, setForm] = useState<ProductFormValues>(defaultProductFormValues);
+  const [savedProductId, setSavedProductId] = useState<string | null>(null);
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
+  const [saveMessage, setSaveMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
 
   const selectedColor = useMemo(() => {
     return form.colors.find((color) => color.id === form.selectedColorId) ?? null;
@@ -57,6 +63,47 @@ export function ProductFormShell() {
     }));
   };
 
+  const saveDraft = async () => {
+    setIsSavingDraft(true);
+    setSaveMessage(null);
+
+    try {
+      const response = await fetch("/api/admin/products", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          productId: savedProductId,
+          form,
+          status: "draft",
+        }),
+      });
+
+      const payload = (await response.json()) as {
+        error?: string;
+        productId?: string;
+      };
+
+      if (!response.ok) {
+        throw new Error(payload.error || "Failed to save draft.");
+      }
+
+      setSavedProductId(payload.productId ?? null);
+      setSaveMessage({
+        type: "success",
+        text: "Draft saved successfully.",
+      });
+    } catch (error) {
+      setSaveMessage({
+        type: "error",
+        text: error instanceof Error ? error.message : "Failed to save draft.",
+      });
+    } finally {
+      setIsSavingDraft(false);
+    }
+  };
+
   return (
     <div className="grid gap-6 xl:grid-cols-[480px_minmax(0,1.05fr)]">
       <div className="xl:sticky xl:top-24 xl:self-start">
@@ -90,9 +137,11 @@ export function ProductFormShell() {
         <div className="flex flex-wrap items-center gap-3">
           <button
             type="button"
+            onClick={saveDraft}
+            disabled={isSavingDraft}
             className="rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
           >
-            Save Draft
+            {isSavingDraft ? "Saving..." : "Save Draft"}
           </button>
 
           <button
@@ -101,6 +150,18 @@ export function ProductFormShell() {
           >
             Publish Product
           </button>
+
+          {saveMessage && (
+            <p
+              className={`text-sm ${
+                saveMessage.type === "success"
+                  ? "text-emerald-600"
+                  : "text-rose-600"
+              }`}
+            >
+              {saveMessage.text}
+            </p>
+          )}
         </div>
       </div>
     </div>
