@@ -79,9 +79,9 @@ async function upsertProductRow(
     .select("id, slug")
     .single();
 
-    if (error) {
-      throw error;
-    }
+  if (error) {
+    throw error;
+  }
 
   return data;
 }
