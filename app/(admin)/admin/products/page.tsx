@@ -1,25 +1,25 @@
 import Link from "next/link";
+import { createClient } from "../../../../lib/supabase-server";
+import { listAdminProducts } from "../../../../lib/products/product-repository";
 
-const products = [
-  {
-    id: "1",
-    name: "V Board Master Whiteboard Marker",
-    productCode: "660103",
-    category: "Markers",
-    brand: "Pilot",
-    status: "Published",
-  },
-  {
-    id: "2",
-    name: "Sample Product",
-    productCode: "220045",
-    category: "Pens",
-    brand: "Chouha",
-    status: "Draft",
-  },
-];
+function getStatusLabel(status: "draft" | "published") {
+  return status === "published" ? "Published" : "Draft";
+}
 
-export default function AdminProductsPage() {
+export default async function AdminProductsPage() {
+  let products: Awaited<ReturnType<typeof listAdminProducts>> = [];
+  let loadError: string | null = null;
+
+  try {
+    const supabase = await createClient();
+    products = await listAdminProducts(supabase);
+  } catch (error) {
+    loadError =
+      error instanceof Error
+        ? error.message
+        : "Unable to load products right now.";
+  }
+
   return (
     <section className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -41,6 +41,12 @@ export default function AdminProductsPage() {
       </div>
 
       <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+        {loadError && (
+          <div className="mb-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+            {loadError}
+          </div>
+        )}
+
         <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <input
             type="text"
@@ -105,17 +111,17 @@ export default function AdminProductsPage() {
                       </div>
                       <div>
                         <p className="font-semibold text-slate-900">
-                          {product.name}
+                          {product.product_name_en || product.product_name_ar}
                         </p>
                         <p className="mt-1 text-sm text-slate-500">
-                          Product item
+                          {product.slug}
                         </p>
                       </div>
                     </div>
                   </td>
 
                   <td className="border-b border-slate-100 px-4 py-4 text-sm text-slate-700">
-                    {product.productCode}
+                    {product.product_code}
                   </td>
 
                   <td className="border-b border-slate-100 px-4 py-4 text-sm text-slate-700">
@@ -129,22 +135,19 @@ export default function AdminProductsPage() {
                   <td className="border-b border-slate-100 px-4 py-4">
                     <span
                       className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                        product.status === "Published"
+                        product.status === "published"
                           ? "bg-emerald-100 text-emerald-700"
                           : "bg-amber-100 text-amber-700"
                       }`}
                     >
-                      {product.status}
+                      {getStatusLabel(product.status)}
                     </span>
                   </td>
 
                   <td className="border-b border-slate-100 px-4 py-4 text-right">
-                    <Link
-                      href={`/admin/products/${product.id}`}
-                      className="inline-flex rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-                    >
-                      Edit
-                    </Link>
+                    <span className="inline-flex rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-500">
+                      Saved
+                    </span>
                   </td>
                 </tr>
               ))}
