@@ -31,6 +31,18 @@ export type AdminProductListItem = {
   slug: string;
 };
 
+export type PublicProductListItem = {
+  id: string;
+  slug: string;
+  product_name_en: string;
+  product_name_ar: string;
+  short_description_en: string;
+  short_description_ar: string;
+  category: string;
+  brand: string;
+  status: "draft" | "published";
+};
+
 function withProductId<T extends { product_id?: string }>(
   rows: T[],
   productId: string
@@ -67,9 +79,9 @@ async function upsertProductRow(
     .select("id, slug")
     .single();
 
-  if (error) {
-    throw error;
-  }
+    if (error) {
+      throw error;
+    }
 
   return data;
 }
@@ -161,6 +173,24 @@ export async function listAdminProducts(
   return (data ?? []) as AdminProductListItem[];
 }
 
+export async function listPublishedProducts(
+  supabase: ProductDatabaseClient
+): Promise<PublicProductListItem[]> {
+  const { data, error } = await supabase
+    .from("products")
+    .select(
+      "id, slug, product_name_en, product_name_ar, short_description_en, short_description_ar, category, brand, status"
+    )
+    .eq("status", "published")
+    .order("product_name_en", { ascending: true });
+
+  if (error) {
+    throw error;
+  }
+
+  return (data ?? []) as PublicProductListItem[];
+}
+
 export async function getProductRecordById(
   supabase: ProductDatabaseClient,
   productId: string
@@ -234,4 +264,28 @@ export async function getProductRecordById(
     colors: (colors ?? []) as ProductColorRow[],
     media: (media ?? []) as ProductMediaRow[],
   };
+}
+
+export async function getPublishedProductRecordBySlug(
+  supabase: ProductDatabaseClient,
+  slug: string
+): Promise<ProductRecord | null> {
+  const { data: product, error: productError } = await supabase
+    .from("products")
+    .select(
+      "id, slug, product_name_en, product_name_ar, product_code, brand, category, short_description_en, short_description_ar, full_description_en, full_description_ar, status"
+    )
+    .eq("slug", slug)
+    .eq("status", "published")
+    .maybeSingle();
+
+  if (productError) {
+    throw productError;
+  }
+
+  if (!product) {
+    return null;
+  }
+
+  return getProductRecordById(supabase, product.id);
 }
