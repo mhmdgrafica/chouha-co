@@ -19,6 +19,7 @@ export function ProductFormShell() {
   const [form, setForm] = useState<ProductFormValues>(defaultProductFormValues);
   const [savedProductId, setSavedProductId] = useState<string | null>(null);
   const [isSavingDraft, setIsSavingDraft] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
   const [saveMessage, setSaveMessage] = useState<{
     type: "success" | "error";
     text: string;
@@ -63,8 +64,13 @@ export function ProductFormShell() {
     }));
   };
 
-  const saveDraft = async () => {
-    setIsSavingDraft(true);
+  const submitProduct = async (status: "draft" | "published") => {
+    if (status === "draft") {
+      setIsSavingDraft(true);
+    } else {
+      setIsPublishing(true);
+    }
+
     setSaveMessage(null);
 
     try {
@@ -76,7 +82,7 @@ export function ProductFormShell() {
         body: JSON.stringify({
           productId: savedProductId,
           form,
-          status: "draft",
+          status,
         }),
       });
 
@@ -92,15 +98,27 @@ export function ProductFormShell() {
       setSavedProductId(payload.productId ?? null);
       setSaveMessage({
         type: "success",
-        text: "Draft saved successfully.",
+        text:
+          status === "published"
+            ? "Product published successfully."
+            : "Draft saved successfully.",
       });
     } catch (error) {
       setSaveMessage({
         type: "error",
-        text: error instanceof Error ? error.message : "Failed to save draft.",
+        text:
+          error instanceof Error
+            ? error.message
+            : status === "published"
+              ? "Failed to publish product."
+              : "Failed to save draft.",
       });
     } finally {
-      setIsSavingDraft(false);
+      if (status === "draft") {
+        setIsSavingDraft(false);
+      } else {
+        setIsPublishing(false);
+      }
     }
   };
 
@@ -137,8 +155,8 @@ export function ProductFormShell() {
         <div className="flex flex-wrap items-center gap-3">
           <button
             type="button"
-            onClick={saveDraft}
-            disabled={isSavingDraft}
+            onClick={() => submitProduct("draft")}
+            disabled={isSavingDraft || isPublishing}
             className="rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
           >
             {isSavingDraft ? "Saving..." : "Save Draft"}
@@ -146,9 +164,11 @@ export function ProductFormShell() {
 
           <button
             type="button"
+            onClick={() => submitProduct("published")}
+            disabled={isSavingDraft || isPublishing}
             className="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
           >
-            Publish Product
+            {isPublishing ? "Publishing..." : "Publish Product"}
           </button>
 
           {saveMessage && (
