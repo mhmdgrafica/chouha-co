@@ -160,3 +160,78 @@ export async function listAdminProducts(
 
   return (data ?? []) as AdminProductListItem[];
 }
+
+export async function getProductRecordById(
+  supabase: ProductDatabaseClient,
+  productId: string
+): Promise<ProductRecord | null> {
+  const { data: product, error: productError } = await supabase
+    .from("products")
+    .select(
+      "id, slug, product_name_en, product_name_ar, product_code, brand, category, short_description_en, short_description_ar, full_description_en, full_description_ar, status"
+    )
+    .eq("id", productId)
+    .maybeSingle();
+
+  if (productError) {
+    throw productError;
+  }
+
+  if (!product) {
+    return null;
+  }
+
+  const [
+    { data: highlights, error: highlightsError },
+    { data: features, error: featuresError },
+    { data: colors, error: colorsError },
+    { data: media, error: mediaError },
+  ] = await Promise.all([
+    supabase
+      .from("product_highlights")
+      .select("id, product_id, sort_order, text_en, text_ar")
+      .eq("product_id", productId)
+      .order("sort_order", { ascending: true }),
+    supabase
+      .from("product_features")
+      .select("id, product_id, sort_order, feature_key, icon, selected")
+      .eq("product_id", productId)
+      .order("sort_order", { ascending: true }),
+    supabase
+      .from("product_colors")
+      .select(
+        "id, product_id, sort_order, name_en, name_ar, hex, product_code, thumbnail_preview, main_image_preview"
+      )
+      .eq("product_id", productId)
+      .order("sort_order", { ascending: true }),
+    supabase
+      .from("product_media")
+      .select("id, product_id, sort_order, media_type, file_kind, name, preview")
+      .eq("product_id", productId)
+      .order("sort_order", { ascending: true }),
+  ]);
+
+  if (highlightsError) {
+    throw highlightsError;
+  }
+
+  if (featuresError) {
+    throw featuresError;
+  }
+
+  if (colorsError) {
+    throw colorsError;
+  }
+
+  if (mediaError) {
+    throw mediaError;
+  }
+
+  return {
+    product: product as ProductRow,
+    highlights: (highlights ?? []) as ProductHighlightRow[],
+    features: (features ?? []) as ProductFeatureRow[],
+    colors: (colors ?? []) as ProductColorRow[],
+    media: (media ?? []) as ProductMediaRow[],
+  };
+}
