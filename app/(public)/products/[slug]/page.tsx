@@ -11,12 +11,76 @@ type ProductPageProps = {
   params: Promise<{
     slug: string;
   }>;
+  searchParams?: Promise<{
+    lang?: string;
+  }>;
 };
+
+const copy = {
+  en: {
+    home: "Home",
+    products: "Products",
+    published: "Published",
+    mainImageFallback: "Product image",
+    mainImagePlaceholder: "Main product image placeholder",
+    inkColor: "Ink Color",
+    colorFallback: "Colour",
+    highlights: "Product Highlights",
+    inquiry: "Send Inquiry",
+    back: "Back to Products",
+    info: "Product information",
+    infoBody: "Additional features will appear here when available.",
+    details: "Product Details",
+    detailsTitle: "Description & specifications",
+    detailsFallback:
+      "Full product description will appear here once it is added from the admin panel.",
+    brand: "Brand",
+    category: "Category",
+    availableColors: "Available Colors",
+    noColors: "No colors added yet.",
+    productCode: "Product Code",
+    related: "Related Products",
+    relatedEmptyTitle: "More products coming soon",
+    relatedEmptyBody: "Related published products will appear here automatically.",
+    langLabel: "العربية",
+  },
+  ar: {
+    home: "الرئيسية",
+    products: "المنتجات",
+    published: "منشور",
+    mainImageFallback: "صورة المنتج",
+    mainImagePlaceholder: "معاينة مؤقتة للصورة الرئيسية",
+    inkColor: "لون الحبر",
+    colorFallback: "لون",
+    highlights: "أبرز الميزات",
+    inquiry: "إرسال استفسار",
+    back: "العودة إلى المنتجات",
+    info: "معلومات المنتج",
+    infoBody: "ستظهر الميزات الإضافية هنا عند توفرها.",
+    details: "تفاصيل المنتج",
+    detailsTitle: "الوصف والمواصفات",
+    detailsFallback: "سيظهر الوصف الكامل هنا بعد إضافته من لوحة الأدمن.",
+    brand: "العلامة التجارية",
+    category: "الفئة",
+    availableColors: "الألوان المتوفرة",
+    noColors: "لا توجد ألوان مضافة بعد.",
+    productCode: "رمز المنتج",
+    related: "منتجات ذات صلة",
+    relatedEmptyTitle: "منتجات أخرى قريباً",
+    relatedEmptyBody: "ستظهر المنتجات المنشورة ذات الصلة هنا تلقائياً.",
+    langLabel: "English",
+  },
+} as const;
 
 export default async function ProductDetailsPage({
   params,
+  searchParams,
 }: ProductPageProps) {
   const { slug } = await params;
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
+  const lang = resolvedSearchParams?.lang === "ar" ? "ar" : "en";
+  const isArabic = lang === "ar";
+  const t = copy[lang];
   const supabase = await createClient();
   const productRecord = await getPublishedProductRecordBySlug(supabase, slug);
 
@@ -44,18 +108,22 @@ export default async function ProductDetailsPage({
         ];
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-10" dir={isArabic ? "rtl" : "ltr"}>
       <div className="text-sm text-[#7b8796]">
         <Link href="/" className="hover:text-[#1f2f4d]">
-          Home
+          {t.home}
         </Link>
         <span className="mx-2">/</span>
-        <Link href="/products" className="hover:text-[#1f2f4d]">
-          Products
+        <Link href={`/products?lang=${lang}`} className="hover:text-[#1f2f4d]">
+          {t.products}
         </Link>
         <span className="mx-2">/</span>
         <span className="text-[#1f2f4d]">
-          {productRecord.product.product_name_en || productRecord.product.product_name_ar}
+          {isArabic
+            ? productRecord.product.product_name_ar ||
+              productRecord.product.product_name_en
+            : productRecord.product.product_name_en ||
+              productRecord.product.product_name_ar}
         </span>
       </div>
 
@@ -66,11 +134,15 @@ export default async function ProductDetailsPage({
               <div>
                 <p className="text-lg font-semibold text-[#1f2f4d]">
                   {form.mainCardImage?.name ||
-                    productRecord.product.product_name_en ||
-                    "Product image"}
+                    (isArabic
+                      ? productRecord.product.product_name_ar ||
+                        productRecord.product.product_name_en
+                      : productRecord.product.product_name_en ||
+                        productRecord.product.product_name_ar) ||
+                    t.mainImageFallback}
                 </p>
                 <p className="mt-2 text-sm text-[#6a7483]">
-                  Main product image placeholder
+                  {t.mainImagePlaceholder}
                 </p>
               </div>
             </div>
@@ -97,23 +169,33 @@ export default async function ProductDetailsPage({
               {productRecord.product.category}
             </span>
             <span className="rounded-full bg-[#edf4ea] px-3 py-1 text-xs font-medium text-[#4f6b52]">
-              Published
+              {t.published}
             </span>
           </div>
 
           <h1 className="mt-4 text-4xl font-semibold leading-tight text-[#1f2f4d]">
-            {productRecord.product.product_name_en || productRecord.product.product_name_ar}
+            {isArabic
+              ? productRecord.product.product_name_ar ||
+                productRecord.product.product_name_en
+              : productRecord.product.product_name_en ||
+                productRecord.product.product_name_ar}
           </h1>
 
           <p className="mt-4 text-base leading-7 text-[#5b6472]">
-            {productRecord.product.short_description_en ||
-              productRecord.product.short_description_ar ||
-              "Product short description will appear here."}
+            {isArabic
+              ? productRecord.product.short_description_ar ||
+                productRecord.product.short_description_en ||
+                t.detailsFallback
+              : productRecord.product.short_description_en ||
+                productRecord.product.short_description_ar ||
+                t.detailsFallback}
           </p>
 
           <div className="mt-8 space-y-6">
             <div>
-              <p className="mb-3 text-sm font-semibold text-[#1f2f4d]">Ink Color</p>
+              <p className="mb-3 text-sm font-semibold text-[#1f2f4d]">
+                {t.inkColor}
+              </p>
               <div className="flex flex-wrap gap-2">
                 {form.colors.map((color, index) => (
                   <button
@@ -124,7 +206,9 @@ export default async function ProductDetailsPage({
                         : "border border-[#d8d1c4] bg-[#fbfaf7] text-[#4f5968] hover:bg-[#eef3f8]"
                     }`}
                   >
-                    {color.nameEn || color.nameAr || "Colour"}
+                    {isArabic
+                      ? color.nameAr || color.nameEn || t.colorFallback
+                      : color.nameEn || color.nameAr || t.colorFallback}
                   </button>
                 ))}
               </div>
@@ -133,7 +217,7 @@ export default async function ProductDetailsPage({
             {highlights.length > 0 && (
               <div>
                 <p className="mb-3 text-sm font-semibold text-[#1f2f4d]">
-                  Product Highlights
+                  {t.highlights}
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {highlights.map((item) => (
@@ -141,7 +225,9 @@ export default async function ProductDetailsPage({
                       key={item.id}
                       className="rounded-full border border-[#d8d1c4] bg-[#fbfaf7] px-4 py-2 text-sm text-[#4f5968]"
                     >
-                      {item.textEn || item.textAr}
+                      {isArabic
+                        ? item.textAr || item.textEn
+                        : item.textEn || item.textAr}
                     </span>
                   ))}
                 </div>
@@ -154,22 +240,31 @@ export default async function ProductDetailsPage({
               href="/contact"
               className="rounded-xl bg-[#243b6b] px-5 py-3 text-sm font-medium text-white transition hover:opacity-90"
             >
-              Send Inquiry
+              {t.inquiry}
             </a>
 
             <a
-              href="/products"
+              href={`/products?lang=${lang}`}
               className="rounded-xl border border-[#d8d1c4] bg-white px-5 py-3 text-sm font-medium text-[#243b6b] transition hover:bg-[#f8f6f2]"
             >
-              Back to Products
+              {t.back}
             </a>
+
+            <Link
+              href={`/products/${slug}?lang=${isArabic ? "en" : "ar"}`}
+              className="rounded-xl border border-[#d8d1c4] bg-white px-5 py-3 text-sm font-medium text-[#243b6b] transition hover:bg-[#f8f6f2]"
+            >
+              {t.langLabel}
+            </Link>
           </div>
 
           <div className="mt-8 grid gap-3 sm:grid-cols-3">
             {features.length > 0 ? (
               features.slice(0, 3).map((item) => (
                 <div key={item.id} className="rounded-[18px] bg-[#f8f6f2] p-4">
-                  <p className="text-sm font-semibold text-[#1f2f4d]">{item.key}</p>
+                  <p className="text-sm font-semibold text-[#1f2f4d]">
+                    {item.key}
+                  </p>
                   <p className="mt-1 text-xs leading-6 text-[#6a7483]">
                     {item.icon}
                   </p>
@@ -178,10 +273,10 @@ export default async function ProductDetailsPage({
             ) : (
               <div className="rounded-[18px] bg-[#f8f6f2] p-4 sm:col-span-3">
                 <p className="text-sm font-semibold text-[#1f2f4d]">
-                  Product information
+                  {t.info}
                 </p>
                 <p className="mt-1 text-xs leading-6 text-[#6a7483]">
-                  Additional features will appear here when available.
+                  {t.infoBody}
                 </p>
               </div>
             )}
@@ -192,50 +287,60 @@ export default async function ProductDetailsPage({
       <section className="grid gap-6 lg:grid-cols-[1fr_320px]">
         <div className="rounded-[28px] border border-[#e6dfd3] bg-white p-6 shadow-sm md:p-8">
           <p className="text-sm font-medium uppercase tracking-[0.15em] text-[#7b8796]">
-            Product Details
+            {t.details}
           </p>
 
           <h2 className="mt-2 text-3xl font-semibold text-[#1f2f4d]">
-            Description & specifications
+            {t.detailsTitle}
           </h2>
 
           <div className="mt-6 space-y-4 text-sm leading-7 text-[#5b6472]">
             <p>
-              {productRecord.product.full_description_en ||
-                productRecord.product.full_description_ar ||
-                "Full product description will appear here once it is added from the admin panel."}
+              {isArabic
+                ? productRecord.product.full_description_ar ||
+                  productRecord.product.full_description_en ||
+                  t.detailsFallback
+                : productRecord.product.full_description_en ||
+                  productRecord.product.full_description_ar ||
+                  t.detailsFallback}
             </p>
           </div>
 
           <div className="mt-8 grid gap-4 sm:grid-cols-2">
             <div className="rounded-[20px] bg-[#f8f6f2] p-5">
-              <p className="text-sm font-semibold text-[#1f2f4d]">Brand</p>
+              <p className="text-sm font-semibold text-[#1f2f4d]">{t.brand}</p>
               <p className="mt-2 text-sm text-[#5b6472]">
                 {productRecord.product.brand}
               </p>
             </div>
 
             <div className="rounded-[20px] bg-[#f8f6f2] p-5">
-              <p className="text-sm font-semibold text-[#1f2f4d]">Category</p>
+              <p className="text-sm font-semibold text-[#1f2f4d]">{t.category}</p>
               <p className="mt-2 text-sm text-[#5b6472]">
                 {productRecord.product.category}
               </p>
             </div>
 
             <div className="rounded-[20px] bg-[#f8f6f2] p-5">
-              <p className="text-sm font-semibold text-[#1f2f4d]">Available Colors</p>
+              <p className="text-sm font-semibold text-[#1f2f4d]">
+                {t.availableColors}
+              </p>
               <p className="mt-2 text-sm text-[#5b6472]">
                 {form.colors.length > 0
                   ? form.colors
-                      .map((item) => item.nameEn || item.nameAr)
+                      .map((item) =>
+                        isArabic ? item.nameAr || item.nameEn : item.nameEn || item.nameAr
+                      )
                       .filter(Boolean)
                       .join(", ")
-                  : "No colors added yet."}
+                  : t.noColors}
               </p>
             </div>
 
             <div className="rounded-[20px] bg-[#f8f6f2] p-5">
-              <p className="text-sm font-semibold text-[#1f2f4d]">Product Code</p>
+              <p className="text-sm font-semibold text-[#1f2f4d]">
+                {t.productCode}
+              </p>
               <p className="mt-2 text-sm text-[#5b6472]">
                 {productRecord.product.product_code}
               </p>
@@ -245,7 +350,7 @@ export default async function ProductDetailsPage({
 
         <aside className="rounded-[28px] border border-[#e6dfd3] bg-white p-6 shadow-sm">
           <p className="text-sm font-medium uppercase tracking-[0.15em] text-[#7b8796]">
-            Related Products
+            {t.related}
           </p>
 
           <div className="mt-5 space-y-4">
@@ -253,26 +358,32 @@ export default async function ProductDetailsPage({
               relatedProducts.map((item) => (
                 <Link
                   key={item.id}
-                  href={`/products/${item.slug}`}
+                  href={`/products/${item.slug}?lang=${lang}`}
                   className="block rounded-[20px] bg-[#f8f6f2] p-4 transition hover:bg-[#eef3f8]"
                 >
                   <p className="font-semibold text-[#1f2f4d]">
-                    {item.product_name_en || item.product_name_ar}
+                    {isArabic
+                      ? item.product_name_ar || item.product_name_en
+                      : item.product_name_en || item.product_name_ar}
                   </p>
                   <p className="mt-1 text-sm text-[#5b6472]">
-                    {item.short_description_en ||
-                      item.short_description_ar ||
-                      item.category}
+                    {isArabic
+                      ? item.short_description_ar ||
+                        item.short_description_en ||
+                        item.category
+                      : item.short_description_en ||
+                        item.short_description_ar ||
+                        item.category}
                   </p>
                 </Link>
               ))
             ) : (
               <div className="rounded-[20px] bg-[#f8f6f2] p-4">
                 <p className="font-semibold text-[#1f2f4d]">
-                  More products coming soon
+                  {t.relatedEmptyTitle}
                 </p>
                 <p className="mt-1 text-sm text-[#5b6472]">
-                  Related published products will appear here automatically.
+                  {t.relatedEmptyBody}
                 </p>
               </div>
             )}
