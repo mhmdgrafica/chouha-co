@@ -1,3 +1,5 @@
+import { LanguageSwitcher } from "./language-switcher";
+
 export default function PublicLayout({
   children,
 }: {
@@ -26,12 +28,16 @@ export default function PublicLayout({
             </a>
           </nav>
 
-          <a
-            href="/contact"
-            className="hidden rounded-lg bg-[#243b6b] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 md:inline-flex"
-          >
-            Inquiry
-          </a>
+          <div className="flex items-center gap-3">
+            <LanguageSwitcher />
+
+            <a
+              href="/contact"
+              className="hidden rounded-lg bg-[#243b6b] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 md:inline-flex"
+            >
+              Inquiry
+            </a>
+          </div>
         </div>
       </header>
 
