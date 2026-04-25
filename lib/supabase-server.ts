@@ -14,3 +14,6 @@ export const createClient = async () => {
     }
   );
 };
+
+// Keep a dedicated admin entrypoint so admin pages can depend on a stable API.
+export const createAdminClient = createClient;

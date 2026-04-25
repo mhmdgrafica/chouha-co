@@ -173,6 +173,25 @@ export async function listAdminProducts(
   return (data ?? []) as AdminProductListItem[];
 }
 
+export async function countProducts(
+  supabase: ProductDatabaseClient,
+  status?: "draft" | "published"
+): Promise<number> {
+  let query = supabase.from("products").select("*", { count: "exact", head: true });
+
+  if (status) {
+    query = query.eq("status", status);
+  }
+
+  const { count, error } = await query;
+
+  if (error) {
+    throw error;
+  }
+
+  return count ?? 0;
+}
+
 export async function listPublishedProducts(
   supabase: ProductDatabaseClient
 ): Promise<PublicProductListItem[]> {
