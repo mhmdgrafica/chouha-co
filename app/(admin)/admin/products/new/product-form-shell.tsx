@@ -15,9 +15,19 @@ import { ProductMediaUpload } from "./product-media-upload";
 import { ProductColors } from "./product-colors";
 import { ProductLivePreview } from "./product-live-preview";
 
-export function ProductFormShell() {
-  const [form, setForm] = useState<ProductFormValues>(defaultProductFormValues);
-  const [savedProductId, setSavedProductId] = useState<string | null>(null);
+type ProductFormShellProps = {
+  initialForm?: ProductFormValues;
+  initialProductId?: string | null;
+};
+
+export function ProductFormShell({
+  initialForm = defaultProductFormValues,
+  initialProductId = null,
+}: ProductFormShellProps) {
+  const [form, setForm] = useState<ProductFormValues>(initialForm);
+  const [savedProductId, setSavedProductId] = useState<string | null>(
+    initialProductId
+  );
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [saveMessage, setSaveMessage] = useState<{
