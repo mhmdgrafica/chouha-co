@@ -2,9 +2,54 @@ import Link from "next/link";
 import { createClient } from "../../../lib/supabase-server";
 import { listPublishedProducts } from "../../../lib/products/product-repository";
 
-export default async function ProductsPage() {
+type ProductsPageProps = {
+  searchParams?: Promise<{
+    lang?: string;
+  }>;
+};
+
+const copy = {
+  en: {
+    badge: "PRODUCT CATALOG",
+    title: "Explore our stationery and office product range.",
+    description:
+      "Browse a modern collection of writing instruments, markers, office tools, and school essentials presented in a clean and professional catalog style.",
+    showing: "Showing",
+    publishedProducts: "published products",
+    sectionTitle: "Product catalog",
+    liveLabel: "Live from catalog",
+    published: "Published",
+    fallbackDescription: "Product description will appear here.",
+    viewProduct: "View Product",
+    empty: "No published products are available yet.",
+    langLabel: "العربية",
+  },
+  ar: {
+    badge: "كتالوج المنتجات",
+    title: "اكتشف مجموعة القرطاسية واللوازم المكتبية لدينا.",
+    description:
+      "تصفح تشكيلة احترافية من أدوات الكتابة والأقلام واللوازم المكتبية والاحتياجات المدرسية ضمن عرض منظم وواضح.",
+    showing: "عرض",
+    publishedProducts: "منتج منشور",
+    sectionTitle: "كتالوج المنتجات",
+    liveLabel: "بيانات مباشرة من الكتالوج",
+    published: "منشور",
+    fallbackDescription: "سيظهر وصف المنتج هنا.",
+    viewProduct: "عرض المنتج",
+    empty: "لا توجد منتجات منشورة حالياً.",
+    langLabel: "English",
+  },
+} as const;
+
+export default async function ProductsPage({
+  searchParams,
+}: ProductsPageProps) {
   let products: Awaited<ReturnType<typeof listPublishedProducts>> = [];
   let loadError: string | null = null;
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
+  const lang = resolvedSearchParams?.lang === "ar" ? "ar" : "en";
+  const isArabic = lang === "ar";
+  const t = copy[lang];
 
   try {
     const supabase = await createClient();
@@ -17,20 +62,19 @@ export default async function ProductsPage() {
   }
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-10" dir={isArabic ? "rtl" : "ltr"}>
       <section className="rounded-[28px] bg-[#f3efe7] p-6 md:p-8 lg:p-10">
-        <div className="max-w-3xl">
+        <div className={`max-w-3xl ${isArabic ? "mr-auto text-right" : ""}`}>
           <span className="inline-flex rounded-full border border-[#d8d1c4] bg-white px-3 py-1 text-xs font-medium tracking-wide text-[#243b6b]">
-            PRODUCT CATALOG
+            {t.badge}
           </span>
 
           <h1 className="mt-4 text-4xl font-semibold leading-tight text-[#1f2f4d] md:text-5xl">
-            Explore our stationery and office product range.
+            {t.title}
           </h1>
 
           <p className="mt-4 max-w-2xl text-base leading-7 text-[#5b6472]">
-            Browse a modern collection of writing instruments, markers, office tools,
-            and school essentials presented in a clean and professional catalog style.
+            {t.description}
           </p>
         </div>
       </section>
@@ -44,18 +88,26 @@ export default async function ProductsPage() {
 
         <div className="space-y-6">
           <div className="flex flex-col gap-4 rounded-[24px] border border-[#e6dfd3] bg-white p-5 shadow-sm md:flex-row md:items-center md:justify-between">
-            <div>
+            <div className={isArabic ? "text-right" : ""}>
               <p className="text-sm text-[#7b8796]">
-                Showing {products.length} published products
+                {t.showing} {products.length} {t.publishedProducts}
               </p>
               <h2 className="mt-1 text-2xl font-semibold text-[#1f2f4d]">
-                Product catalog
+                {t.sectionTitle}
               </h2>
             </div>
 
-            <span className="inline-flex rounded-full bg-[#eef3f8] px-4 py-2 text-sm font-medium text-[#243b6b]">
-              Live from catalog
-            </span>
+            <div className="flex items-center gap-3">
+              <span className="inline-flex rounded-full bg-[#eef3f8] px-4 py-2 text-sm font-medium text-[#243b6b]">
+                {t.liveLabel}
+              </span>
+              <Link
+                href={`/products?lang=${isArabic ? "en" : "ar"}`}
+                className="inline-flex rounded-full border border-[#d8d1c4] bg-white px-4 py-2 text-sm font-medium text-[#243b6b] transition hover:bg-[#f8f6f2]"
+              >
+                {t.langLabel}
+              </Link>
+            </div>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -79,12 +131,14 @@ export default async function ProductsPage() {
                     </span>
 
                     <span className="rounded-full bg-[#edf4ea] px-3 py-1 text-xs font-medium text-[#4f6b52]">
-                      Published
+                      {t.published}
                     </span>
                   </div>
 
                   <h3 className="mt-4 text-xl font-semibold leading-snug text-[#1f2f4d]">
-                    {product.product_name_en || product.product_name_ar}
+                    {isArabic
+                      ? product.product_name_ar || product.product_name_en
+                      : product.product_name_en || product.product_name_ar}
                   </h3>
 
                   <p className="mt-2 text-sm font-medium text-[#7b8796]">
@@ -92,16 +146,20 @@ export default async function ProductsPage() {
                   </p>
 
                   <p className="mt-3 text-sm leading-6 text-[#5b6472]">
-                    {product.short_description_en ||
-                      product.short_description_ar ||
-                      "Product description will appear here."}
+                    {isArabic
+                      ? product.short_description_ar ||
+                        product.short_description_en ||
+                        t.fallbackDescription
+                      : product.short_description_en ||
+                        product.short_description_ar ||
+                        t.fallbackDescription}
                   </p>
 
                   <Link
-                    href={`/products/${product.slug}`}
+                    href={`/products/${product.slug}?lang=${lang}`}
                     className="mt-5 inline-flex rounded-xl border border-[#d7dfe8] bg-[#f8fbff] px-4 py-2.5 text-sm font-medium text-[#243b6b] transition hover:bg-[#eef3f8]"
                   >
-                    View Product
+                    {t.viewProduct}
                   </Link>
                 </div>
               </article>
@@ -110,7 +168,7 @@ export default async function ProductsPage() {
 
           {products.length === 0 && !loadError && (
             <div className="rounded-[24px] border border-[#e6dfd3] bg-white px-6 py-12 text-center text-sm text-[#6a7483] shadow-sm">
-              No published products are available yet.
+              {t.empty}
             </div>
           )}
         </div>
