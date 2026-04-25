@@ -145,9 +145,12 @@ export default async function AdminProductsPage() {
                   </td>
 
                   <td className="border-b border-slate-100 px-4 py-4 text-right">
-                    <span className="inline-flex rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-500">
-                      Saved
-                    </span>
+                    <Link
+                      href={`/admin/products/${product.id}`}
+                      className="inline-flex rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                    >
+                      Edit
+                    </Link>
                   </td>
                 </tr>
               ))}
