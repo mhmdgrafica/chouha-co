@@ -49,6 +49,8 @@ export type PublicProductListItem = {
   brand_logo_url: string | null;
   category_name_en: string | null;
   category_name_ar: string | null;
+  card_image_url: string | null;
+  color_thumbnail_url: string | null;
 };
 
 type ProductQueryRow = {
@@ -83,6 +85,13 @@ type ProductQueryRow = {
         name_ar: string | null;
       }[]
     | null;
+  product_colors:
+    | {
+        main_image_url: string | null;
+        thumbnail_url: string | null;
+        position: number;
+      }[]
+    | null;
 };
 
 function toSingleObject<T>(value: T | T[] | null | undefined): T | null {
@@ -114,6 +123,8 @@ function mapAdminListItem(item: ProductQueryRow): AdminProductListItem {
     brand_logo_url: brand?.logo_url ?? null,
     category_name_en: category?.name_en ?? null,
     category_name_ar: category?.name_ar ?? null,
+    card_image_url: null,
+    color_thumbnail_url: null,
   };
 }
 
@@ -134,6 +145,12 @@ function mapPublicListItem(item: ProductQueryRow): PublicProductListItem {
     brand_logo_url: brand?.logo_url ?? null,
     category_name_en: category?.name_en ?? null,
     category_name_ar: category?.name_ar ?? null,
+    card_image_url:
+      item.product_colors?.slice().sort((a, b) => a.position - b.position)[0]?.main_image_url ??
+      null,
+    color_thumbnail_url:
+      item.product_colors?.slice().sort((a, b) => a.position - b.position)[0]?.thumbnail_url ??
+      null,
   };
 }
 
@@ -297,7 +314,7 @@ export async function listPublishedProducts(
   const { data, error } = await supabase
     .from("products")
     .select(
-      "id, slug, name_en, name_ar, short_description_en, short_description_ar, stock_status, is_active, brands(name_en, name_ar, logo_url), categories(name_en, name_ar)"
+      "id, slug, name_en, name_ar, short_description_en, short_description_ar, stock_status, is_active, brands(name_en, name_ar, logo_url), categories(name_en, name_ar), product_colors(main_image_url, thumbnail_url, position)"
     )
     .eq("is_active", true)
     .order("name_en", { ascending: true });
