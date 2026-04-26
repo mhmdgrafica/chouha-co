@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { listCatalogItems } from "../../../../../lib/catalog/catalog-repository";
 import { ProductFormShell } from "../new/product-form-shell";
-import { createClient } from "../../../../../lib/supabase-server";
+import { createAdminClient, createClient } from "../../../../../lib/supabase-server";
 import { mapProductRecordToForm } from "../../../../../lib/products/product-mappers";
 import { getProductRecordById } from "../../../../../lib/products/product-repository";
 
@@ -15,8 +16,18 @@ export default async function EditProductPage({
   params,
 }: EditProductPageProps) {
   const { id } = await params;
+  let brandOptions = [];
+  let categoryOptions = [];
   const supabase = await createClient();
   const productRecord = await getProductRecordById(supabase, id);
+
+  try {
+    const adminSupabase = await createAdminClient();
+    [brandOptions, categoryOptions] = await Promise.all([
+      listCatalogItems(adminSupabase, "brands"),
+      listCatalogItems(adminSupabase, "categories"),
+    ]);
+  } catch {}
 
   if (!productRecord) {
     notFound();
@@ -41,7 +52,12 @@ export default async function EditProductPage({
         </p>
       </div>
 
-      <ProductFormShell initialForm={form} initialProductId={id} />
+      <ProductFormShell
+        initialForm={form}
+        initialProductId={id}
+        brandOptions={brandOptions}
+        categoryOptions={categoryOptions}
+      />
     </section>
   );
 }
