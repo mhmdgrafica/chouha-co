@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import { FeatureIcon } from "../../../../../components/feature-icon";
 import type { ProductColorOption, ProductFormValues } from "./product-form.types";
 
@@ -9,11 +10,39 @@ type Props = {
 };
 
 export function ProductLivePreview({ form, selectedColor }: Props) {
+  const [selectedGalleryImageId, setSelectedGalleryImageId] = useState<string | null>(
+    null
+  );
   const activeHighlights = form.highlights.filter(
     (item) => item.textEn.trim() !== "" || item.textAr.trim() !== ""
   );
   const activeFeatures = form.featureIcons.filter((item) => item.selected);
-  const mainPreviewUrl = selectedColor?.mainImageUrl || form.galleryImages[0]?.url || "";
+  const galleryPreviewItems = useMemo(() => {
+    const selectedColorMainImage = selectedColor?.mainImageUrl
+      ? [
+          {
+            id: `selected-color-${selectedColor.id}`,
+            name: selectedColor.nameEn || selectedColor.nameAr || "Selected color",
+            url: selectedColor.mainImageUrl,
+          },
+        ]
+      : [];
+
+    return [
+      ...selectedColorMainImage,
+      ...form.galleryImages.map((item) => ({
+        id: item.id,
+        name: item.name,
+        url: item.url,
+      })),
+    ];
+  }, [form.galleryImages, selectedColor]);
+
+  const selectedGalleryImage =
+    galleryPreviewItems.find((item) => item.id === selectedGalleryImageId) ??
+    galleryPreviewItems[0] ??
+    null;
+  const mainPreviewUrl = selectedGalleryImage?.url || "";
 
   return (
     <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
@@ -47,14 +76,24 @@ export function ProductLivePreview({ form, selectedColor }: Props) {
           </div>
 
           <div className="mt-4 grid grid-cols-4 gap-2">
-            {form.galleryImages.slice(0, 4).map((item) => (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+            {galleryPreviewItems.slice(0, 4).map((item) => (
+              <button
                 key={item.id}
-                src={item.url}
-                alt={item.name}
-                className="h-16 w-full rounded-2xl border border-slate-200 object-cover"
-              />
+                type="button"
+                onClick={() => setSelectedGalleryImageId(item.id)}
+                className={`overflow-hidden rounded-2xl border bg-white ${
+                  selectedGalleryImage?.id === item.id
+                    ? "border-slate-900"
+                    : "border-slate-200"
+                }`}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={item.url}
+                  alt={item.name}
+                  className="h-16 w-full object-cover"
+                />
+              </button>
             ))}
           </div>
         </div>
@@ -80,6 +119,18 @@ export function ProductLivePreview({ form, selectedColor }: Props) {
               Stock: {form.stockStatus === "in_stock" ? "In Stock" : "Out of Stock"}
             </p>
 
+            <div className="flex flex-wrap gap-3">
+              {form.colors.map((color) => (
+                <div key={color.id} className="flex flex-col items-center gap-2 text-center">
+                  <div
+                    className="h-12 w-12 rounded-full border-2 border-white shadow ring-1 ring-slate-300"
+                    style={{ backgroundColor: color.hex || "#ddd" }}
+                  />
+                  <span className="text-xs text-slate-500">{color.nameEn || "Colour"}</span>
+                </div>
+              ))}
+            </div>
+
             <div className="space-y-3">
               {activeHighlights.length > 0 ? (
                 activeHighlights.map((item) => (
@@ -93,18 +144,6 @@ export function ProductLivePreview({ form, selectedColor }: Props) {
               ) : (
                 <p className="text-sm text-slate-400">No highlights yet.</p>
               )}
-            </div>
-
-            <div className="flex flex-wrap gap-3">
-              {form.colors.map((color) => (
-                <div key={color.id} className="flex flex-col items-center gap-2 text-center">
-                  <div
-                    className="h-12 w-12 rounded-full border-2 border-white shadow ring-1 ring-slate-300"
-                    style={{ backgroundColor: color.hex || "#ddd" }}
-                  />
-                  <span className="text-xs text-slate-500">{color.nameEn || "Colour"}</span>
-                </div>
-              ))}
             </div>
           </div>
 
@@ -128,6 +167,18 @@ export function ProductLivePreview({ form, selectedColor }: Props) {
               الحالة: {form.stockStatus === "in_stock" ? "متوفر" : "غير متوفر"}
             </p>
 
+            <div className="flex flex-wrap justify-end gap-3">
+              {form.colors.map((color) => (
+                <div key={color.id} className="flex flex-col items-center gap-2 text-center">
+                  <div
+                    className="h-12 w-12 rounded-full border-2 border-white shadow ring-1 ring-slate-300"
+                    style={{ backgroundColor: color.hex || "#ddd" }}
+                  />
+                  <span className="text-xs text-slate-500">{color.nameAr || "لون"}</span>
+                </div>
+              ))}
+            </div>
+
             <div className="space-y-3">
               {activeHighlights.length > 0 ? (
                 activeHighlights.map((item) => (
@@ -141,18 +192,6 @@ export function ProductLivePreview({ form, selectedColor }: Props) {
               ) : (
                 <p className="text-sm text-slate-400">لا توجد ميزات بعد.</p>
               )}
-            </div>
-
-            <div className="flex flex-wrap justify-end gap-3">
-              {form.colors.map((color) => (
-                <div key={color.id} className="flex flex-col items-center gap-2 text-center">
-                  <div
-                    className="h-12 w-12 rounded-full border-2 border-white shadow ring-1 ring-slate-300"
-                    style={{ backgroundColor: color.hex || "#ddd" }}
-                  />
-                  <span className="text-xs text-slate-500">{color.nameAr || "لون"}</span>
-                </div>
-              ))}
             </div>
           </div>
         </div>
