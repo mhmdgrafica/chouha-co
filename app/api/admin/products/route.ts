@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { createClient } from "../../../../lib/supabase-server";
-import { mapProductFormToRecord } from "../../../../lib/products/product-mappers";
 import type { ProductFormValues, ProductStatus } from "../../../../lib/products/product.types";
 import { saveProductRecord } from "../../../../lib/products/product-repository";
 
@@ -22,10 +21,10 @@ export async function POST(request: Request) {
     }
 
     const supabase = await createClient();
-    const record = mapProductFormToRecord(body.form, body.status ?? "draft");
     const savedProduct = await saveProductRecord(supabase, {
       productId: body.productId,
-      record,
+      form: body.form,
+      status: body.status ?? "draft",
     });
 
     return NextResponse.json({
