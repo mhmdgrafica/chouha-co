@@ -1,6 +1,19 @@
+import { listCatalogItems } from "../../../../../lib/catalog/catalog-repository";
+import { createAdminClient } from "../../../../../lib/supabase-server";
 import { ProductFormShell } from "./product-form-shell";
 
-export default function NewProductPage() {
+export default async function NewProductPage() {
+  let brandOptions = [];
+  let categoryOptions = [];
+
+  try {
+    const supabase = await createAdminClient();
+    [brandOptions, categoryOptions] = await Promise.all([
+      listCatalogItems(supabase, "brands"),
+      listCatalogItems(supabase, "categories"),
+    ]);
+  } catch {}
+
   return (
     <section className="space-y-6">
       <div className="flex flex-col gap-2">
@@ -13,7 +26,10 @@ export default function NewProductPage() {
         </p>
       </div>
 
-      <ProductFormShell />
+      <ProductFormShell
+        brandOptions={brandOptions}
+        categoryOptions={categoryOptions}
+      />
     </section>
   );
 }
