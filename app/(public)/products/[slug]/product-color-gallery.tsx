@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type {
   ProductColorOption,
   ProductFeatureIcon,
@@ -9,6 +9,7 @@ import type {
 
 type Props = {
   colors: ProductColorOption[];
+  selectedColorId: string | null;
   galleryItems: ProductMediaItem[];
   features: ProductFeatureIcon[];
   productName: string;
@@ -19,6 +20,7 @@ type Props = {
 
 export function ProductColorGallery({
   colors,
+  selectedColorId,
   galleryItems,
   features,
   productName,
@@ -26,15 +28,16 @@ export function ProductColorGallery({
   colorFallback,
   mainImagePlaceholder,
 }: Props) {
-  const [selectedColorId, setSelectedColorId] = useState<string | null>(
-    colors[0]?.id ?? null
-  );
   const [selectedGalleryImageId, setSelectedGalleryImageId] = useState<string | null>(null);
 
   const selectedColor = useMemo(
     () => colors.find((item) => item.id === selectedColorId) ?? colors[0] ?? null,
     [colors, selectedColorId]
   );
+
+  useEffect(() => {
+    setSelectedGalleryImageId(null);
+  }, [selectedColorId]);
 
   const selectedGalleryImage = useMemo(
     () =>
@@ -49,11 +52,6 @@ export function ProductColorGallery({
     selectedColor?.mainImageUrl ||
     galleryItems[0]?.url ||
     "";
-
-  const handleSelectColor = (colorId: string) => {
-    setSelectedColorId(colorId);
-    setSelectedGalleryImageId(null);
-  };
 
   return (
     <div className="space-y-4">

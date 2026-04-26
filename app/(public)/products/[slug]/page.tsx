@@ -7,7 +7,7 @@ import {
   listPublishedProducts,
 } from "../../../../lib/products/product-repository";
 import { createClient } from "../../../../lib/supabase-server";
-import { ProductColorGallery } from "./product-color-gallery";
+import { ProductOverview } from "./product-overview";
 
 type ProductPageProps = {
   params: Promise<{ slug: string }>;
@@ -116,152 +116,48 @@ export default async function ProductDetailsPage({
         <span className="text-[#1f2f4d]">{productName}</span>
       </div>
 
-      <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-        <ProductColorGallery
-          colors={form.colors}
-          galleryItems={form.galleryImages}
-          features={features}
-          productName={productName}
-          isArabic={isArabic}
-          colorFallback={t.colorFallback}
-          mainImagePlaceholder={t.mainImagePlaceholder}
-        />
-
-        <div className={`rounded-[28px] border border-[#e6dfd3] bg-white p-6 shadow-sm md:p-8 ${isArabic ? "text-right" : ""}`}>
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-3 rounded-full bg-[#eef3f8] px-3 py-1.5">
-              {productRecord.brands?.logo_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={productRecord.brands.logo_url}
-                  alt={productRecord.brands.name_en || "Brand logo"}
-                  className="h-8 w-8 rounded-full bg-white object-contain p-1"
-                />
-              ) : null}
-              <span className="text-xs font-medium text-[#243b6b]">
-                {isArabic
-                  ? productRecord.brands?.name_ar || productRecord.brands?.name_en
-                  : productRecord.brands?.name_en || productRecord.brands?.name_ar}
-              </span>
-            </div>
-            <span className="rounded-full bg-[#f4f0e7] px-3 py-1 text-xs font-medium text-[#6a7483]">
-              {isArabic
-                ? productRecord.categories?.name_ar || productRecord.categories?.name_en
-                : productRecord.categories?.name_en || productRecord.categories?.name_ar}
-            </span>
-            <span
-              className={`rounded-full px-3 py-1 text-xs font-medium ${
-                productRecord.product.stock_status === "in_stock"
-                  ? "bg-blue-50 text-blue-700"
-                  : "bg-rose-50 text-rose-700"
-              }`}
-            >
-              {productRecord.product.stock_status === "in_stock"
-                ? t.inStock
-                : t.outOfStock}
-            </span>
-          </div>
-
-          <h1 className="mt-4 text-4xl font-semibold leading-tight text-[#1f2f4d]">
-            {productName}
-          </h1>
-
-          <p
-            className={`mt-4 text-lg leading-8 text-[#4f5a69] ${
-              isArabic ? "font-arabic-medium" : "font-medium"
-            }`}
-          >
-            {isArabic
-              ? productRecord.product.short_description_ar ||
-                productRecord.product.short_description_en ||
-                t.detailsFallback
-              : productRecord.product.short_description_en ||
-                productRecord.product.short_description_ar ||
-                t.detailsFallback}
-          </p>
-
-          <div className="mt-8 space-y-6">
-            <div>
-              <p className="mb-3 text-sm font-semibold text-[#1f2f4d]">
-                {t.availableColors}
-              </p>
-              <div className="grid gap-3 sm:grid-cols-2">
-                {form.colors.length > 0 ? (
-                  form.colors.map((color) => (
-                    <button
-                      key={color.id}
-                      type="button"
-                      className="flex items-center gap-3 rounded-[18px] border border-[#d8d1c4] bg-[#fbfaf7] px-3 py-3 text-left"
-                    >
-                      {color.thumbnailUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={color.thumbnailUrl}
-                          alt={color.nameEn || color.nameAr || t.colorFallback}
-                          className="h-12 w-12 rounded-xl border border-[#d8d1c4] object-cover"
-                        />
-                      ) : (
-                        <div
-                          className="h-12 w-12 rounded-xl border border-[#d8d1c4]"
-                          style={{ backgroundColor: color.hex || "#ddd" }}
-                        />
-                      )}
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold text-[#1f2f4d]">
-                          {isArabic
-                            ? color.nameAr || color.nameEn || t.colorFallback
-                            : color.nameEn || color.nameAr || t.colorFallback}
-                        </p>
-                        <p className="mt-1 text-xs text-[#6a7483]">
-                          {color.productCode || productRecord.product.product_code}
-                        </p>
-                      </div>
-                    </button>
-                  ))
-                ) : (
-                  <div className="rounded-[18px] border border-[#d8d1c4] bg-[#fbfaf7] px-4 py-4 text-sm text-[#6a7483] sm:col-span-2">
-                    {t.noColors}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {highlights.length > 0 && (
-              <div>
-                <p className="mb-3 text-sm font-semibold text-[#1f2f4d]">
-                  {t.highlights}
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {highlights.map((item) => (
-                    <span
-                      key={item.id}
-                      className="rounded-full border border-[#d8d1c4] bg-[#fbfaf7] px-4 py-2 text-sm text-[#4f5968]"
-                    >
-                      {isArabic ? item.textAr || item.textEn : item.textEn || item.textAr}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="mt-8 flex flex-wrap gap-3">
-            <a
-              href="/contact"
-              className="rounded-xl bg-[#243b6b] px-5 py-3 text-sm font-medium text-white transition hover:opacity-90"
-            >
-              {t.inquiry}
-            </a>
-
-            <a
-              href={`/products?lang=${lang}`}
-              className="rounded-xl border border-[#d8d1c4] bg-white px-5 py-3 text-sm font-medium text-[#243b6b] transition hover:bg-[#f8f6f2]"
-            >
-              {t.back}
-            </a>
-          </div>
-        </div>
-      </section>
+      <ProductOverview
+        colors={form.colors}
+        galleryItems={form.galleryImages}
+        features={features}
+        highlights={highlights}
+        productName={productName}
+        brandName={
+          isArabic
+            ? productRecord.brands?.name_ar || productRecord.brands?.name_en || ""
+            : productRecord.brands?.name_en || productRecord.brands?.name_ar || ""
+        }
+        brandLogoUrl={productRecord.brands?.logo_url || ""}
+        categoryName={
+          isArabic
+            ? productRecord.categories?.name_ar || productRecord.categories?.name_en || ""
+            : productRecord.categories?.name_en || productRecord.categories?.name_ar || ""
+        }
+        shortDescription={
+          isArabic
+            ? productRecord.product.short_description_ar ||
+              productRecord.product.short_description_en ||
+              t.detailsFallback
+            : productRecord.product.short_description_en ||
+              productRecord.product.short_description_ar ||
+              t.detailsFallback
+        }
+        stockStatus={productRecord.product.stock_status}
+        fallbackProductCode={productRecord.product.product_code}
+        isArabic={isArabic}
+        lang={lang}
+        copy={{
+          availableColors: t.availableColors,
+          noColors: t.noColors,
+          colorFallback: t.colorFallback,
+          mainImagePlaceholder: t.mainImagePlaceholder,
+          highlights: t.highlights,
+          inquiry: t.inquiry,
+          back: t.back,
+          inStock: t.inStock,
+          outOfStock: t.outOfStock,
+        }}
+      />
 
       <section className="grid gap-6 lg:grid-cols-[1fr_320px]">
         <div className="rounded-[28px] border border-[#e6dfd3] bg-white p-6 shadow-sm md:p-8">
