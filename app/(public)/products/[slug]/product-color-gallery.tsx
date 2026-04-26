@@ -1,31 +1,38 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { ProductColorOption, ProductMediaItem } from "../../../../lib/products/product.types";
+import { FeatureIcon } from "../../../../components/feature-icon";
+import type {
+  ProductFeatureIcon,
+  ProductMediaItem,
+} from "../../../../lib/products/product.types";
 
 type Props = {
-  colors: ProductColorOption[];
   galleryItems: ProductMediaItem[];
+  features: ProductFeatureIcon[];
   productName: string;
   isArabic: boolean;
-  colorFallback: string;
+  mainImagePlaceholder: string;
 };
 
 export function ProductColorGallery({
-  colors,
   galleryItems,
+  features,
   productName,
   isArabic,
-  colorFallback,
+  mainImagePlaceholder,
 }: Props) {
-  const [selectedColorId, setSelectedColorId] = useState<string | null>(colors[0]?.id ?? null);
+  const [selectedGalleryImageId, setSelectedGalleryImageId] = useState<string | null>(null);
 
-  const selectedColor = useMemo(
-    () => colors.find((item) => item.id === selectedColorId) ?? colors[0] ?? null,
-    [colors, selectedColorId]
+  const selectedGalleryImage = useMemo(
+    () =>
+      galleryItems.find((item) => item.id === selectedGalleryImageId) ??
+      galleryItems[0] ??
+      null,
+    [galleryItems, selectedGalleryImageId]
   );
 
-  const mainImageUrl = selectedColor?.mainImageUrl || galleryItems[0]?.url || "";
+  const mainImageUrl = selectedGalleryImage?.url || galleryItems[0]?.url || "";
 
   return (
     <div className="space-y-4">
@@ -38,6 +45,7 @@ export function ProductColorGallery({
             ) : (
               <div className="px-6 text-center">
                 <p className="text-lg font-semibold text-[#1f2f4d]">{productName}</p>
+                <p className="mt-2 text-sm text-[#6a7483]">{mainImagePlaceholder}</p>
               </div>
             )}
           </div>
@@ -45,9 +53,15 @@ export function ProductColorGallery({
 
         <div className="grid grid-cols-4 gap-3">
           {galleryItems.slice(0, 4).map((item, index) => (
-            <div
+            <button
               key={item.id}
-              className="overflow-hidden rounded-[18px] border border-[#e6dfd3] bg-white"
+              type="button"
+              onClick={() => setSelectedGalleryImageId(item.id)}
+              className={`overflow-hidden rounded-[18px] border bg-white ${
+                selectedGalleryImage?.id === item.id
+                  ? "border-[#243b6b]"
+                  : "border-[#e6dfd3]"
+              }`}
             >
               {item.url ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -61,32 +75,34 @@ export function ProductColorGallery({
                   {item.name || `Gallery ${index + 1}`}
                 </div>
               )}
-            </div>
+            </button>
           ))}
         </div>
       </div>
 
-      <div>
+      <div className="rounded-[28px] border border-[#e6dfd3] bg-white p-5 shadow-sm">
         <p className="mb-3 text-sm font-semibold text-[#1f2f4d]">
-          {isArabic ? "لون الحبر" : "Ink Color"}
+          {isArabic ? "الميزات" : "Features"}
         </p>
-        <div className="flex flex-wrap gap-2">
-          {colors.map((color) => (
-            <button
-              key={color.id}
-              type="button"
-              onClick={() => setSelectedColorId(color.id)}
-              className={`rounded-full px-4 py-2 text-sm transition ${
-                selectedColor?.id === color.id
-                  ? "bg-[#243b6b] text-white"
-                  : "border border-[#d8d1c4] bg-[#fbfaf7] text-[#4f5968]"
-              }`}
+        <div className="grid gap-3 sm:grid-cols-2">
+          {features.slice(0, 4).map((item) => (
+            <div
+              key={item.id}
+              className="flex items-center gap-3 rounded-[18px] border border-[#d8d1c4] bg-[#fbfaf7] px-3 py-3"
             >
-              {isArabic
-                ? color.nameAr || color.nameEn || colorFallback
-                : color.nameEn || color.nameAr || colorFallback}
-            </button>
+              <FeatureIcon name={item.iconName} className="h-5 w-5 text-[#243b6b]" />
+              <div>
+                <p className="text-sm font-semibold text-[#1f2f4d]">
+                  {isArabic ? item.labelAr || item.labelEn : item.labelEn || item.labelAr}
+                </p>
+              </div>
+            </div>
           ))}
+          {features.length === 0 && (
+            <div className="rounded-[18px] border border-[#d8d1c4] bg-[#fbfaf7] px-4 py-4 text-sm text-[#6a7483] sm:col-span-2">
+              {isArabic ? "لا توجد ميزات مفعلة لهذا المنتج بعد." : "No product features are active yet."}
+            </div>
+          )}
         </div>
       </div>
     </div>
