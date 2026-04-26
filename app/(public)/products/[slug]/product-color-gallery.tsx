@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react";
 import type {
   ProductColorOption,
-  ProductFeatureIcon,
   ProductMediaItem,
 } from "../../../../lib/products/product.types";
 
@@ -57,6 +56,31 @@ export function ProductColorGallery({
     <div className="space-y-4">
       <div className="space-y-4">
         <div className="overflow-hidden rounded-[28px] border border-[#e6dfd3] bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b border-[#efe8db] bg-[#fbf8f2] px-5 py-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#7b8796]">
+                {isArabic ? "المعرض الرئيسي" : "Main Gallery"}
+              </p>
+              <p className="mt-1 text-sm font-semibold text-[#1f2f4d]">
+                {isArabic
+                  ? selectedColor?.nameAr || selectedColor?.nameEn || colorFallback
+                  : selectedColor?.nameEn || selectedColor?.nameAr || colorFallback}
+              </p>
+            </div>
+
+            {selectedColor && (
+              <div className="flex items-center gap-2 rounded-full border border-[#d8d1c4] bg-white px-3 py-1.5">
+                <span
+                  className="h-3 w-3 rounded-full border border-white shadow-sm ring-1 ring-[#d8d1c4]"
+                  style={{ backgroundColor: selectedColor.hex || "#ddd" }}
+                />
+                <span className="text-xs font-medium text-[#5b6472]">
+                  {selectedColor.productCode || productName}
+                </span>
+              </div>
+            )}
+          </div>
+
           <div className="flex h-[420px] items-center justify-center bg-[linear-gradient(135deg,#eee7dc_0%,#dbe6f2_100%)]">
             {mainImageUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -76,9 +100,9 @@ export function ProductColorGallery({
               key={item.id}
               type="button"
               onClick={() => setSelectedGalleryImageId(item.id)}
-              className={`overflow-hidden rounded-[18px] border bg-white ${
+              className={`overflow-hidden rounded-[18px] border bg-white transition ${
                 selectedGalleryImage?.id === item.id
-                  ? "border-[#243b6b]"
+                  ? "border-[#243b6b] shadow-[0_0_0_2px_rgba(36,59,107,0.12)]"
                   : "border-[#e6dfd3]"
               }`}
             >
@@ -111,7 +135,7 @@ export function ProductColorGallery({
               onClick={() => handleSelectColor(color.id)}
               className={`flex items-center gap-3 rounded-[18px] border px-3 py-3 text-left transition ${
                 selectedColor?.id === color.id
-                  ? "border-[#243b6b] bg-[#eef3f8]"
+                  ? "border-[#243b6b] bg-[#eef3f8] shadow-[0_0_0_2px_rgba(36,59,107,0.08)]"
                   : "border-[#d8d1c4] bg-[#fbfaf7]"
               }`}
             >
@@ -129,11 +153,18 @@ export function ProductColorGallery({
                 />
               )}
               <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-[#1f2f4d]">
-                  {isArabic
-                    ? color.nameAr || color.nameEn || colorFallback
-                    : color.nameEn || color.nameAr || colorFallback}
-                </p>
+                <div className="flex items-center gap-2">
+                  <p className="truncate text-sm font-semibold text-[#1f2f4d]">
+                    {isArabic
+                      ? color.nameAr || color.nameEn || colorFallback
+                      : color.nameEn || color.nameAr || colorFallback}
+                  </p>
+                  {selectedColor?.id === color.id && (
+                    <span className="rounded-full bg-[#243b6b] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-white">
+                      {isArabic ? "نشط" : "Active"}
+                    </span>
+                  )}
+                </div>
                 <p className="mt-1 text-xs text-[#6a7483]">
                   {color.productCode || productName}
                 </p>
