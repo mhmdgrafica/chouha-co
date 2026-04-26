@@ -5,6 +5,8 @@ import { listPublishedProducts } from "../../../lib/products/product-repository"
 type ProductsPageProps = {
   searchParams?: Promise<{
     lang?: string;
+    brand?: string;
+    category?: string;
   }>;
 };
 
@@ -22,6 +24,8 @@ const copy = {
     fallbackDescription: "Product description will appear here.",
     viewProduct: "View Product",
     empty: "No published products are available yet.",
+    clearFilter: "Clear filter",
+    filteredBy: "Filtered by",
   },
   ar: {
     badge: "كتالوج المنتجات",
@@ -36,6 +40,8 @@ const copy = {
     fallbackDescription: "سيظهر وصف المنتج هنا.",
     viewProduct: "عرض المنتج",
     empty: "لا توجد منتجات منشورة حالياً.",
+    clearFilter: "إزالة الفلتر",
+    filteredBy: "تصفية حسب",
   },
 } as const;
 
@@ -46,6 +52,8 @@ export default async function ProductsPage({
   let loadError: string | null = null;
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const lang = resolvedSearchParams?.lang === "ar" ? "ar" : "en";
+  const brandFilter = resolvedSearchParams?.brand?.trim() || "";
+  const categoryFilter = resolvedSearchParams?.category?.trim() || "";
   const isArabic = lang === "ar";
   const t = copy[lang];
 
@@ -58,6 +66,33 @@ export default async function ProductsPage({
         ? error.message
         : "Unable to load products right now.";
   }
+
+  const filteredProducts = products.filter((product) => {
+    const matchesBrand = brandFilter ? product.brand_slug === brandFilter : true;
+    const matchesCategory = categoryFilter ? product.category_slug === categoryFilter : true;
+
+    return matchesBrand && matchesCategory;
+  });
+
+  const selectedBrand = brandFilter
+    ? products.find((product) => product.brand_slug === brandFilter)
+    : null;
+  const selectedCategory = categoryFilter
+    ? products.find((product) => product.category_slug === categoryFilter)
+    : null;
+
+  const selectedFilters = [
+    selectedBrand
+      ? isArabic
+        ? selectedBrand.brand_name_ar || selectedBrand.brand_name_en
+        : selectedBrand.brand_name_en || selectedBrand.brand_name_ar
+      : null,
+    selectedCategory
+      ? isArabic
+        ? selectedCategory.category_name_ar || selectedCategory.category_name_en
+        : selectedCategory.category_name_en || selectedCategory.category_name_ar
+      : null,
+  ].filter((value): value is string => Boolean(value));
 
   return (
     <div className="space-y-10">
@@ -88,16 +123,35 @@ export default async function ProductsPage({
           <div className="rounded-[24px] border border-[#e6dfd3] bg-white p-5 shadow-sm">
             <div className={isArabic ? "text-right" : ""}>
               <p className="text-sm text-[#7b8796]">
-                {t.showing} {products.length} {t.publishedProducts}
+                {t.showing} {filteredProducts.length} {t.publishedProducts}
               </p>
               <h2 className="mt-1 text-2xl font-semibold text-[#1f2f4d]">
                 {t.sectionTitle}
               </h2>
+              {selectedFilters.length > 0 && (
+                <div className="mt-4 flex flex-wrap items-center gap-2">
+                  <span className="text-sm text-[#7b8796]">{t.filteredBy}</span>
+                  {selectedFilters.map((filterLabel) => (
+                    <span
+                      key={filterLabel}
+                      className="rounded-full bg-[#eef3f8] px-3 py-1 text-xs font-medium text-[#243b6b]"
+                    >
+                      {filterLabel}
+                    </span>
+                  ))}
+                  <Link
+                    href={`/products?lang=${lang}`}
+                    className="text-sm font-medium text-[#243b6b] hover:underline"
+                  >
+                    {t.clearFilter}
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {products.map((product) => (
+            {filteredProducts.map((product) => (
               <article
                 key={product.id}
                 className="overflow-hidden rounded-[24px] border border-[#e6dfd3] bg-white shadow-sm transition hover:-translate-y-0.5"
@@ -181,7 +235,7 @@ export default async function ProductsPage({
             ))}
           </div>
 
-          {products.length === 0 && !loadError && (
+          {filteredProducts.length === 0 && !loadError && (
             <div className="rounded-[24px] border border-[#e6dfd3] bg-white px-6 py-12 text-center text-sm text-[#6a7483] shadow-sm">
               {t.empty}
             </div>
