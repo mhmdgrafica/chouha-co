@@ -17,14 +17,11 @@ const copy = {
     showing: "Showing",
     publishedProducts: "published products",
     sectionTitle: "Product catalog",
-    liveLabel: "Live from catalog",
-    published: "Published",
     inStock: "In Stock",
     outOfStock: "Out of Stock",
     fallbackDescription: "Product description will appear here.",
     viewProduct: "View Product",
     empty: "No published products are available yet.",
-    langLabel: "العربية",
   },
   ar: {
     badge: "كتالوج المنتجات",
@@ -34,14 +31,11 @@ const copy = {
     showing: "عرض",
     publishedProducts: "منتج منشور",
     sectionTitle: "كتالوج المنتجات",
-    liveLabel: "بيانات مباشرة من الكتالوج",
-    published: "منشور",
     inStock: "متوفر",
     outOfStock: "غير متوفر",
     fallbackDescription: "سيظهر وصف المنتج هنا.",
     viewProduct: "عرض المنتج",
     empty: "لا توجد منتجات منشورة حالياً.",
-    langLabel: "English",
   },
 } as const;
 
@@ -66,7 +60,7 @@ export default async function ProductsPage({
   }
 
   return (
-    <div className="space-y-10" dir={isArabic ? "rtl" : "ltr"}>
+    <div className="space-y-10">
       <section className="rounded-[28px] bg-[#f3efe7] p-6 md:p-8 lg:p-10">
         <div className={`max-w-3xl ${isArabic ? "mr-auto text-right" : ""}`}>
           <span className="inline-flex rounded-full border border-[#d8d1c4] bg-white px-3 py-1 text-xs font-medium tracking-wide text-[#243b6b]">
@@ -91,7 +85,7 @@ export default async function ProductsPage({
         )}
 
         <div className="space-y-6">
-          <div className="flex flex-col gap-4 rounded-[24px] border border-[#e6dfd3] bg-white p-5 shadow-sm md:flex-row md:items-center md:justify-between">
+          <div className="rounded-[24px] border border-[#e6dfd3] bg-white p-5 shadow-sm">
             <div className={isArabic ? "text-right" : ""}>
               <p className="text-sm text-[#7b8796]">
                 {t.showing} {products.length} {t.publishedProducts}
@@ -100,44 +94,41 @@ export default async function ProductsPage({
                 {t.sectionTitle}
               </h2>
             </div>
-
-            <div className="flex items-center gap-3">
-              <span className="inline-flex rounded-full bg-[#eef3f8] px-4 py-2 text-sm font-medium text-[#243b6b]">
-                {t.liveLabel}
-              </span>
-              <Link
-                href={`/products?lang=${isArabic ? "en" : "ar"}`}
-                className="inline-flex rounded-full border border-[#d8d1c4] bg-white px-4 py-2 text-sm font-medium text-[#243b6b] transition hover:bg-[#f8f6f2]"
-              >
-                {t.langLabel}
-              </Link>
-            </div>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {products.map((product, index) => (
+            {products.map((product) => (
               <article
                 key={product.id}
                 className="overflow-hidden rounded-[24px] border border-[#e6dfd3] bg-white shadow-sm transition hover:-translate-y-0.5"
               >
-                <div
-                  className={`h-56 ${
-                    index % 2 === 0
-                      ? "bg-[linear-gradient(135deg,#ede6db_0%,#dce7f1_100%)]"
-                      : "bg-[linear-gradient(135deg,#f4efe7_0%,#d6e1ec_100%)]"
-                  }`}
-                />
+                <div className="h-56 overflow-hidden bg-[linear-gradient(135deg,#ede6db_0%,#dce7f1_100%)]">
+                  {product.card_image_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={product.card_image_url}
+                      alt={isArabic ? product.name_ar || product.name_en : product.name_en || product.name_ar}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="h-full w-full" />
+                  )}
+                </div>
 
-                <div className="p-5">
-                  <div className="flex items-center justify-between gap-3">
+                <div className={`p-5 ${isArabic ? "text-right" : ""}`}>
+                  <div className="flex items-center gap-3">
+                    {product.brand_logo_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={product.brand_logo_url}
+                        alt={product.brand_name_en || "Brand logo"}
+                        className="h-10 w-10 rounded-xl border border-[#d8d1c4] bg-white object-contain p-1"
+                      />
+                    ) : null}
                     <span className="rounded-full bg-[#eef3f8] px-3 py-1 text-xs font-medium text-[#243b6b]">
                       {isArabic
                         ? product.brand_name_ar || product.brand_name_en
                         : product.brand_name_en || product.brand_name_ar}
-                    </span>
-
-                    <span className="rounded-full bg-[#edf4ea] px-3 py-1 text-xs font-medium text-[#4f6b52]">
-                      {t.published}
                     </span>
                   </div>
 
@@ -153,7 +144,11 @@ export default async function ProductsPage({
                       : product.category_name_en || product.category_name_ar}
                   </p>
 
-                  <p className="mt-3 text-sm leading-6 text-[#5b6472]">
+                  <p
+                    className={`mt-3 text-[15px] leading-7 text-[#4f5a69] ${
+                      isArabic ? "font-arabic-medium" : "font-medium"
+                    }`}
+                  >
                     {isArabic
                       ? product.short_description_ar ||
                         product.short_description_en ||
