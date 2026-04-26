@@ -2,8 +2,12 @@ import Link from "next/link";
 import { createClient } from "../../../../lib/supabase-server";
 import { listAdminProducts } from "../../../../lib/products/product-repository";
 
-function getStatusLabel(status: "draft" | "published") {
+function getPublishStatusLabel(status: "draft" | "published") {
   return status === "published" ? "Published" : "Draft";
+}
+
+function getStockStatusLabel(status: "in_stock" | "out_of_stock") {
+  return status === "in_stock" ? "In Stock" : "Out of Stock";
 }
 
 export default async function AdminProductsPage() {
@@ -93,7 +97,10 @@ export default async function AdminProductsPage() {
                   Brand
                 </th>
                 <th className="border-b border-slate-200 px-4 py-4 text-left text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-                  Status
+                  Visibility
+                </th>
+                <th className="border-b border-slate-200 px-4 py-4 text-left text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                  Stock
                 </th>
                 <th className="border-b border-slate-200 px-4 py-4 text-right text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
                   Action
@@ -106,12 +113,21 @@ export default async function AdminProductsPage() {
                 <tr key={product.id}>
                   <td className="border-b border-slate-100 px-4 py-4">
                     <div className="flex items-center gap-4">
-                      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#f7f5ef] text-xs font-semibold text-slate-400">
-                        IMG
-                      </div>
+                      {product.brand_logo_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={product.brand_logo_url}
+                          alt={product.brand_name_en || product.name_en}
+                          className="h-14 w-14 rounded-2xl border border-slate-200 bg-white object-contain p-2"
+                        />
+                      ) : (
+                        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#f7f5ef] text-xs font-semibold text-slate-400">
+                          IMG
+                        </div>
+                      )}
                       <div>
                         <p className="font-semibold text-slate-900">
-                          {product.product_name_en || product.product_name_ar}
+                          {product.name_en || product.name_ar}
                         </p>
                         <p className="mt-1 text-sm text-slate-500">
                           {product.slug}
@@ -125,22 +141,34 @@ export default async function AdminProductsPage() {
                   </td>
 
                   <td className="border-b border-slate-100 px-4 py-4 text-sm text-slate-700">
-                    {product.category}
+                    {product.category_name_en || product.category_name_ar || "—"}
                   </td>
 
                   <td className="border-b border-slate-100 px-4 py-4 text-sm text-slate-700">
-                    {product.brand}
+                    {product.brand_name_en || product.brand_name_ar || "—"}
                   </td>
 
                   <td className="border-b border-slate-100 px-4 py-4">
                     <span
                       className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                        product.status === "published"
+                        product.publishStatus === "published"
                           ? "bg-emerald-100 text-emerald-700"
                           : "bg-amber-100 text-amber-700"
                       }`}
                     >
-                      {getStatusLabel(product.status)}
+                      {getPublishStatusLabel(product.publishStatus)}
+                    </span>
+                  </td>
+
+                  <td className="border-b border-slate-100 px-4 py-4">
+                    <span
+                      className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+                        product.stock_status === "in_stock"
+                          ? "bg-blue-100 text-blue-700"
+                          : "bg-rose-100 text-rose-700"
+                      }`}
+                    >
+                      {getStockStatusLabel(product.stock_status)}
                     </span>
                   </td>
 
@@ -158,7 +186,7 @@ export default async function AdminProductsPage() {
               {products.length === 0 && (
                 <tr>
                   <td
-                    colSpan={6}
+                    colSpan={7}
                     className="px-4 py-12 text-center text-sm text-slate-500"
                   >
                     No products found.

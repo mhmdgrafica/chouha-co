@@ -19,6 +19,8 @@ const copy = {
     sectionTitle: "Product catalog",
     liveLabel: "Live from catalog",
     published: "Published",
+    inStock: "In Stock",
+    outOfStock: "Out of Stock",
     fallbackDescription: "Product description will appear here.",
     viewProduct: "View Product",
     empty: "No published products are available yet.",
@@ -34,6 +36,8 @@ const copy = {
     sectionTitle: "كتالوج المنتجات",
     liveLabel: "بيانات مباشرة من الكتالوج",
     published: "منشور",
+    inStock: "متوفر",
+    outOfStock: "غير متوفر",
     fallbackDescription: "سيظهر وصف المنتج هنا.",
     viewProduct: "عرض المنتج",
     empty: "لا توجد منتجات منشورة حالياً.",
@@ -127,7 +131,9 @@ export default async function ProductsPage({
                 <div className="p-5">
                   <div className="flex items-center justify-between gap-3">
                     <span className="rounded-full bg-[#eef3f8] px-3 py-1 text-xs font-medium text-[#243b6b]">
-                      {product.brand}
+                      {isArabic
+                        ? product.brand_name_ar || product.brand_name_en
+                        : product.brand_name_en || product.brand_name_ar}
                     </span>
 
                     <span className="rounded-full bg-[#edf4ea] px-3 py-1 text-xs font-medium text-[#4f6b52]">
@@ -137,12 +143,14 @@ export default async function ProductsPage({
 
                   <h3 className="mt-4 text-xl font-semibold leading-snug text-[#1f2f4d]">
                     {isArabic
-                      ? product.product_name_ar || product.product_name_en
-                      : product.product_name_en || product.product_name_ar}
+                      ? product.name_ar || product.name_en
+                      : product.name_en || product.name_ar}
                   </h3>
 
                   <p className="mt-2 text-sm font-medium text-[#7b8796]">
-                    {product.category}
+                    {isArabic
+                      ? product.category_name_ar || product.category_name_en
+                      : product.category_name_en || product.category_name_ar}
                   </p>
 
                   <p className="mt-3 text-sm leading-6 text-[#5b6472]">
@@ -154,6 +162,18 @@ export default async function ProductsPage({
                         product.short_description_ar ||
                         t.fallbackDescription}
                   </p>
+
+                  <div className="mt-3 flex items-center gap-2 text-xs font-medium">
+                    <span
+                      className={`rounded-full px-3 py-1 ${
+                        product.stock_status === "in_stock"
+                          ? "bg-blue-50 text-blue-700"
+                          : "bg-rose-50 text-rose-700"
+                      }`}
+                    >
+                      {product.stock_status === "in_stock" ? t.inStock : t.outOfStock}
+                    </span>
+                  </div>
 
                   <Link
                     href={`/products/${product.slug}?lang=${lang}`}

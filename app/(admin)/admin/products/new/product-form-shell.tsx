@@ -7,6 +7,7 @@ import type {
   ProductColorOption,
   ProductFeatureIcon,
   ProductFormValues,
+  ProductPublishStatus,
   ProductHighlight,
 } from "./product-form.types";
 import { ProductBasicInfo } from "./product-basic-info";
@@ -21,6 +22,7 @@ type ProductFormShellProps = {
   initialProductId?: string | null;
   brandOptions?: CatalogItem[];
   categoryOptions?: CatalogItem[];
+  featureOptions?: ProductFeatureIcon[];
 };
 
 export function ProductFormShell({
@@ -28,8 +30,15 @@ export function ProductFormShell({
   initialProductId = null,
   brandOptions = [],
   categoryOptions = [],
+  featureOptions = [],
 }: ProductFormShellProps) {
-  const [form, setForm] = useState<ProductFormValues>(initialForm);
+  const [form, setForm] = useState<ProductFormValues>({
+    ...initialForm,
+    featureIcons:
+      initialForm.featureIcons.length > 0
+        ? initialForm.featureIcons
+        : featureOptions,
+  });
   const [savedProductId, setSavedProductId] = useState<string | null>(
     initialProductId
   );
@@ -79,7 +88,7 @@ export function ProductFormShell({
     }));
   };
 
-  const submitProduct = async (status: "draft" | "published") => {
+  const submitProduct = async (status: ProductPublishStatus) => {
     if (status === "draft") {
       setIsSavingDraft(true);
     } else {

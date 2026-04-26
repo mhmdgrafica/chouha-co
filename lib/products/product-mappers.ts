@@ -8,9 +8,9 @@ import type {
   ProductHighlightRow,
   ProductMediaItem,
   ProductMediaRow,
+  ProductPublishStatus,
   ProductRecord,
   ProductRow,
-  ProductStatus,
 } from "./product.types";
 
 const fallbackSlug = "untitled-product";
@@ -32,88 +32,78 @@ export function buildProductSlug(form: ProductFormValues) {
 
 function toProductRow(
   form: ProductFormValues,
-  status: ProductStatus
+  publishStatus: ProductPublishStatus
 ): ProductRow {
   return {
     slug: buildProductSlug(form),
-    product_name_en: form.productNameEn.trim(),
-    product_name_ar: form.productNameAr.trim(),
+    name_en: form.productNameEn.trim(),
+    name_ar: form.productNameAr.trim(),
     product_code: form.productCode.trim(),
-    brand: form.brand.trim(),
-    category: form.category.trim(),
+    brand_id: form.brandId || null,
+    category_id: form.categoryId || null,
     short_description_en: form.shortDescriptionEn.trim(),
     short_description_ar: form.shortDescriptionAr.trim(),
     full_description_en: form.fullDescriptionEn.trim(),
     full_description_ar: form.fullDescriptionAr.trim(),
-    status,
+    stock_status: form.stockStatus,
+    is_active: publishStatus === "published",
+    is_featured: false,
   };
 }
 
-function toHighlightRows(
-  highlights: ProductHighlight[]
-): ProductHighlightRow[] {
+function toHighlightRows(highlights: ProductHighlight[]): ProductHighlightRow[] {
   return highlights
     .filter((item) => item.textEn.trim() !== "" || item.textAr.trim() !== "")
     .map((item, index) => ({
-      sort_order: index,
+      position: index,
       text_en: item.textEn.trim(),
       text_ar: item.textAr.trim(),
     }));
 }
 
-function toFeatureRows(
-  featureIcons: ProductFeatureIcon[]
-): ProductFeatureRow[] {
-  return featureIcons.map((item, index) => ({
-    sort_order: index,
-    feature_key: item.key,
-    icon: item.icon,
-    selected: item.selected,
-  }));
+function toFeatureRows(featureIcons: ProductFeatureIcon[]): ProductFeatureRow[] {
+  return featureIcons
+    .filter((item) => item.selected)
+    .map((item, index) => ({
+      position: index,
+      feature_key: item.key,
+    }));
 }
 
 function toColorRows(colors: ProductColorOption[]): ProductColorRow[] {
   return colors.map((item, index) => ({
-    sort_order: index,
+    position: index,
     name_en: item.nameEn.trim(),
     name_ar: item.nameAr.trim(),
     hex: item.hex.trim(),
     product_code: item.productCode.trim(),
-    thumbnail_preview: item.thumbnailPreview.trim(),
-    main_image_preview: item.mainImagePreview.trim(),
+    thumbnail_url: item.thumbnailUrl.trim(),
+    main_image_url: item.mainImageUrl.trim(),
   }));
 }
 
 function toMediaRows(form: ProductFormValues): ProductMediaRow[] {
   const media: ProductMediaRow[] = [];
 
-  if (form.mainCardImage) {
-    media.push({
-      sort_order: 0,
-      media_type: "main",
-      file_kind: form.mainCardImage.type,
-      name: form.mainCardImage.name.trim(),
-      preview: form.mainCardImage.preview.trim(),
-    });
-  }
-
   form.galleryImages.forEach((item, index) => {
     media.push({
-      sort_order: index,
-      media_type: "gallery",
-      file_kind: item.type,
-      name: item.name.trim(),
-      preview: item.preview.trim(),
+      position: index,
+      media_type: item.type,
+      url: item.url.trim(),
+      alt_en: item.altEn.trim(),
+      alt_ar: item.altAr.trim(),
+      is_main: false,
     });
   });
 
   if (form.video) {
     media.push({
-      sort_order: 0,
+      position: media.length,
       media_type: "video",
-      file_kind: form.video.type,
-      name: form.video.name.trim(),
-      preview: form.video.preview.trim(),
+      url: form.video.url.trim(),
+      alt_en: form.video.altEn.trim(),
+      alt_ar: form.video.altAr.trim(),
+      is_main: false,
     });
   }
 
@@ -122,10 +112,10 @@ function toMediaRows(form: ProductFormValues): ProductMediaRow[] {
 
 export function mapProductFormToRecord(
   form: ProductFormValues,
-  status: ProductStatus = "draft"
+  publishStatus: ProductPublishStatus = "draft"
 ): ProductRecord {
   return {
-    product: toProductRow(form, status),
+    product: toProductRow(form, publishStatus),
     highlights: toHighlightRows(form.highlights),
     features: toFeatureRows(form.featureIcons),
     colors: toColorRows(form.colors),
@@ -136,7 +126,7 @@ export function mapProductFormToRecord(
 function fromHighlightRows(rows: ProductHighlightRow[]): ProductHighlight[] {
   return rows
     .slice()
-    .sort((a, b) => a.sort_order - b.sort_order)
+    .sort((a, b) => a.position - b.position)
     .map((item, index) => ({
       id: item.id ?? `highlight-${index + 1}`,
       textEn: item.text_en,
@@ -144,68 +134,73 @@ function fromHighlightRows(rows: ProductHighlightRow[]): ProductHighlight[] {
     }));
 }
 
-function fromFeatureRows(rows: ProductFeatureRow[]): ProductFeatureIcon[] {
-  return rows
-    .slice()
-    .sort((a, b) => a.sort_order - b.sort_order)
-    .map((item, index) => ({
-      id: item.id ?? `feature-${index + 1}`,
-      key: item.feature_key,
-      icon: item.icon,
-      selected: item.selected,
-    }));
+export function mergeFeatureDefinitionsWithSelections(
+  definitions: ProductFeatureIcon[],
+  rows: ProductFeatureRow[]
+): ProductFeatureIcon[] {
+  const selectedKeys = new Set(rows.map((item) => item.feature_key));
+
+  return definitions.map((definition) => ({
+    ...definition,
+    selected: selectedKeys.has(definition.key),
+  }));
 }
 
 function fromColorRows(rows: ProductColorRow[]): ProductColorOption[] {
   return rows
     .slice()
-    .sort((a, b) => a.sort_order - b.sort_order)
+    .sort((a, b) => a.position - b.position)
     .map((item, index) => ({
       id: item.id ?? `color-${index + 1}`,
       nameEn: item.name_en,
       nameAr: item.name_ar,
       hex: item.hex,
       productCode: item.product_code,
-      thumbnailPreview: item.thumbnail_preview,
-      mainImagePreview: item.main_image_preview,
+      thumbnailUrl: item.thumbnail_url,
+      mainImageUrl: item.main_image_url,
     }));
 }
 
 function toMediaItem(item: ProductMediaRow, fallbackId: string): ProductMediaItem {
   return {
     id: item.id ?? fallbackId,
-    type: item.file_kind,
-    name: item.name,
-    preview: item.preview,
+    type: item.media_type,
+    name: item.url.split("/").pop() ?? fallbackId,
+    url: item.url,
+    altEn: item.alt_en,
+    altAr: item.alt_ar,
   };
 }
 
-export function mapProductRecordToForm(record: ProductRecord): ProductFormValues {
+export function mapProductRecordToForm(
+  record: ProductRecord,
+  featureIcons: ProductFeatureIcon[]
+): ProductFormValues {
   const colors = fromColorRows(record.colors);
-  const mainMedia = record.media.find((item) => item.media_type === "main") ?? null;
-  const videoMedia = record.media.find((item) => item.media_type === "video") ?? null;
   const galleryMedia = record.media
-    .filter((item) => item.media_type === "gallery")
-    .sort((a, b) => a.sort_order - b.sort_order);
+    .filter((item) => item.media_type === "image")
+    .sort((a, b) => a.position - b.position);
+  const videoMedia =
+    record.media.find((item) => item.media_type === "video") ?? null;
 
   return {
-    productNameEn: record.product.product_name_en,
-    productNameAr: record.product.product_name_ar,
+    productNameEn: record.product.name_en,
+    productNameAr: record.product.name_ar,
     productCode: record.product.product_code,
-    brand: record.product.brand,
-    category: record.product.category,
+    brandId: record.product.brand_id ?? "",
+    categoryId: record.product.category_id ?? "",
     shortDescriptionEn: record.product.short_description_en,
     shortDescriptionAr: record.product.short_description_ar,
     fullDescriptionEn: record.product.full_description_en,
     fullDescriptionAr: record.product.full_description_ar,
+    stockStatus: record.product.stock_status,
     highlights: fromHighlightRows(record.highlights),
-    featureIcons: fromFeatureRows(record.features),
-    mainCardImage: mainMedia ? toMediaItem(mainMedia, "main-image") : null,
+    featureIcons: mergeFeatureDefinitionsWithSelections(featureIcons, record.features),
+    colors,
+    selectedColorId: colors[0]?.id ?? null,
     galleryImages: galleryMedia.map((item, index) =>
       toMediaItem(item, `gallery-${index + 1}`)
     ),
     video: videoMedia ? toMediaItem(videoMedia, "video-1") : null,
-    colors,
-    selectedColorId: colors[0]?.id ?? null,
   };
 }

@@ -1,7 +1,7 @@
 "use client";
 
+import { FeatureIcon } from "../../../../../components/feature-icon";
 import type { ProductFeatureIcon } from "./product-form.types";
-import { featureIconLabels } from "./product-form.constants";
 
 type Props = {
   featureIcons: ProductFeatureIcon[];
@@ -28,8 +28,6 @@ export function ProductFeatureIcons({ featureIcons, onChange }: Props) {
 
       <div className="grid gap-3 sm:grid-cols-2">
         {featureIcons.map((item) => {
-          const label = featureIconLabels[item.key];
-
           return (
             <button
               key={item.id}
@@ -41,15 +39,18 @@ export function ProductFeatureIcons({ featureIcons, onChange }: Props) {
                   : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
               }`}
             >
-              <div className="text-sm font-semibold">
-                {label?.en || item.key}
+              <div className="flex items-center gap-3">
+                <FeatureIcon name={item.iconName} className="h-5 w-5" />
+                <div className="text-sm font-semibold">
+                  {item.labelEn || item.key}
+                </div>
               </div>
 
               <div className="mt-1 text-xs opacity-80">
-                {label?.ar || item.key}
+                {item.labelAr || item.key}
               </div>
 
-              <div className="mt-2 text-xs opacity-70">{item.icon}</div>
+              <div className="mt-2 text-xs opacity-70">{item.iconName}</div>
             </button>
           );
         })}

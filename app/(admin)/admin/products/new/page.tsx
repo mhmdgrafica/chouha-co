@@ -1,16 +1,19 @@
 import { listCatalogItems } from "../../../../../lib/catalog/catalog-repository";
+import { listActiveFeatureIcons } from "../../../../../lib/features/feature-definitions-repository";
 import { createAdminClient } from "../../../../../lib/supabase-server";
 import { ProductFormShell } from "./product-form-shell";
 
 export default async function NewProductPage() {
   let brandOptions = [];
   let categoryOptions = [];
+  let featureOptions = [];
 
   try {
     const supabase = await createAdminClient();
-    [brandOptions, categoryOptions] = await Promise.all([
+    [brandOptions, categoryOptions, featureOptions] = await Promise.all([
       listCatalogItems(supabase, "brands"),
       listCatalogItems(supabase, "categories"),
+      listActiveFeatureIcons(supabase),
     ]);
   } catch {}
 
@@ -29,6 +32,7 @@ export default async function NewProductPage() {
       <ProductFormShell
         brandOptions={brandOptions}
         categoryOptions={categoryOptions}
+        featureOptions={featureOptions}
       />
     </section>
   );

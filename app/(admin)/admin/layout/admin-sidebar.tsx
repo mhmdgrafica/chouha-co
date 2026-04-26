@@ -36,7 +36,7 @@ const navItems = [
     icon: Shapes,
   },
   {
-    label: "Options",
+    label: "Feature Icons",
     href: "/admin/options",
     icon: SlidersHorizontal,
   },

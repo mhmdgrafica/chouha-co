@@ -26,13 +26,19 @@ function buildCatalogSlug(nameEn: string) {
   return normalizeSlugPart(nameEn) || `item-${Date.now()}`;
 }
 
+function getCatalogSelect(table: CatalogTable) {
+  return table === "brands"
+    ? "id, name_en, name_ar, slug, logo_url, created_at"
+    : "id, name_en, name_ar, slug, created_at";
+}
+
 export async function listCatalogItems(
   supabase: CatalogDatabaseClient,
   table: CatalogTable
 ): Promise<CatalogItem[]> {
   const { data, error } = await supabase
     .from(table)
-    .select("id, name_en, name_ar, slug, logo_url, created_at")
+    .select(getCatalogSelect(table))
     .order("name_en", { ascending: true });
 
   if (error) {
@@ -62,7 +68,7 @@ export async function createCatalogItem(
       slug,
       ...(input.table === "brands" ? { logo_url: input.logoUrl ?? null } : {}),
     })
-    .select("id, name_en, name_ar, slug, logo_url, created_at")
+    .select(getCatalogSelect(input.table))
     .single();
 
   if (error) {
@@ -97,7 +103,7 @@ export async function updateCatalogItem(
       ...(input.table === "brands" ? { logo_url: input.logoUrl ?? null } : {}),
     })
     .eq("id", input.id)
-    .select("id, name_en, name_ar, slug, logo_url, created_at")
+    .select(getCatalogSelect(input.table))
     .single();
 
   if (error) {

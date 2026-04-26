@@ -1,13 +1,16 @@
 import { NextResponse } from "next/server";
 import { createClient } from "../../../../lib/supabase-server";
 import { mapProductFormToRecord } from "../../../../lib/products/product-mappers";
-import type { ProductFormValues, ProductStatus } from "../../../../lib/products/product.types";
+import type {
+  ProductFormValues,
+  ProductPublishStatus,
+} from "../../../../lib/products/product.types";
 import { saveProductRecord } from "../../../../lib/products/product-repository";
 
 type SaveProductRequestBody = {
   productId?: string | null;
   form: ProductFormValues;
-  status?: ProductStatus;
+  status?: ProductPublishStatus;
 };
 
 export async function POST(request: Request) {

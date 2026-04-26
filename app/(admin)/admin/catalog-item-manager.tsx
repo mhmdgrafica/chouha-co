@@ -2,6 +2,8 @@
 
 import { useId, useMemo, useRef, useState, type ChangeEvent } from "react";
 import type { CatalogItem, CatalogTable } from "../../../../lib/catalog/catalog.types";
+import { storageBuckets } from "../../../../lib/storage/storage.constants";
+import { uploadPublicFile } from "../../../../lib/storage/upload-client";
 
 type CatalogItemManagerProps = {
   table: CatalogTable;
@@ -70,8 +72,13 @@ export function CatalogItemManager({
     }
 
     try {
-      const preview = await readFileAsDataUrl(file);
-      setLogoUrl(preview);
+      await readFileAsDataUrl(file);
+      const upload = await uploadPublicFile(
+        storageBuckets.brands,
+        "brands/logos",
+        file
+      );
+      setLogoUrl(upload.publicUrl);
       setMessage(null);
     } catch (error) {
       setMessage({

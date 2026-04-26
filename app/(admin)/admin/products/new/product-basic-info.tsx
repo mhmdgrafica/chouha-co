@@ -22,6 +22,8 @@ export function ProductBasicInfo({
 }: Props) {
   const hasBrands = brandOptions.length > 0;
   const hasCategories = categoryOptions.length > 0;
+  const selectedBrand =
+    brandOptions.find((brand) => brand.id === form.brandId) ?? null;
 
   return (
     <div className="space-y-5 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -75,8 +77,8 @@ export function ProductBasicInfo({
             Brand
           </label>
           <select
-            value={form.brand}
-            onChange={(e) => updateField("brand", e.target.value)}
+            value={form.brandId}
+            onChange={(e) => updateField("brandId", e.target.value)}
             disabled={!hasBrands}
             className="mt-1 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-slate-400 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
           >
@@ -84,11 +86,27 @@ export function ProductBasicInfo({
               {hasBrands ? "Select brand" : "Add brands first"}
             </option>
             {brandOptions.map((brand) => (
-              <option key={brand.id} value={brand.name_en}>
+              <option key={brand.id} value={brand.id}>
                 {brand.name_en} / {brand.name_ar}
               </option>
             ))}
           </select>
+          {selectedBrand?.logo_url && (
+            <div className="mt-3 flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-3">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={selectedBrand.logo_url}
+                alt={selectedBrand.name_en}
+                className="h-12 w-12 rounded-xl border border-slate-200 object-contain bg-white p-1"
+              />
+              <div>
+                <p className="text-sm font-semibold text-slate-900">
+                  {selectedBrand.name_en}
+                </p>
+                <p className="text-xs text-slate-500">{selectedBrand.name_ar}</p>
+              </div>
+            </div>
+          )}
           {!hasBrands && (
             <p className="mt-2 text-sm text-amber-700">
               No brands yet. Add them from{" "}
@@ -105,8 +123,8 @@ export function ProductBasicInfo({
             Category
           </label>
           <select
-            value={form.category}
-            onChange={(e) => updateField("category", e.target.value)}
+            value={form.categoryId}
+            onChange={(e) => updateField("categoryId", e.target.value)}
             disabled={!hasCategories}
             className="mt-1 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-slate-400 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
           >
@@ -114,7 +132,7 @@ export function ProductBasicInfo({
               {hasCategories ? "Select category" : "Add categories first"}
             </option>
             {categoryOptions.map((category) => (
-              <option key={category.id} value={category.name_en}>
+              <option key={category.id} value={category.id}>
                 {category.name_en} / {category.name_ar}
               </option>
             ))}
@@ -128,6 +146,20 @@ export function ProductBasicInfo({
               .
             </p>
           )}
+        </div>
+
+        <div className="sm:col-span-2">
+          <label className="text-sm font-medium text-slate-600">
+            Stock Status
+          </label>
+          <select
+            value={form.stockStatus}
+            onChange={(e) => updateField("stockStatus", e.target.value as ProductFormValues["stockStatus"])}
+            className="mt-1 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-slate-400"
+          >
+            <option value="in_stock">In Stock</option>
+            <option value="out_of_stock">Out of Stock</option>
+          </select>
         </div>
 
         <div>

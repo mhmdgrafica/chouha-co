@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { listCatalogItems } from "../../../../../lib/catalog/catalog-repository";
+import { listActiveFeatureIcons } from "../../../../../lib/features/feature-definitions-repository";
 import { ProductFormShell } from "../new/product-form-shell";
 import { createAdminClient, createClient } from "../../../../../lib/supabase-server";
 import { mapProductRecordToForm } from "../../../../../lib/products/product-mappers";
@@ -18,14 +19,16 @@ export default async function EditProductPage({
   const { id } = await params;
   let brandOptions = [];
   let categoryOptions = [];
+  let featureOptions = [];
   const supabase = await createClient();
   const productRecord = await getProductRecordById(supabase, id);
 
   try {
     const adminSupabase = await createAdminClient();
-    [brandOptions, categoryOptions] = await Promise.all([
+    [brandOptions, categoryOptions, featureOptions] = await Promise.all([
       listCatalogItems(adminSupabase, "brands"),
       listCatalogItems(adminSupabase, "categories"),
+      listActiveFeatureIcons(adminSupabase),
     ]);
   } catch {}
 
@@ -33,7 +36,7 @@ export default async function EditProductPage({
     notFound();
   }
 
-  const form = mapProductRecordToForm(productRecord);
+  const form = mapProductRecordToForm(productRecord, featureOptions);
 
   return (
     <section className="space-y-6">
@@ -57,6 +60,7 @@ export default async function EditProductPage({
         initialProductId={id}
         brandOptions={brandOptions}
         categoryOptions={categoryOptions}
+        featureOptions={featureOptions}
       />
     </section>
   );

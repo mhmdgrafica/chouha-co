@@ -2,6 +2,8 @@
 
 import type { ChangeEvent } from "react";
 import type { ProductFormValues } from "./product-form.types";
+import { storageBuckets } from "../../../../../lib/storage/storage.constants";
+import { uploadPublicFile } from "../../../../../lib/storage/upload-client";
 
 type Props = {
   form: ProductFormValues;
@@ -12,32 +14,6 @@ type Props = {
 };
 
 export function ProductMediaUpload({ form, updateField }: Props) {
-  const readFileAsDataUrl = (file: File) =>
-    new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () =>
-        resolve(typeof reader.result === "string" ? reader.result : "");
-      reader.onerror = () => reject(new Error("Unable to read file."));
-      reader.readAsDataURL(file);
-    });
-
-  const handleMainImageSelect = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-
-    if (!file) {
-      return;
-    }
-
-    const preview = await readFileAsDataUrl(file);
-    updateField("mainCardImage", {
-      id: `main-${crypto.randomUUID()}`,
-      type: "image",
-      name: file.name,
-      preview,
-    });
-    event.target.value = "";
-  };
-
   const handleGallerySelect = async (event: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files ?? []);
 
@@ -46,12 +22,22 @@ export function ProductMediaUpload({ form, updateField }: Props) {
     }
 
     const uploads = await Promise.all(
-      files.map(async (file) => ({
-        id: crypto.randomUUID(),
-        type: "image" as const,
-        name: file.name,
-        preview: await readFileAsDataUrl(file),
-      }))
+      files.map(async (file) => {
+        const upload = await uploadPublicFile(
+          storageBuckets.productMedia,
+          "products/gallery",
+          file
+        );
+
+        return {
+          id: crypto.randomUUID(),
+          type: "image" as const,
+          name: file.name,
+          url: upload.publicUrl,
+          altEn: "",
+          altAr: "",
+        };
+      })
     );
 
     updateField("galleryImages", [...form.galleryImages, ...uploads]);
@@ -65,12 +51,19 @@ export function ProductMediaUpload({ form, updateField }: Props) {
       return;
     }
 
-    const preview = await readFileAsDataUrl(file);
+    const upload = await uploadPublicFile(
+      storageBuckets.productMedia,
+      "products/video",
+      file
+    );
+
     updateField("video", {
       id: `video-${crypto.randomUUID()}`,
       type: "video",
       name: file.name,
-      preview,
+      url: upload.publicUrl,
+      altEn: "",
+      altAr: "",
     });
     event.target.value = "";
   };
@@ -80,55 +73,15 @@ export function ProductMediaUpload({ form, updateField }: Props) {
       <div>
         <h3 className="text-lg font-semibold text-slate-900">Product Media</h3>
         <p className="mt-1 text-sm text-slate-500">
-          Later we will connect this section to real file uploads.
+          Upload the fixed gallery images that stay the same across all product colors.
         </p>
       </div>
 
       <div className="grid gap-4">
         <div className="rounded-2xl border border-dashed border-slate-300 p-5">
-          <p className="text-sm font-medium text-slate-700">Main Card Image</p>
-          <p className="mt-1 text-sm text-slate-500">
-            Main product image used on the card and preview.
-          </p>
-
-          <label className="mt-4 inline-flex cursor-pointer rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
-            Add Image
-            <input
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleMainImageSelect}
-            />
-          </label>
-
-          {form.mainCardImage && (
-            <div className="mt-3 space-y-3">
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-sm text-slate-600">
-                  Added: {form.mainCardImage.name}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => updateField("mainCardImage", null)}
-                  className="rounded-lg border border-rose-200 px-3 py-1.5 text-xs font-medium text-rose-700 hover:bg-rose-50"
-                >
-                  Remove
-                </button>
-              </div>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={form.mainCardImage.preview}
-                alt={form.mainCardImage.name}
-                className="h-28 w-full rounded-2xl border border-slate-200 object-cover"
-              />
-            </div>
-          )}
-        </div>
-
-        <div className="rounded-2xl border border-dashed border-slate-300 p-5">
           <p className="text-sm font-medium text-slate-700">Gallery Images</p>
           <p className="mt-1 text-sm text-slate-500">
-            Additional advertising or supporting images.
+            These images remain the same even when the customer changes product color.
           </p>
 
           <label className="mt-4 inline-flex cursor-pointer rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
@@ -151,7 +104,7 @@ export function ProductMediaUpload({ form, updateField }: Props) {
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={item.preview}
+                    src={item.url}
                     alt={item.name}
                     className="h-24 w-full object-cover"
                   />
@@ -181,7 +134,7 @@ export function ProductMediaUpload({ form, updateField }: Props) {
         <div className="rounded-2xl border border-dashed border-slate-300 p-5">
           <p className="text-sm font-medium text-slate-700">Optional Video</p>
           <p className="mt-1 text-sm text-slate-500">
-            Product video will be added here later.
+            Add one optional product video shared by all color options.
           </p>
 
           <label className="mt-4 inline-flex cursor-pointer rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">

@@ -2,6 +2,8 @@
 
 import type { ChangeEvent } from "react";
 import type { ProductColorOption } from "./product-form.types";
+import { storageBuckets } from "../../../../../lib/storage/storage.constants";
+import { uploadPublicFile } from "../../../../../lib/storage/upload-client";
 
 type Props = {
   colors: ProductColorOption[];
@@ -46,8 +48,8 @@ export function ProductColors({
         nameAr: "",
         hex: "#000000",
         productCode: "",
-        thumbnailPreview: "",
-        mainImagePreview: "",
+        thumbnailUrl: "",
+        mainImageUrl: "",
       },
     ]);
   };
@@ -59,7 +61,7 @@ export function ProductColors({
   const handleFileSelect = async (
     event: ChangeEvent<HTMLInputElement>,
     id: string,
-    key: "thumbnailPreview" | "mainImagePreview"
+    key: "thumbnailUrl" | "mainImageUrl"
   ) => {
     const file = event.target.files?.[0];
 
@@ -67,8 +69,13 @@ export function ProductColors({
       return;
     }
 
-    const preview = await readFileAsDataUrl(file);
-    updateColor(id, key, preview);
+    await readFileAsDataUrl(file);
+    const upload = await uploadPublicFile(
+      storageBuckets.productMedia,
+      "products/colors",
+      file
+    );
+    updateColor(id, key, upload.publicUrl);
     event.target.value = "";
   };
 
@@ -191,14 +198,14 @@ export function ProductColors({
                     accept="image/*"
                     className="hidden"
                     onChange={(e) =>
-                      handleFileSelect(e, color.id, "thumbnailPreview")
+                      handleFileSelect(e, color.id, "thumbnailUrl")
                     }
                   />
                 </label>
-                {color.thumbnailPreview && (
+                {color.thumbnailUrl && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={color.thumbnailPreview}
+                    src={color.thumbnailUrl}
                     alt={`${color.nameEn || color.nameAr || "Colour"} thumbnail`}
                     className="mt-2 h-20 w-full rounded-2xl border border-slate-200 object-cover"
                   />
@@ -216,14 +223,14 @@ export function ProductColors({
                     accept="image/*"
                     className="hidden"
                     onChange={(e) =>
-                      handleFileSelect(e, color.id, "mainImagePreview")
+                      handleFileSelect(e, color.id, "mainImageUrl")
                     }
                   />
                 </label>
-                {color.mainImagePreview && (
+                {color.mainImageUrl && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={color.mainImagePreview}
+                    src={color.mainImageUrl}
                     alt={`${color.nameEn || color.nameAr || "Colour"} main`}
                     className="mt-2 h-20 w-full rounded-2xl border border-slate-200 object-cover"
                   />
