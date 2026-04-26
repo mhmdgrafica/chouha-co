@@ -34,7 +34,11 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : "Unable to save product.";
+      error instanceof Error
+        ? error.message
+        : typeof error === "object" && error !== null
+          ? JSON.stringify(error)
+          : "Unable to save product.";
 
     return NextResponse.json({ error: message }, { status: 500 });
   }
