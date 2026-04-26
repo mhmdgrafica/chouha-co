@@ -1,9 +1,9 @@
 "use client";
 
 import { useId, useMemo, useRef, useState, type ChangeEvent } from "react";
-import type { CatalogItem, CatalogTable } from "../../../../lib/catalog/catalog.types";
-import { storageBuckets } from "../../../../lib/storage/storage.constants";
-import { uploadPublicFile } from "../../../../lib/storage/upload-client";
+import type { CatalogItem, CatalogTable } from "../../../lib/catalog/catalog.types";
+import { storageBuckets } from "../../../lib/storage/storage.constants";
+import { uploadPublicFile } from "../../../lib/storage/upload-client";
 
 type CatalogItemManagerProps = {
   table: CatalogTable;
