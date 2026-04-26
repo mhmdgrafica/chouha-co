@@ -1,5 +1,6 @@
 "use client";
 
+import type { ChangeEvent } from "react";
 import type { ProductColorOption } from "./product-form.types";
 
 type Props = {
@@ -15,6 +16,15 @@ export function ProductColors({
   onChange,
   onSelectColor,
 }: Props) {
+  const readFileAsDataUrl = (file: File) =>
+    new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () =>
+        resolve(typeof reader.result === "string" ? reader.result : "");
+      reader.onerror = () => reject(new Error("Unable to read file."));
+      reader.readAsDataURL(file);
+    });
+
   const updateColor = (
     id: string,
     key: keyof ProductColorOption,
@@ -44,6 +54,22 @@ export function ProductColors({
 
   const removeColor = (id: string) => {
     onChange(colors.filter((color) => color.id !== id));
+  };
+
+  const handleFileSelect = async (
+    event: ChangeEvent<HTMLInputElement>,
+    id: string,
+    key: "thumbnailPreview" | "mainImagePreview"
+  ) => {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    const preview = await readFileAsDataUrl(file);
+    updateColor(id, key, preview);
+    event.target.value = "";
   };
 
   return (
@@ -158,30 +184,50 @@ export function ProductColors({
                 <label className="text-sm font-medium text-slate-600">
                   Thumbnail Image
                 </label>
-                <input
-                  type="text"
-                  value={color.thumbnailPreview}
-                  onChange={(e) =>
-                    updateColor(color.id, "thumbnailPreview", e.target.value)
-                  }
-                  placeholder="Thumbnail placeholder"
-                  className="mt-1 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-slate-400"
-                />
+                <label className="mt-1 flex cursor-pointer items-center justify-center rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50">
+                  Choose Image
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) =>
+                      handleFileSelect(e, color.id, "thumbnailPreview")
+                    }
+                  />
+                </label>
+                {color.thumbnailPreview && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={color.thumbnailPreview}
+                    alt={`${color.nameEn || color.nameAr || "Colour"} thumbnail`}
+                    className="mt-2 h-20 w-full rounded-2xl border border-slate-200 object-cover"
+                  />
+                )}
               </div>
 
               <div>
                 <label className="text-sm font-medium text-slate-600">
                   Main Switch Image
                 </label>
-                <input
-                  type="text"
-                  value={color.mainImagePreview}
-                  onChange={(e) =>
-                    updateColor(color.id, "mainImagePreview", e.target.value)
-                  }
-                  placeholder="Main image placeholder"
-                  className="mt-1 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-slate-400"
-                />
+                <label className="mt-1 flex cursor-pointer items-center justify-center rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50">
+                  Choose Image
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) =>
+                      handleFileSelect(e, color.id, "mainImagePreview")
+                    }
+                  />
+                </label>
+                {color.mainImagePreview && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={color.mainImagePreview}
+                    alt={`${color.nameEn || color.nameAr || "Colour"} main`}
+                    className="mt-2 h-20 w-full rounded-2xl border border-slate-200 object-cover"
+                  />
+                )}
               </div>
             </div>
           </div>

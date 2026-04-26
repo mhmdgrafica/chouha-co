@@ -1,16 +1,28 @@
 "use client";
 
+import Link from "next/link";
+import type { CatalogItem } from "../../../../../lib/catalog/catalog.types";
 import type { ProductFormValues } from "./product-form.types";
 
 type Props = {
   form: ProductFormValues;
+  brandOptions: CatalogItem[];
+  categoryOptions: CatalogItem[];
   updateField: <K extends keyof ProductFormValues>(
     key: K,
     value: ProductFormValues[K]
   ) => void;
 };
 
-export function ProductBasicInfo({ form, updateField }: Props) {
+export function ProductBasicInfo({
+  form,
+  brandOptions,
+  categoryOptions,
+  updateField,
+}: Props) {
+  const hasBrands = brandOptions.length > 0;
+  const hasCategories = categoryOptions.length > 0;
+
   return (
     <div className="space-y-5 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
       <h3 className="text-lg font-semibold text-slate-900">
@@ -62,26 +74,60 @@ export function ProductBasicInfo({ form, updateField }: Props) {
           <label className="text-sm font-medium text-slate-600">
             Brand
           </label>
-          <input
-            type="text"
+          <select
             value={form.brand}
             onChange={(e) => updateField("brand", e.target.value)}
-            placeholder="Pilot"
-            className="mt-1 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-slate-400"
-          />
+            disabled={!hasBrands}
+            className="mt-1 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-slate-400 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+          >
+            <option value="">
+              {hasBrands ? "Select brand" : "Add brands first"}
+            </option>
+            {brandOptions.map((brand) => (
+              <option key={brand.id} value={brand.name_en}>
+                {brand.name_en} / {brand.name_ar}
+              </option>
+            ))}
+          </select>
+          {!hasBrands && (
+            <p className="mt-2 text-sm text-amber-700">
+              No brands yet. Add them from{" "}
+              <Link href="/admin/brands" className="font-semibold underline">
+                Brands
+              </Link>
+              .
+            </p>
+          )}
         </div>
 
         <div className="sm:col-span-2">
           <label className="text-sm font-medium text-slate-600">
             Category
           </label>
-          <input
-            type="text"
+          <select
             value={form.category}
             onChange={(e) => updateField("category", e.target.value)}
-            placeholder="Markers"
-            className="mt-1 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-slate-400"
-          />
+            disabled={!hasCategories}
+            className="mt-1 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-slate-400 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+          >
+            <option value="">
+              {hasCategories ? "Select category" : "Add categories first"}
+            </option>
+            {categoryOptions.map((category) => (
+              <option key={category.id} value={category.name_en}>
+                {category.name_en} / {category.name_ar}
+              </option>
+            ))}
+          </select>
+          {!hasCategories && (
+            <p className="mt-2 text-sm text-amber-700">
+              No categories yet. Add them from{" "}
+              <Link href="/admin/categories" className="font-semibold underline">
+                Categories
+              </Link>
+              .
+            </p>
+          )}
         </div>
 
         <div>

@@ -5,6 +5,7 @@ import { createCatalogItem } from "../../../../lib/catalog/catalog-repository";
 type CreateBrandRequestBody = {
   nameEn?: string;
   nameAr?: string;
+  logoUrl?: string | null;
 };
 
 export async function POST(request: Request) {
@@ -15,6 +16,7 @@ export async function POST(request: Request) {
       table: "brands",
       nameEn: body.nameEn ?? "",
       nameAr: body.nameAr ?? "",
+      logoUrl: body.logoUrl ?? null,
     });
 
     return NextResponse.json(brand, { status: 201 });
