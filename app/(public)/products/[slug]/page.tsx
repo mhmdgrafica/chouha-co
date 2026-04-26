@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { FeatureIcon } from "../../../../components/feature-icon";
 import { listActiveFeatureIcons } from "../../../../lib/features/feature-definitions-repository";
 import { mapProductRecordToForm } from "../../../../lib/products/product-mappers";
 import {
@@ -21,7 +20,6 @@ const copy = {
     products: "Products",
     mainImagePlaceholder: "Main product image",
     colorFallback: "Colour",
-    features: "Features",
     highlights: "Product Highlights",
     inquiry: "Send Inquiry",
     back: "Back to Products",
@@ -48,7 +46,6 @@ const copy = {
     products: "المنتجات",
     mainImagePlaceholder: "الصورة الرئيسية للمنتج",
     colorFallback: "لون",
-    features: "الميزات",
     highlights: "أبرز الميزات",
     inquiry: "إرسال استفسار",
     back: "العودة إلى المنتجات",
@@ -123,6 +120,7 @@ export default async function ProductDetailsPage({
         <ProductColorGallery
           colors={form.colors}
           galleryItems={form.galleryImages}
+          features={features}
           productName={productName}
           isArabic={isArabic}
           colorFallback={t.colorFallback}
@@ -183,6 +181,51 @@ export default async function ProductDetailsPage({
           </p>
 
           <div className="mt-8 space-y-6">
+            <div>
+              <p className="mb-3 text-sm font-semibold text-[#1f2f4d]">
+                {t.availableColors}
+              </p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {form.colors.length > 0 ? (
+                  form.colors.map((color) => (
+                    <button
+                      key={color.id}
+                      type="button"
+                      className="flex items-center gap-3 rounded-[18px] border border-[#d8d1c4] bg-[#fbfaf7] px-3 py-3 text-left"
+                    >
+                      {color.thumbnailUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={color.thumbnailUrl}
+                          alt={color.nameEn || color.nameAr || t.colorFallback}
+                          className="h-12 w-12 rounded-xl border border-[#d8d1c4] object-cover"
+                        />
+                      ) : (
+                        <div
+                          className="h-12 w-12 rounded-xl border border-[#d8d1c4]"
+                          style={{ backgroundColor: color.hex || "#ddd" }}
+                        />
+                      )}
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold text-[#1f2f4d]">
+                          {isArabic
+                            ? color.nameAr || color.nameEn || t.colorFallback
+                            : color.nameEn || color.nameAr || t.colorFallback}
+                        </p>
+                        <p className="mt-1 text-xs text-[#6a7483]">
+                          {color.productCode || productRecord.product.product_code}
+                        </p>
+                      </div>
+                    </button>
+                  ))
+                ) : (
+                  <div className="rounded-[18px] border border-[#d8d1c4] bg-[#fbfaf7] px-4 py-4 text-sm text-[#6a7483] sm:col-span-2">
+                    {t.noColors}
+                  </div>
+                )}
+              </div>
+            </div>
+
             {highlights.length > 0 && (
               <div>
                 <p className="mb-3 text-sm font-semibold text-[#1f2f4d]">
@@ -196,32 +239,6 @@ export default async function ProductDetailsPage({
                     >
                       {isArabic ? item.textAr || item.textEn : item.textEn || item.textAr}
                     </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {features.length > 0 && (
-              <div>
-                <p className="mb-3 text-sm font-semibold text-[#1f2f4d]">
-                  {t.features}
-                </p>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {features.slice(0, 4).map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex items-center gap-3 rounded-[18px] border border-[#d8d1c4] bg-[#fbfaf7] px-3 py-3"
-                    >
-                      <FeatureIcon
-                        name={item.iconName}
-                        className="h-5 w-5 text-[#243b6b]"
-                      />
-                      <p className="text-sm font-semibold text-[#1f2f4d]">
-                        {isArabic
-                          ? item.labelAr || item.labelEn
-                          : item.labelEn || item.labelAr}
-                      </p>
-                    </div>
                   ))}
                 </div>
               </div>
