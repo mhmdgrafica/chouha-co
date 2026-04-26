@@ -85,7 +85,7 @@ export function ProductColors({
         <div>
           <h3 className="text-lg font-semibold text-slate-900">Colour Options</h3>
           <p className="mt-1 text-sm text-slate-500">
-            Add the colors shown on the product page in both languages.
+            Add bilingual colors, a main image for each selected color, and an optional thumbnail.
           </p>
         </div>
 
@@ -189,8 +189,11 @@ export function ProductColors({
 
               <div>
                 <label className="text-sm font-medium text-slate-600">
-                  Thumbnail Image
+                  Color Thumbnail
                 </label>
+                <p className="mt-1 text-xs text-slate-500">
+                  Used inside the color selector when available.
+                </p>
                 <label className="mt-1 flex cursor-pointer items-center justify-center rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50">
                   Choose Image
                   <input
@@ -214,8 +217,11 @@ export function ProductColors({
 
               <div>
                 <label className="text-sm font-medium text-slate-600">
-                  Main Switch Image
+                  Main Card Image
                 </label>
+                <p className="mt-1 text-xs text-slate-500">
+                  This is the main image that changes with the color and appears on the product card.
+                </p>
                 <label className="mt-1 flex cursor-pointer items-center justify-center rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50">
                   Choose Image
                   <input
