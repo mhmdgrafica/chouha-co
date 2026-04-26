@@ -1,16 +1,24 @@
 "use client";
 
+import type { CatalogItem } from "../../../../../lib/catalog/catalog.types";
 import type { ProductFormValues } from "./product-form.types";
 
 type Props = {
   form: ProductFormValues;
+  brandOptions: CatalogItem[];
+  categoryOptions: CatalogItem[];
   updateField: <K extends keyof ProductFormValues>(
     key: K,
     value: ProductFormValues[K]
   ) => void;
 };
 
-export function ProductBasicInfo({ form, updateField }: Props) {
+export function ProductBasicInfo({
+  form,
+  brandOptions,
+  categoryOptions,
+  updateField,
+}: Props) {
   return (
     <div className="space-y-5 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
       <h3 className="text-lg font-semibold text-slate-900">
@@ -62,26 +70,56 @@ export function ProductBasicInfo({ form, updateField }: Props) {
           <label className="text-sm font-medium text-slate-600">
             Brand
           </label>
-          <input
-            type="text"
-            value={form.brand}
-            onChange={(e) => updateField("brand", e.target.value)}
-            placeholder="Pilot"
-            className="mt-1 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-slate-400"
-          />
+          {brandOptions.length > 0 ? (
+            <select
+              value={form.brand}
+              onChange={(e) => updateField("brand", e.target.value)}
+              className="mt-1 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-slate-400"
+            >
+              <option value="">Select brand</option>
+              {brandOptions.map((brand) => (
+                <option key={brand.id} value={brand.name_en}>
+                  {brand.name_en} / {brand.name_ar}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <input
+              type="text"
+              value={form.brand}
+              onChange={(e) => updateField("brand", e.target.value)}
+              placeholder="Pilot"
+              className="mt-1 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-slate-400"
+            />
+          )}
         </div>
 
         <div className="sm:col-span-2">
           <label className="text-sm font-medium text-slate-600">
             Category
           </label>
-          <input
-            type="text"
-            value={form.category}
-            onChange={(e) => updateField("category", e.target.value)}
-            placeholder="Markers"
-            className="mt-1 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-slate-400"
-          />
+          {categoryOptions.length > 0 ? (
+            <select
+              value={form.category}
+              onChange={(e) => updateField("category", e.target.value)}
+              className="mt-1 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-slate-400"
+            >
+              <option value="">Select category</option>
+              {categoryOptions.map((category) => (
+                <option key={category.id} value={category.name_en}>
+                  {category.name_en} / {category.name_ar}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <input
+              type="text"
+              value={form.category}
+              onChange={(e) => updateField("category", e.target.value)}
+              placeholder="Markers"
+              className="mt-1 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-slate-400"
+            />
+          )}
         </div>
 
         <div>

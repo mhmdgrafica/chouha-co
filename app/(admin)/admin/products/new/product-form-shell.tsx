@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import type { CatalogItem } from "../../../../../lib/catalog/catalog.types";
 import { defaultProductFormValues } from "./product-form.constants";
 import type {
   ProductColorOption,
@@ -18,11 +19,15 @@ import { ProductLivePreview } from "./product-live-preview";
 type ProductFormShellProps = {
   initialForm?: ProductFormValues;
   initialProductId?: string | null;
+  brandOptions?: CatalogItem[];
+  categoryOptions?: CatalogItem[];
 };
 
 export function ProductFormShell({
   initialForm = defaultProductFormValues,
   initialProductId = null,
+  brandOptions = [],
+  categoryOptions = [],
 }: ProductFormShellProps) {
   const [form, setForm] = useState<ProductFormValues>(initialForm);
   const [savedProductId, setSavedProductId] = useState<string | null>(
@@ -139,7 +144,12 @@ export function ProductFormShell({
       </div>
 
       <div className="space-y-6">
-        <ProductBasicInfo form={form} updateField={updateField} />
+        <ProductBasicInfo
+          form={form}
+          brandOptions={brandOptions}
+          categoryOptions={categoryOptions}
+          updateField={updateField}
+        />
 
         <ProductHighlights
           highlights={form.highlights}
