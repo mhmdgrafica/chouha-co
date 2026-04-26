@@ -1,319 +1,384 @@
 import Link from "next/link";
+import {
+  ArrowRight,
+  BadgeHelp,
+  BriefcaseBusiness,
+  FolderKanban,
+  MessageSquareMore,
+  PhoneCall,
+} from "lucide-react";
+import { listCatalogItems } from "../../lib/catalog/catalog-repository";
+import { listPublishedProducts } from "../../lib/products/product-repository";
+import { createClient } from "../../lib/supabase-server";
+import { HomeBrandsCarousel } from "./home-brands-carousel";
+import { HomeProductsCarousel } from "./home-products-carousel";
 
-const featuredCategories = [
-  {
-    title: "Writing Instruments",
-    description: "Pens, pencils, gel pens, fountain pens, and everyday writing essentials.",
+type HomePageProps = {
+  searchParams?: Promise<{
+    lang?: string;
+  }>;
+};
+
+const copy = {
+  en: {
+    heroBadge: "CHOUHA STATIONERY & OFFICE SUPPLIES",
+    heroTitle: "Real products, cleaner browsing, and a front page that feels ready for business.",
+    heroBody:
+      "Browse published products, move through brands directly from the homepage, and reach the right inquiry path without guessing.",
+    exploreProducts: "Explore Products",
+    contactUs: "Contact Us",
+    totalProducts: "Published products",
+    totalBrands: "Brands",
+    totalCategories: "Categories",
+    familiesBadge: "PRODUCT FAMILIES",
+    familiesTitle: "Browse product families from real catalog data",
+    familiesAction: "Open catalog",
+    productsTitle: "Featured products",
+    productsAction: "View all products",
+    viewProduct: "View Product",
+    inStock: "In Stock",
+    outOfStock: "Out of Stock",
+    fallbackDescription: "Product description will appear here.",
+    brandTitle: "Brands we present",
+    brandAction: "See all brands",
+    brandFallbackPrefix: "Brand:",
+    contactBadge: "CONTACT & INQUIRY",
+    contactTitle: "Need a product, a brand, or a wholesale conversation?",
+    contactBody:
+      "Direct visitors toward product discovery, brand-based browsing, and quick support without forcing them through a long path.",
+    contactAction: "Get In Touch",
+    supportBadge: "WE'RE HERE TO HELP",
+    supportTitle: "Support & quick access",
+    supportAction: "Open",
+    inquiryTitle: "Product Inquiry",
+    inquiryText: "Jump into the product list and pick the item you want to ask about.",
+    brandSupportTitle: "Brand Support",
+    brandSupportText: "Browse by brand and head straight into the filtered catalog.",
+    contactCardTitle: "Contact Us",
+    contactCardText: "Open the contact page for location details and direct communication.",
+    corporateTitle: "Corporate Orders",
+    corporateText: "Use the contact route for bulk and business supply requests.",
+    productCountSuffix: "products",
+    loadErrorFallback: "Unable to load homepage data right now.",
+    noProducts: "Published products will appear here after they are added from the admin panel.",
+    noBrands: "Brands will appear here once they are added to the catalog.",
   },
-  {
-    title: "Markers & Highlighters",
-    description: "Whiteboard markers, permanent markers, paint markers, and highlighters.",
+  ar: {
+    heroBadge: "شوحة للقرطاسية واللوازم المكتبية",
+    heroTitle: "منتجات حقيقية، تصفح أوضح، وصفحة رئيسية جاهزة للشغل.",
+    heroBody:
+      "تصفح المنتجات المنشورة، انتقل بين البراندات مباشرة من الصفحة الرئيسية، ووصل الزائر للمسار الصحيح بدون تعقيد.",
+    exploreProducts: "استعرض المنتجات",
+    contactUs: "تواصل معنا",
+    totalProducts: "منتجات منشورة",
+    totalBrands: "براندات",
+    totalCategories: "فئات",
+    familiesBadge: "عائلات المنتجات",
+    familiesTitle: "تصفح عائلات المنتجات من بيانات الكتالوج الحقيقية",
+    familiesAction: "فتح الكتالوج",
+    productsTitle: "منتجات مميزة",
+    productsAction: "كل المنتجات",
+    viewProduct: "عرض المنتج",
+    inStock: "متوفر",
+    outOfStock: "غير متوفر",
+    fallbackDescription: "سيظهر وصف المنتج هنا.",
+    brandTitle: "البراندات التي نعرضها",
+    brandAction: "عرض كل البراندات",
+    brandFallbackPrefix: "براند:",
+    contactBadge: "التواصل والاستفسارات",
+    contactTitle: "تبحث عن منتج أو براند أو طلب جملة؟",
+    contactBody:
+      "وجّه الزائر إلى استكشاف المنتجات أو التصفح حسب البراند أو الوصول السريع للدعم بدون لف طويل.",
+    contactAction: "تواصل الآن",
+    supportBadge: "نحن هنا للمساعدة",
+    supportTitle: "الدعم والوصول السريع",
+    supportAction: "فتح",
+    inquiryTitle: "استفسار عن منتج",
+    inquiryText: "ادخل إلى قائمة المنتجات واختر المنتج الذي تريد السؤال عنه.",
+    brandSupportTitle: "دعم البراندات",
+    brandSupportText: "تصفح حسب البراند وادخل مباشرة إلى الكتالوج المفلتر.",
+    contactCardTitle: "تواصل معنا",
+    contactCardText: "افتح صفحة التواصل لمعلومات الموقع ووسائل التواصل المباشر.",
+    corporateTitle: "طلبات الشركات",
+    corporateText: "استخدم مسار التواصل لطلبات الجملة والتوريد التجاري.",
+    productCountSuffix: "منتج",
+    loadErrorFallback: "تعذر تحميل بيانات الصفحة الرئيسية حالياً.",
+    noProducts: "ستظهر المنتجات المنشورة هنا بعد إضافتها من لوحة الأدمن.",
+    noBrands: "ستظهر البراندات هنا بعد إضافتها إلى الكتالوج.",
   },
-  {
-    title: "Office Essentials",
-    description: "Staplers, tapes, clips, organizers, correction tools, and desk supplies.",
-  },
-  {
-    title: "School & Creative",
-    description: "Student supplies, colouring tools, notebooks, and creative stationery.",
-  },
-];
+} as const;
 
-const bestSellers = [
-  { title: "Gel Pen Collection", subtitle: "Smooth writing with clean finishes" },
-  { title: "Office Marker Set", subtitle: "Reliable daily-use marker solutions" },
-  { title: "Premium Fountain Pen", subtitle: "Refined design for elegant writing" },
-  { title: "School Essentials Pack", subtitle: "A practical mix for classrooms" },
-];
+function buildHref(path: string, lang: "en" | "ar") {
+  return path === "/" ? `/?lang=${lang}` : `${path}?lang=${lang}`;
+}
 
-const brands = [
-  "Pilot",
-  "Claro",
-  "Pikasso",
-  "C3",
-  "Stronger",
-  "TEXTA",
-];
+export default async function HomePage({ searchParams }: HomePageProps) {
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
+  const lang = resolvedSearchParams?.lang === "ar" ? "ar" : "en";
+  const isArabic = lang === "ar";
+  const t = copy[lang];
 
-const helpCards = [
-  { title: "Product Inquiry", text: "Need help choosing the right product range?" },
-  { title: "Contact Us", text: "Get in touch with our team for catalog and orders." },
-  { title: "Brand Support", text: "Looking for a specific brand or collection?" },
-  { title: "Corporate Orders", text: "Bulk and business supply requests made simple." },
-];
+  let products: Awaited<ReturnType<typeof listPublishedProducts>> = [];
+  let brands: Awaited<ReturnType<typeof listCatalogItems>> = [];
+  let categories: Awaited<ReturnType<typeof listCatalogItems>> = [];
+  let loadError: string | null = null;
 
-export default function HomePage() {
+  try {
+    const supabase = await createClient();
+    [products, brands, categories] = await Promise.all([
+      listPublishedProducts(supabase),
+      listCatalogItems(supabase, "brands"),
+      listCatalogItems(supabase, "categories"),
+    ]);
+  } catch (error) {
+    loadError =
+      error instanceof Error ? error.message : t.loadErrorFallback;
+  }
+
+  const featuredCategories = categories
+    .map((category) => {
+      const count = products.filter((product) => product.category_slug === category.slug).length;
+
+      return {
+        ...category,
+        count,
+      };
+    })
+    .filter((category) => category.count > 0)
+    .slice(0, 4);
+
+  const supportCards = [
+    {
+      title: t.inquiryTitle,
+      text: t.inquiryText,
+      href: buildHref("/products", lang),
+      icon: <MessageSquareMore className="h-5 w-5" />,
+    },
+    {
+      title: t.brandSupportTitle,
+      text: t.brandSupportText,
+      href: buildHref("/products", lang),
+      icon: <BadgeHelp className="h-5 w-5" />,
+    },
+    {
+      title: t.contactCardTitle,
+      text: t.contactCardText,
+      href: buildHref("/contact", lang),
+      icon: <PhoneCall className="h-5 w-5" />,
+    },
+    {
+      title: t.corporateTitle,
+      text: t.corporateText,
+      href: buildHref("/contact", lang),
+      icon: <BriefcaseBusiness className="h-5 w-5" />,
+    },
+  ];
+
   return (
     <div className="space-y-10 md:space-y-14">
-      <section className="grid gap-6 rounded-[28px] bg-[#f3efe7] p-5 md:grid-cols-2 md:gap-8 md:p-8 lg:p-10">
-        <div className="flex flex-col justify-center">
-          <span className="mb-3 inline-flex w-fit rounded-full border border-[#d8d1c4] bg-white px-3 py-1 text-xs font-medium tracking-wide text-[#243b6b]">
-            CHOUHA STATIONERY & OFFICE SUPPLIES
+      <section className="grid gap-6 overflow-hidden rounded-[30px] bg-[#f2ede3] p-5 md:grid-cols-[1.05fr_0.95fr] md:p-8 lg:p-10">
+        <div className={`flex flex-col justify-center ${isArabic ? "text-right" : ""}`}>
+          <span className="inline-flex w-fit rounded-full border border-[#d8d1c4] bg-white px-3 py-1 text-xs font-medium tracking-[0.16em] text-[#243b6b]">
+            {t.heroBadge}
           </span>
 
-          <h1 className="max-w-xl text-4xl font-semibold leading-tight text-[#1f2f4d] md:text-5xl">
-            Smart stationery solutions for school, office, and professional use.
+          <h1 className="mt-5 max-w-2xl text-4xl font-semibold leading-tight text-[#1f2f4d] md:text-5xl">
+            {t.heroTitle}
           </h1>
 
-          <p className="mt-4 max-w-lg text-base leading-7 text-[#5b6472]">
-            A modern catalog website for premium stationery, office tools, and branded writing
-            products — designed for clear browsing, strong presentation, and smooth inquiries.
+          <p className="mt-5 max-w-xl text-base leading-8 text-[#566274]">
+            {t.heroBody}
           </p>
 
-          <div className="mt-8 flex flex-wrap gap-3">
+          <div className={`mt-8 flex flex-wrap gap-3 ${isArabic ? "justify-end" : ""}`}>
             <Link
-              href="/products"
-              className="rounded-xl bg-[#243b6b] px-5 py-3 text-sm font-medium text-white transition hover:opacity-90"
+              href={buildHref("/products", lang)}
+              className="inline-flex items-center gap-2 rounded-full bg-[#243b6b] px-5 py-3 text-sm font-medium text-white transition hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(36,59,107,0.2)]"
             >
-              Explore Products
+              {t.exploreProducts}
+              <ArrowRight className={`h-4 w-4 ${isArabic ? "rotate-180" : ""}`} />
             </Link>
 
             <Link
-              href="/contact"
-              className="rounded-xl border border-[#cfd6df] bg-white px-5 py-3 text-sm font-medium text-[#243b6b] transition hover:bg-[#f7f9fc]"
+              href={buildHref("/contact", lang)}
+              className="rounded-full border border-[#cfd6df] bg-white px-5 py-3 text-sm font-medium text-[#243b6b] transition hover:border-[#243b6b]/35 hover:bg-[#f7f9fc]"
             >
-              Contact Us
+              {t.contactUs}
             </Link>
           </div>
         </div>
 
-        <div className="min-h-[320px] overflow-hidden rounded-[24px] border border-white/60 bg-white shadow-sm md:min-h-[460px]">
-          <div className="relative h-full w-full bg-[linear-gradient(135deg,#eae4d8_0%,#f8f6f2_40%,#d9e3ef_100%)]">
-            <div className="absolute left-6 top-6 h-24 w-24 rounded-full bg-[#dfe8f3]" />
-            <div className="absolute right-8 top-10 h-16 w-16 rounded-2xl bg-[#c9d8ea]" />
-            <div className="absolute bottom-0 left-0 right-0 h-40 bg-[linear-gradient(180deg,rgba(255,255,255,0)_0%,rgba(36,59,107,0.08)_100%)]" />
+        <div className="relative min-h-[360px] overflow-hidden rounded-[28px] bg-[linear-gradient(135deg,#f8f5ef_0%,#e5ebf3_55%,#d7e1ee_100%)] p-6 md:min-h-[440px]">
+          <div className="absolute inset-x-0 bottom-0 h-40 bg-[linear-gradient(180deg,rgba(255,255,255,0)_0%,rgba(31,47,77,0.12)_100%)]" />
+          <div className="absolute left-8 top-8 h-28 w-28 rounded-full bg-white/45 blur-2xl" />
+          <div className="absolute right-10 top-12 h-24 w-24 rounded-[28px] bg-[#d5dfec]/70" />
 
-            <div className="absolute inset-x-8 bottom-8 rounded-[24px] bg-white/85 p-5 shadow-sm backdrop-blur">
-              <p className="text-xs font-semibold tracking-[0.2em] text-[#7b8796]">
-                FEATURED COLLECTION
+          <div className="relative flex h-full flex-col justify-between">
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="rounded-[22px] bg-white/82 p-4 shadow-sm backdrop-blur">
+                <p className="text-xs font-medium uppercase tracking-[0.16em] text-[#7b8796]">
+                  {t.totalProducts}
+                </p>
+                <p className="mt-3 text-3xl font-semibold text-[#1f2f4d]">{products.length}</p>
+              </div>
+              <div className="rounded-[22px] bg-white/72 p-4 shadow-sm backdrop-blur">
+                <p className="text-xs font-medium uppercase tracking-[0.16em] text-[#7b8796]">
+                  {t.totalBrands}
+                </p>
+                <p className="mt-3 text-3xl font-semibold text-[#1f2f4d]">{brands.length}</p>
+              </div>
+              <div className="rounded-[22px] bg-white/72 p-4 shadow-sm backdrop-blur">
+                <p className="text-xs font-medium uppercase tracking-[0.16em] text-[#7b8796]">
+                  {t.totalCategories}
+                </p>
+                <p className="mt-3 text-3xl font-semibold text-[#1f2f4d]">{categories.length}</p>
+              </div>
+            </div>
+
+            <div className="relative mt-6 rounded-[28px] bg-[#1f2f4d] p-6 text-white shadow-[0_24px_60px_rgba(31,47,77,0.18)]">
+              <p className="text-xs font-medium uppercase tracking-[0.18em] text-white/60">
+                Chouha Catalog
               </p>
-              <h2 className="mt-2 text-2xl font-semibold text-[#1f2f4d]">
-                Premium writing & office presentation
+              <h2 className="mt-3 max-w-sm text-3xl font-semibold leading-tight">
+                {t.productsTitle}
               </h2>
-              <p className="mt-2 text-sm leading-6 text-[#5b6472]">
-                Clean visual presentation for branded products, featured categories, and elegant
-                catalog browsing.
+              <p className="mt-3 max-w-md text-sm leading-7 text-white/78">
+                {products.length > 0
+                  ? `${products.length} ${t.productCountSuffix}`
+                  : t.noProducts}
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="grid gap-6 md:grid-cols-[1.1fr_0.9fr]">
-        <div className="overflow-hidden rounded-[24px] bg-[#1f2f4d] p-6 shadow-sm md:p-8">
-          <div className="flex h-full min-h-[260px] flex-col justify-between">
-            <div>
-              <span className="inline-flex rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-white/80">
-                FEATURED STORY
-              </span>
-              <h2 className="mt-4 max-w-md text-3xl font-semibold leading-tight text-white">
-                Present your stationery collections with a polished corporate feel.
-              </h2>
+      {loadError && (
+        <div className="rounded-[24px] border border-rose-200 bg-rose-50 px-5 py-4 text-sm text-rose-700">
+          {loadError}
+        </div>
+      )}
+
+      {featuredCategories.length > 0 && (
+        <section className="space-y-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div className={isArabic ? "sm:text-right" : ""}>
+              <p className="text-sm font-medium uppercase tracking-[0.15em] text-[#7b8796]">
+                {t.familiesBadge}
+              </p>
+              <h2 className="mt-2 text-3xl font-semibold text-[#1f2f4d]">{t.familiesTitle}</h2>
             </div>
 
-            <div className="mt-6">
-              <p className="max-w-md text-sm leading-7 text-white/80">
-                Highlight premium products, launch featured categories, and guide visitors toward
-                inquiry or catalog browsing with a clean visual structure.
-              </p>
+            <Link href={buildHref("/products", lang)} className="text-sm font-medium text-[#243b6b] hover:underline">
+              {t.familiesAction}
+            </Link>
+          </div>
 
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {featuredCategories.map((category) => (
               <Link
-                href="/about"
-                className="mt-5 inline-flex rounded-xl bg-white px-4 py-3 text-sm font-medium text-[#1f2f4d] transition hover:opacity-90"
+                key={category.id}
+                href={`/products?category=${category.slug}&lang=${lang}`}
+                className="group rounded-[24px] border border-[#e6dfd3] bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-2 hover:shadow-[0_24px_60px_rgba(31,47,77,0.12)]"
               >
-                Learn More
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eef3f8] text-[#243b6b] transition group-hover:bg-[#243b6b] group-hover:text-white">
+                    <FolderKanban className="h-5 w-5" />
+                  </div>
+                  <span className="rounded-full bg-[#f8f6f2] px-3 py-1 text-xs font-medium text-[#7b8796]">
+                    {category.count}
+                  </span>
+                </div>
+
+                <h3 className="mt-5 text-lg font-semibold text-[#1f2f4d]">
+                  {isArabic ? category.name_ar : category.name_en}
+                </h3>
+                <p className="mt-2 text-sm leading-6 text-[#5b6472]">
+                  {category.count} {t.productCountSuffix}
+                </p>
               </Link>
-            </div>
+            ))}
           </div>
-        </div>
+        </section>
+      )}
 
-        <div className="rounded-[24px] border border-[#e5dfd4] bg-white p-6 shadow-sm md:p-8">
-          <span className="inline-flex rounded-full bg-[#eef3f8] px-3 py-1 text-xs font-medium text-[#243b6b]">
-            COMPANY FOCUS
-          </span>
-          <h2 className="mt-4 text-3xl font-semibold leading-tight text-[#1f2f4d]">
-            Reliable sourcing, modern display, and strong brand presentation.
-          </h2>
-          <p className="mt-4 text-sm leading-7 text-[#5b6472]">
-            This section can later present your company strengths, supply capability, brand
-            partnerships, or import/export specialization in a more refined way.
-          </p>
-          <div className="mt-6 grid grid-cols-2 gap-3">
-            <div className="rounded-2xl bg-[#f8f6f2] p-4">
-              <p className="text-sm font-semibold text-[#1f2f4d]">Catalog-first</p>
-              <p className="mt-1 text-xs leading-6 text-[#6a7483]">Built for product discovery</p>
-            </div>
-            <div className="rounded-2xl bg-[#f8f6f2] p-4">
-              <p className="text-sm font-semibold text-[#1f2f4d]">Brand-ready</p>
-              <p className="mt-1 text-xs leading-6 text-[#6a7483]">Supports categories & brands</p>
-            </div>
-          </div>
+      {products.length > 0 ? (
+        <HomeProductsCarousel
+          products={products.slice(0, 10)}
+          lang={lang}
+          isArabic={isArabic}
+          copy={{
+            title: t.productsTitle,
+            action: t.productsAction,
+            viewProduct: t.viewProduct,
+            inStock: t.inStock,
+            outOfStock: t.outOfStock,
+            fallbackDescription: t.fallbackDescription,
+          }}
+        />
+      ) : (
+        <div className="rounded-[28px] border border-[#e6dfd3] bg-white px-6 py-12 text-center text-sm text-[#6a7483] shadow-sm">
+          {t.noProducts}
         </div>
-      </section>
+      )}
 
-      <section className="space-y-5">
-        <div className="flex items-end justify-between gap-4">
-          <div>
+      {brands.length > 0 ? (
+        <HomeBrandsCarousel
+          brands={brands}
+          lang={lang}
+          isArabic={isArabic}
+          copy={{
+            title: t.brandTitle,
+            action: t.brandAction,
+            fallbackPrefix: t.brandFallbackPrefix,
+          }}
+        />
+      ) : (
+        <div className="rounded-[28px] border border-[#e6dfd3] bg-white px-6 py-12 text-center text-sm text-[#6a7483] shadow-sm">
+          {t.noBrands}
+        </div>
+      )}
+
+      <section className="grid gap-6 rounded-[30px] bg-[#dde7df] p-6 md:grid-cols-[0.94fr_1.06fr] md:p-8">
+        <div className={`flex flex-col justify-center ${isArabic ? "text-right" : ""}`}>
+          <div className="space-y-2">
             <p className="text-sm font-medium uppercase tracking-[0.15em] text-[#7b8796]">
-              Featured Categories
+              {t.contactBadge}
             </p>
-            <h2 className="mt-2 text-3xl font-semibold text-[#1f2f4d]">Browse product families</h2>
-          </div>
-
-          <Link href="/products" className="text-sm font-medium text-[#243b6b] hover:underline">
-            View all products
-          </Link>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {featuredCategories.map((category) => (
-            <div
-              key={category.title}
-              className="rounded-[22px] border border-[#e6dfd3] bg-white p-5 shadow-sm transition hover:-translate-y-0.5"
-            >
-              <div className="mb-4 h-36 rounded-[18px] bg-[linear-gradient(135deg,#f0ebe2_0%,#dde7f1_100%)]" />
-              <h3 className="text-lg font-semibold text-[#1f2f4d]">{category.title}</h3>
-              <p className="mt-2 text-sm leading-6 text-[#5b6472]">{category.description}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="space-y-5">
-        <div className="flex items-end justify-between gap-4">
-          <div>
             <p className="text-sm font-medium uppercase tracking-[0.15em] text-[#7b8796]">
-              Best Sellers
+              {t.supportBadge}
             </p>
-            <h2 className="mt-2 text-3xl font-semibold text-[#1f2f4d]">Popular product highlights</h2>
           </div>
-
-          <Link href="/products" className="text-sm font-medium text-[#243b6b] hover:underline">
-            Browse catalog
-          </Link>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {bestSellers.map((item, index) => (
-            <div
-              key={item.title}
-              className="overflow-hidden rounded-[22px] border border-[#e6dfd3] bg-white shadow-sm"
-            >
-              <div
-                className={`h-48 ${
-                  index % 2 === 0
-                    ? "bg-[linear-gradient(135deg,#ebe5da_0%,#dce7f3_100%)]"
-                    : "bg-[linear-gradient(135deg,#f3eee7_0%,#d6e0ec_100%)]"
-                }`}
-              />
-              <div className="p-5">
-                <h3 className="text-lg font-semibold text-[#1f2f4d]">{item.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-[#5b6472]">{item.subtitle}</p>
-                <Link
-                  href="/products"
-                  className="mt-4 inline-flex text-sm font-medium text-[#243b6b] hover:underline"
-                >
-                  View details
-                </Link>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="rounded-[28px] bg-white p-6 shadow-sm md:p-8">
-        <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-          <div>
-            <p className="text-sm font-medium uppercase tracking-[0.15em] text-[#7b8796]">
-              Featured Brands
-            </p>
-            <h2 className="mt-2 text-3xl font-semibold text-[#1f2f4d]">
-              Trusted names in stationery
-            </h2>
-          </div>
-
-          <Link href="/products" className="text-sm font-medium text-[#243b6b] hover:underline">
-            Explore all brands
-          </Link>
-        </div>
-
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-          {brands.map((brand) => (
-            <div
-              key={brand}
-              className="flex min-h-[88px] items-center justify-center rounded-[18px] border border-[#e6dfd3] bg-[#fbfaf7] px-4 text-center text-sm font-semibold text-[#243b6b]"
-            >
-              {brand}
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="grid gap-6 rounded-[28px] bg-[#eef1ea] p-6 md:grid-cols-2 md:p-8">
-        <div className="rounded-[24px] bg-[linear-gradient(135deg,#f6f3ec_0%,#dce5dd_100%)] min-h-[280px]" />
-        <div className="flex flex-col justify-center">
-          <p className="text-sm font-medium uppercase tracking-[0.15em] text-[#7b8796]">
-            About the Company
-          </p>
           <h2 className="mt-2 text-3xl font-semibold leading-tight text-[#1f2f4d]">
-            A modern stationery company website with clear structure and strong presentation.
+            {t.contactTitle}
           </h2>
           <p className="mt-4 text-sm leading-7 text-[#5b6472]">
-            This block can later present your story, import/export capabilities, product range,
-            partnerships, or business values — all within a refined and readable format.
+            {t.contactBody}
           </p>
           <Link
-            href="/about"
-            className="mt-6 inline-flex w-fit rounded-xl bg-[#243b6b] px-5 py-3 text-sm font-medium text-white transition hover:opacity-90"
+            href={buildHref("/contact", lang)}
+            className="mt-6 inline-flex w-fit rounded-full bg-[#243b6b] px-5 py-3 text-sm font-medium text-white transition hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(36,59,107,0.2)]"
           >
-            Read More
-          </Link>
-        </div>
-      </section>
-
-      <section className="grid gap-6 rounded-[28px] bg-[#dde7df] p-6 md:grid-cols-[0.9fr_1.1fr] md:p-8">
-        <div className="flex flex-col justify-center">
-          <p className="text-sm font-medium uppercase tracking-[0.15em] text-[#7b8796]">
-            Contact & Inquiry
-          </p>
-          <h2 className="mt-2 text-3xl font-semibold leading-tight text-[#1f2f4d]">
-            Looking for products, brands, or supply inquiries?
-          </h2>
-          <p className="mt-4 text-sm leading-7 text-[#5b6472]">
-            Invite customers and business partners to reach out for product details, brand requests,
-            quotations, and distribution opportunities.
-          </p>
-          <Link
-            href="/contact"
-            className="mt-6 inline-flex w-fit rounded-xl bg-[#243b6b] px-5 py-3 text-sm font-medium text-white transition hover:opacity-90"
-          >
-            Find Us
+            {t.contactAction}
           </Link>
         </div>
 
-        <div className="rounded-[24px] bg-[linear-gradient(135deg,#f3eee5_0%,#ffffff_100%)] min-h-[280px]" />
-      </section>
-
-      <section className="space-y-5">
-        <div>
-          <p className="text-sm font-medium uppercase tracking-[0.15em] text-[#7b8796]">
-            We&apos;re Here to Help
-          </p>
-          <h2 className="mt-2 text-3xl font-semibold text-[#1f2f4d]">Support & quick access</h2>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {helpCards.map((item) => (
-            <div
+        <div className="grid gap-4 sm:grid-cols-2">
+          {supportCards.map((item) => (
+            <Link
               key={item.title}
-              className="rounded-[22px] border border-[#e6dfd3] bg-white p-5 shadow-sm"
+              href={item.href}
+              className="group rounded-[24px] border border-white/50 bg-white/80 p-5 shadow-sm backdrop-blur transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_50px_rgba(31,47,77,0.12)]"
             >
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eef3f8] text-lg text-[#243b6b]">
-                •
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eef3f8] text-[#243b6b] transition group-hover:bg-[#243b6b] group-hover:text-white">
+                {item.icon}
               </div>
-              <h3 className="text-lg font-semibold text-[#1f2f4d]">{item.title}</h3>
+              <h3 className="mt-5 text-lg font-semibold text-[#1f2f4d]">{item.title}</h3>
               <p className="mt-2 text-sm leading-6 text-[#5b6472]">{item.text}</p>
-            </div>
+              <span className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-[#243b6b]">
+                {t.supportAction}
+                <ArrowRight className={`h-4 w-4 ${isArabic ? "rotate-180" : ""}`} />
+              </span>
+            </Link>
           ))}
         </div>
       </section>
