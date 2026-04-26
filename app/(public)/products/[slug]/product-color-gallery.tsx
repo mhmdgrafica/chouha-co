@@ -3,12 +3,14 @@
 import { useMemo, useState } from "react";
 import type {
   ProductColorOption,
+  ProductFeatureIcon,
   ProductMediaItem,
 } from "../../../../lib/products/product.types";
 
 type Props = {
   colors: ProductColorOption[];
   galleryItems: ProductMediaItem[];
+  features: ProductFeatureIcon[];
   productName: string;
   isArabic: boolean;
   colorFallback: string;
@@ -18,6 +20,7 @@ type Props = {
 export function ProductColorGallery({
   colors,
   galleryItems,
+  features,
   productName,
   isArabic,
   colorFallback,
@@ -125,55 +128,23 @@ export function ProductColorGallery({
 
       <div className="rounded-[28px] border border-[#e6dfd3] bg-white p-5 shadow-sm">
         <p className="mb-3 text-sm font-semibold text-[#1f2f4d]">
-          {isArabic ? "ألوان المنتج" : "Product Colors"}
+          {isArabic ? "الميزات" : "Features"}
         </p>
         <div className="grid gap-3 sm:grid-cols-2">
-          {colors.map((color) => (
-            <button
-              key={color.id}
-              type="button"
-              onClick={() => handleSelectColor(color.id)}
-              className={`flex items-center gap-3 rounded-[18px] border px-3 py-3 text-left transition ${
-                selectedColor?.id === color.id
-                  ? "border-[#243b6b] bg-[#eef3f8] shadow-[0_0_0_2px_rgba(36,59,107,0.08)]"
-                  : "border-[#d8d1c4] bg-[#fbfaf7]"
-              }`}
+          {features.slice(0, 4).map((item) => (
+            <div
+              key={item.id}
+              className="rounded-[18px] border border-[#d8d1c4] bg-[#fbfaf7] px-4 py-4"
             >
-              {color.thumbnailUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={color.thumbnailUrl}
-                  alt={color.nameEn || color.nameAr || colorFallback}
-                  className="h-12 w-12 rounded-xl border border-[#d8d1c4] object-cover"
-                />
-              ) : (
-                <div
-                  className="h-12 w-12 rounded-xl border border-[#d8d1c4]"
-                  style={{ backgroundColor: color.hex || "#ddd" }}
-                />
-              )}
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className="truncate text-sm font-semibold text-[#1f2f4d]">
-                    {isArabic
-                      ? color.nameAr || color.nameEn || colorFallback
-                      : color.nameEn || color.nameAr || colorFallback}
-                  </p>
-                  {selectedColor?.id === color.id && (
-                    <span className="rounded-full bg-[#243b6b] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-white">
-                      {isArabic ? "نشط" : "Active"}
-                    </span>
-                  )}
-                </div>
-                <p className="mt-1 text-xs text-[#6a7483]">
-                  {color.productCode || productName}
-                </p>
-              </div>
-            </button>
+              <p className="text-sm font-semibold text-[#1f2f4d]">
+                {isArabic ? item.labelAr || item.labelEn : item.labelEn || item.labelAr}
+              </p>
+              <p className="mt-1 text-xs text-[#7b8796]">{item.key}</p>
+            </div>
           ))}
-          {colors.length === 0 && (
+          {features.length === 0 && (
             <div className="rounded-[18px] border border-[#d8d1c4] bg-[#fbfaf7] px-4 py-4 text-sm text-[#6a7483] sm:col-span-2">
-              {isArabic ? "لا توجد ألوان مضافة لهذا المنتج بعد." : "No product colors are available yet."}
+              {isArabic ? "لا توجد ميزات مفعلة لهذا المنتج بعد." : "No product features are active yet."}
             </div>
           )}
         </div>
