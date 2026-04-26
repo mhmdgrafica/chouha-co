@@ -44,9 +44,11 @@ export type PublicProductListItem = {
   short_description_en: string;
   short_description_ar: string;
   stock_status: "in_stock" | "out_of_stock";
+  brand_slug: string | null;
   brand_name_en: string | null;
   brand_name_ar: string | null;
   brand_logo_url: string | null;
+  category_slug: string | null;
   category_name_en: string | null;
   category_name_ar: string | null;
   card_image_url: string | null;
@@ -65,11 +67,13 @@ type ProductQueryRow = {
   is_active: boolean;
   brands:
     | {
+        slug: string | null;
         name_en: string | null;
         name_ar: string | null;
         logo_url: string | null;
       }
     | {
+        slug: string | null;
         name_en: string | null;
         name_ar: string | null;
         logo_url: string | null;
@@ -77,10 +81,12 @@ type ProductQueryRow = {
     | null;
   categories:
     | {
+        slug: string | null;
         name_en: string | null;
         name_ar: string | null;
       }
     | {
+        slug: string | null;
         name_en: string | null;
         name_ar: string | null;
       }[]
@@ -140,9 +146,11 @@ function mapPublicListItem(item: ProductQueryRow): PublicProductListItem {
     short_description_en: item.short_description_en,
     short_description_ar: item.short_description_ar,
     stock_status: item.stock_status,
+    brand_slug: brand?.slug ?? null,
     brand_name_en: brand?.name_en ?? null,
     brand_name_ar: brand?.name_ar ?? null,
     brand_logo_url: brand?.logo_url ?? null,
+    category_slug: category?.slug ?? null,
     category_name_en: category?.name_en ?? null,
     category_name_ar: category?.name_ar ?? null,
     card_image_url:
@@ -314,7 +322,7 @@ export async function listPublishedProducts(
   const { data, error } = await supabase
     .from("products")
     .select(
-      "id, slug, name_en, name_ar, short_description_en, short_description_ar, stock_status, is_active, brands(name_en, name_ar, logo_url), categories(name_en, name_ar), product_colors(main_image_url, thumbnail_url, position)"
+      "id, slug, name_en, name_ar, short_description_en, short_description_ar, stock_status, is_active, brands(slug, name_en, name_ar, logo_url), categories(slug, name_en, name_ar), product_colors(main_image_url, thumbnail_url, position)"
     )
     .eq("is_active", true)
     .order("name_en", { ascending: true });
