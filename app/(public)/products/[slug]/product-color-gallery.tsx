@@ -1,28 +1,38 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { FeatureIcon } from "../../../../components/feature-icon";
 import type {
+  ProductColorOption,
   ProductFeatureIcon,
   ProductMediaItem,
 } from "../../../../lib/products/product.types";
 
 type Props = {
+  colors: ProductColorOption[];
   galleryItems: ProductMediaItem[];
-  features: ProductFeatureIcon[];
   productName: string;
   isArabic: boolean;
+  colorFallback: string;
   mainImagePlaceholder: string;
 };
 
 export function ProductColorGallery({
+  colors,
   galleryItems,
-  features,
   productName,
   isArabic,
+  colorFallback,
   mainImagePlaceholder,
 }: Props) {
+  const [selectedColorId, setSelectedColorId] = useState<string | null>(
+    colors[0]?.id ?? null
+  );
   const [selectedGalleryImageId, setSelectedGalleryImageId] = useState<string | null>(null);
+
+  const selectedColor = useMemo(
+    () => colors.find((item) => item.id === selectedColorId) ?? colors[0] ?? null,
+    [colors, selectedColorId]
+  );
 
   const selectedGalleryImage = useMemo(
     () =>
@@ -32,7 +42,16 @@ export function ProductColorGallery({
     [galleryItems, selectedGalleryImageId]
   );
 
-  const mainImageUrl = selectedGalleryImage?.url || galleryItems[0]?.url || "";
+  const mainImageUrl =
+    selectedGalleryImage?.url ||
+    selectedColor?.mainImageUrl ||
+    galleryItems[0]?.url ||
+    "";
+
+  const handleSelectColor = (colorId: string) => {
+    setSelectedColorId(colorId);
+    setSelectedGalleryImageId(null);
+  };
 
   return (
     <div className="space-y-4">
@@ -82,25 +101,48 @@ export function ProductColorGallery({
 
       <div className="rounded-[28px] border border-[#e6dfd3] bg-white p-5 shadow-sm">
         <p className="mb-3 text-sm font-semibold text-[#1f2f4d]">
-          {isArabic ? "الميزات" : "Features"}
+          {isArabic ? "ألوان المنتج" : "Product Colors"}
         </p>
         <div className="grid gap-3 sm:grid-cols-2">
-          {features.slice(0, 4).map((item) => (
-            <div
-              key={item.id}
-              className="flex items-center gap-3 rounded-[18px] border border-[#d8d1c4] bg-[#fbfaf7] px-3 py-3"
+          {colors.map((color) => (
+            <button
+              key={color.id}
+              type="button"
+              onClick={() => handleSelectColor(color.id)}
+              className={`flex items-center gap-3 rounded-[18px] border px-3 py-3 text-left transition ${
+                selectedColor?.id === color.id
+                  ? "border-[#243b6b] bg-[#eef3f8]"
+                  : "border-[#d8d1c4] bg-[#fbfaf7]"
+              }`}
             >
-              <FeatureIcon name={item.iconName} className="h-5 w-5 text-[#243b6b]" />
-              <div>
-                <p className="text-sm font-semibold text-[#1f2f4d]">
-                  {isArabic ? item.labelAr || item.labelEn : item.labelEn || item.labelAr}
+              {color.thumbnailUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={color.thumbnailUrl}
+                  alt={color.nameEn || color.nameAr || colorFallback}
+                  className="h-12 w-12 rounded-xl border border-[#d8d1c4] object-cover"
+                />
+              ) : (
+                <div
+                  className="h-12 w-12 rounded-xl border border-[#d8d1c4]"
+                  style={{ backgroundColor: color.hex || "#ddd" }}
+                />
+              )}
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-[#1f2f4d]">
+                  {isArabic
+                    ? color.nameAr || color.nameEn || colorFallback
+                    : color.nameEn || color.nameAr || colorFallback}
+                </p>
+                <p className="mt-1 text-xs text-[#6a7483]">
+                  {color.productCode || productName}
                 </p>
               </div>
-            </div>
+            </button>
           ))}
-          {features.length === 0 && (
+          {colors.length === 0 && (
             <div className="rounded-[18px] border border-[#d8d1c4] bg-[#fbfaf7] px-4 py-4 text-sm text-[#6a7483] sm:col-span-2">
-              {isArabic ? "لا توجد ميزات مفعلة لهذا المنتج بعد." : "No product features are active yet."}
+              {isArabic ? "لا توجد ألوان مضافة لهذا المنتج بعد." : "No product colors are available yet."}
             </div>
           )}
         </div>
