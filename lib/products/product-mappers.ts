@@ -14,6 +14,13 @@ import type {
 } from "./product.types";
 
 const fallbackSlug = "untitled-product";
+const defaultFeatureDefinitions = [
+  { key: "refillable", icon: "Droplets" },
+  { key: "xylene_free", icon: "ShieldCheck" },
+  { key: "dry_erase", icon: "Eraser" },
+  { key: "non_toxic", icon: "Leaf" },
+  { key: "recycled_materials", icon: "Recycle" },
+] as const;
 
 function normalizeSlugPart(value: string) {
   return value
@@ -145,15 +152,31 @@ function fromHighlightRows(rows: ProductHighlightRow[]): ProductHighlight[] {
 }
 
 function fromFeatureRows(rows: ProductFeatureRow[]): ProductFeatureIcon[] {
-  return rows
+  const orderedRows = rows
     .slice()
-    .sort((a, b) => a.sort_order - b.sort_order)
+    .sort((a, b) => a.sort_order - b.sort_order);
+  const selectedIds = new Map(
+    orderedRows.map((item) => [item.feature_key, item.id ?? item.feature_key])
+  );
+  const selectedKeys = new Set(orderedRows.map((item) => item.feature_key));
+
+  const defaultRows = defaultFeatureDefinitions.map((item, index) => ({
+    id: selectedIds.get(item.key) ?? `feature-${index + 1}`,
+    key: item.key,
+    icon: item.icon,
+    selected: selectedKeys.has(item.key),
+  }));
+
+  const extraRows = orderedRows
+    .filter((item) => !defaultFeatureDefinitions.some((entry) => entry.key === item.feature_key))
     .map((item, index) => ({
-      id: item.id ?? `feature-${index + 1}`,
+      id: item.id ?? `feature-extra-${index + 1}`,
       key: item.feature_key,
       icon: item.icon,
       selected: item.selected,
     }));
+
+  return [...defaultRows, ...extraRows];
 }
 
 function fromColorRows(rows: ProductColorRow[]): ProductColorOption[] {
