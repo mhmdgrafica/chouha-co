@@ -121,6 +121,8 @@ type ProductOptionValueDbRow = {
   value_en: string;
   value_ar: string;
   option_code: string;
+  thumbnail_url: string;
+  main_image_url: string;
   is_default: boolean;
 };
 
@@ -327,6 +329,8 @@ async function replaceOptionGroups(
           value_en: value.value_en,
           value_ar: value.value_ar,
           option_code: value.option_code,
+          thumbnail_url: value.thumbnail_url,
+          main_image_url: value.main_image_url,
           is_default: value.is_default,
         }))
       );
@@ -522,7 +526,7 @@ export async function getProductRecordById(
     const { data: optionValuesData, error: optionValuesError } = await supabase
       .from("product_option_values")
       .select(
-        "id, option_group_id, position, value_en, value_ar, option_code, is_default"
+        "id, option_group_id, position, value_en, value_ar, option_code, thumbnail_url, main_image_url, is_default"
       )
       .in("option_group_id", optionGroupIds)
       .order("position", { ascending: true });
@@ -546,6 +550,8 @@ export async function getProductRecordById(
           value_en: value.value_en,
           value_ar: value.value_ar,
           option_code: value.option_code,
+          thumbnail_url: value.thumbnail_url,
+          main_image_url: value.main_image_url,
           is_default: value.is_default,
         })),
     })
