@@ -38,6 +38,8 @@ export type ProductOptionValue = {
   valueEn: string;
   valueAr: string;
   optionCode: string;
+  thumbnailUrl: string;
+  mainImageUrl: string;
   isDefault: boolean;
 };
 
@@ -146,6 +148,8 @@ export type ProductOptionValueRow = {
   value_en: string;
   value_ar: string;
   option_code: string;
+  thumbnail_url: string;
+  main_image_url: string;
   is_default: boolean;
 };
 
