@@ -30,7 +30,7 @@ export function ProductColors({
   const updateColor = (
     id: string,
     key: keyof ProductColorOption,
-    value: string
+    value: string | boolean
   ) => {
     onChange(
       colors.map((color) =>
@@ -39,23 +39,49 @@ export function ProductColors({
     );
   };
 
+  const setDefaultColor = (id: string) => {
+    onChange(
+      colors.map((color) => ({
+        ...color,
+        isDefault: color.id === id,
+      }))
+    );
+    onSelectColor(id);
+  };
+
   const addColor = () => {
+    const nextId = crypto.randomUUID();
+
     onChange([
       ...colors,
       {
-        id: crypto.randomUUID(),
+        id: nextId,
         nameEn: "",
         nameAr: "",
         hex: "#000000",
         productCode: "",
         thumbnailUrl: "",
         mainImageUrl: "",
+        isDefault: colors.length === 0,
       },
     ]);
+
+    if (colors.length === 0) {
+      onSelectColor(nextId);
+    }
   };
 
   const removeColor = (id: string) => {
-    onChange(colors.filter((color) => color.id !== id));
+    const nextColors = colors.filter((color) => color.id !== id);
+
+    if (colors.find((color) => color.id === id)?.isDefault && nextColors[0]) {
+      nextColors[0] = {
+        ...nextColors[0],
+        isDefault: true,
+      };
+    }
+
+    onChange(nextColors);
   };
 
   const handleFileSelect = async (
@@ -85,7 +111,7 @@ export function ProductColors({
         <div>
           <h3 className="text-lg font-semibold text-slate-900">Colour Options</h3>
           <p className="mt-1 text-sm text-slate-500">
-            Add bilingual colors, a main image for each selected color, and an optional thumbnail.
+            Add each available product colour, upload its image, and choose which colour appears first on the website.
           </p>
         </div>
 
@@ -122,13 +148,27 @@ export function ProductColors({
                 </p>
               </button>
 
-              <button
-                type="button"
-                onClick={() => removeColor(color.id)}
-                className="rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
-              >
-                Delete
-              </button>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setDefaultColor(color.id)}
+                  className={`rounded-xl border px-3 py-2 text-sm font-medium transition ${
+                    color.isDefault
+                      ? "border-slate-900 bg-slate-900 text-white"
+                      : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                  }`}
+                >
+                  {color.isDefault ? "Default Display Colour" : "Set as Default"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => removeColor(color.id)}
+                  className="rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
@@ -192,7 +232,7 @@ export function ProductColors({
                   Color Thumbnail
                 </label>
                 <p className="mt-1 text-xs text-slate-500">
-                  Used inside the color selector when available.
+                  Used in the color selector buttons below the product title.
                 </p>
                 <label className="mt-1 flex cursor-pointer items-center justify-center rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50">
                   Choose Image
@@ -217,10 +257,10 @@ export function ProductColors({
 
               <div>
                 <label className="text-sm font-medium text-slate-600">
-                  Main Card Image
+                  Main Product Image
                 </label>
                 <p className="mt-1 text-xs text-slate-500">
-                  This is the main image that changes with the color and appears on the product card.
+                  This image becomes the first large image when the customer selects this colour.
                 </p>
                 <label className="mt-1 flex cursor-pointer items-center justify-center rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50">
                   Choose Image
