@@ -78,6 +78,27 @@ export function ProductOverview({
     [colors, defaultColor, selectedColorId]
   );
 
+  const selectedVariantImage = useMemo(() => {
+    for (const group of optionGroups) {
+      const selectedValueId = selectedOptionValues[group.id] ?? group.options[0]?.id ?? null;
+      const selectedOption = group.options.find((option) => option.id === selectedValueId) ?? null;
+
+      if (selectedOption?.mainImageUrl) {
+        const optionLabel = isArabic
+          ? selectedOption.valueAr || selectedOption.valueEn
+          : selectedOption.valueEn || selectedOption.valueAr;
+
+        return {
+          id: `option-${group.id}-${selectedOption.id}`,
+          name: optionLabel || productName,
+          url: selectedOption.mainImageUrl,
+        };
+      }
+    }
+
+    return null;
+  }, [isArabic, optionGroups, productName, selectedOptionValues]);
+
   const descriptionParagraphs = fullDescription
     .split("\n")
     .map((paragraph) => paragraph.trim())
@@ -88,6 +109,7 @@ export function ProductOverview({
       <ProductColorGallery
         colors={colors}
         selectedColorId={selectedColor?.id ?? null}
+        selectedVariantImage={selectedVariantImage}
         galleryItems={galleryItems}
         features={features}
         productName={productName}
@@ -241,14 +263,30 @@ export function ProductOverview({
                             [group.id]: option.id,
                           }))
                         }
-                        className={`rounded-full border px-4 py-2.5 text-sm font-medium transition ${
+                        className={`flex min-w-[120px] items-center gap-3 rounded-[18px] border px-3 py-3 text-left transition ${
                           isActive
-                            ? "border-[#243b6b] bg-[#243b6b] text-white"
+                            ? "border-[#243b6b] bg-[#243b6b] text-white shadow-[0_0_0_2px_rgba(36,59,107,0.12)]"
                             : "border-[#d8d1c4] bg-[#fbfaf7] text-[#4f5a69]"
                         }`}
                       >
-                        {optionLabel}
-                        {option.optionCode ? ` · ${option.optionCode}` : ""}
+                        {option.thumbnailUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={option.thumbnailUrl}
+                            alt={optionLabel || "Option"}
+                            className="h-11 w-11 rounded-xl border border-[#d8d1c4] object-cover"
+                          />
+                        ) : null}
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold">
+                            {optionLabel}
+                          </p>
+                          {option.optionCode ? (
+                            <p className={`mt-1 text-xs ${isActive ? "text-white/75" : "text-[#7b8796]"}`}>
+                              {option.optionCode}
+                            </p>
+                          ) : null}
+                        </div>
                       </button>
                     );
                   })}
