@@ -1,5 +1,8 @@
 "use client";
 
+import type { ChangeEvent } from "react";
+import { storageBuckets } from "../../../../../lib/storage/storage.constants";
+import { uploadPublicFile } from "../../../../../lib/storage/upload-client";
 import type { ProductOptionGroup, ProductOptionValue } from "./product-form.types";
 
 type Props = {
@@ -13,6 +16,8 @@ function buildEmptyOptionValue(): ProductOptionValue {
     valueEn: "",
     valueAr: "",
     optionCode: "",
+    thumbnailUrl: "",
+    mainImageUrl: "",
     isDefault: false,
   };
 }
@@ -36,6 +41,45 @@ export function ProductOptionGroups({ optionGroups, onChange }: Props) {
     updater: (group: ProductOptionGroup) => ProductOptionGroup
   ) => {
     onChange(optionGroups.map((group) => (group.id === groupId ? updater(group) : group)));
+  };
+
+  const updateOptionValue = (
+    groupId: string,
+    valueId: string,
+    updater: (option: ProductOptionValue) => ProductOptionValue
+  ) => {
+    updateGroup(groupId, (group) => ({
+      ...group,
+      options: group.options.map((option) =>
+        option.id === valueId ? updater(option) : option
+      ),
+    }));
+  };
+
+  const handleFileSelect = async (
+    event: ChangeEvent<HTMLInputElement>,
+    groupId: string,
+    valueId: string,
+    key: "thumbnailUrl" | "mainImageUrl"
+  ) => {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    const upload = await uploadPublicFile(
+      storageBuckets.productMedia,
+      "products/options",
+      file
+    );
+
+    updateOptionValue(groupId, valueId, (option) => ({
+      ...option,
+      [key]: upload.publicUrl,
+    }));
+
+    event.target.value = "";
   };
 
   const addGroup = () => {
@@ -98,7 +142,7 @@ export function ProductOptionGroups({ optionGroups, onChange }: Props) {
         <div>
           <h3 className="text-lg font-semibold text-slate-900">Custom Product Options</h3>
           <p className="mt-1 text-sm text-slate-500">
-            Add selectors like Tip Type, Line Width, Pack Size, or any other product-specific choice.
+            Add selectors like Tip Type, Line Width, Pack Size, with their own thumbnail and large display image when needed.
           </p>
         </div>
 
@@ -173,20 +217,16 @@ export function ProductOptionGroups({ optionGroups, onChange }: Props) {
             <div className="mt-4 space-y-3">
               {group.options.map((option) => (
                 <div key={option.id} className="rounded-2xl border border-slate-200 bg-white p-4">
-                  <div className="grid gap-4 lg:grid-cols-[1fr_1fr_180px_auto]">
+                  <div className="grid gap-4 xl:grid-cols-[1fr_1fr_180px_auto]">
                     <div>
                       <label className="text-sm font-medium text-slate-600">Option (EN)</label>
                       <input
                         type="text"
                         value={option.valueEn}
                         onChange={(event) =>
-                          updateGroup(group.id, (currentGroup) => ({
-                            ...currentGroup,
-                            options: currentGroup.options.map((currentOption) =>
-                              currentOption.id === option.id
-                                ? { ...currentOption, valueEn: event.target.value }
-                                : currentOption
-                            ),
+                          updateOptionValue(group.id, option.id, (currentOption) => ({
+                            ...currentOption,
+                            valueEn: event.target.value,
                           }))
                         }
                         placeholder="Bullet"
@@ -203,13 +243,9 @@ export function ProductOptionGroups({ optionGroups, onChange }: Props) {
                         type="text"
                         value={option.valueAr}
                         onChange={(event) =>
-                          updateGroup(group.id, (currentGroup) => ({
-                            ...currentGroup,
-                            options: currentGroup.options.map((currentOption) =>
-                              currentOption.id === option.id
-                                ? { ...currentOption, valueAr: event.target.value }
-                                : currentOption
-                            ),
+                          updateOptionValue(group.id, option.id, (currentOption) => ({
+                            ...currentOption,
+                            valueAr: event.target.value,
                           }))
                         }
                         placeholder="مدبب"
@@ -223,13 +259,9 @@ export function ProductOptionGroups({ optionGroups, onChange }: Props) {
                         type="text"
                         value={option.optionCode}
                         onChange={(event) =>
-                          updateGroup(group.id, (currentGroup) => ({
-                            ...currentGroup,
-                            options: currentGroup.options.map((currentOption) =>
-                              currentOption.id === option.id
-                                ? { ...currentOption, optionCode: event.target.value }
-                                : currentOption
-                            ),
+                          updateOptionValue(group.id, option.id, (currentOption) => ({
+                            ...currentOption,
+                            optionCode: event.target.value,
                           }))
                         }
                         placeholder="1.0 mm"
@@ -237,7 +269,7 @@ export function ProductOptionGroups({ optionGroups, onChange }: Props) {
                       />
                     </div>
 
-                    <div className="flex items-end gap-2 lg:justify-end">
+                    <div className="flex items-end gap-2 xl:justify-end">
                       <button
                         type="button"
                         onClick={() => setDefaultValue(group.id, option.id)}
@@ -256,6 +288,64 @@ export function ProductOptionGroups({ optionGroups, onChange }: Props) {
                       >
                         Remove
                       </button>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <label className="text-sm font-medium text-slate-600">
+                        Option Thumbnail
+                      </label>
+                      <p className="mt-1 text-xs text-slate-500">
+                        Used inside the selector row under the product title.
+                      </p>
+                      <label className="mt-2 flex cursor-pointer items-center justify-center rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50">
+                        Choose Image
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(event) =>
+                            handleFileSelect(event, group.id, option.id, "thumbnailUrl")
+                          }
+                        />
+                      </label>
+                      {option.thumbnailUrl && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={option.thumbnailUrl}
+                          alt={`${option.valueEn || option.valueAr || "Option"} thumbnail`}
+                          className="mt-2 h-20 w-full rounded-2xl border border-slate-200 object-cover"
+                        />
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium text-slate-600">
+                        Option Display Image
+                      </label>
+                      <p className="mt-1 text-xs text-slate-500">
+                        When selected, this image becomes the large image just like a color image.
+                      </p>
+                      <label className="mt-2 flex cursor-pointer items-center justify-center rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-700 hover:bg-slate-50">
+                        Choose Image
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(event) =>
+                            handleFileSelect(event, group.id, option.id, "mainImageUrl")
+                          }
+                        />
+                      </label>
+                      {option.mainImageUrl && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={option.mainImageUrl}
+                          alt={`${option.valueEn || option.valueAr || "Option"} display`}
+                          className="mt-2 h-20 w-full rounded-2xl border border-slate-200 object-cover"
+                        />
+                      )}
                     </div>
                   </div>
                 </div>
@@ -279,5 +369,5 @@ export function ProductOptionGroups({ optionGroups, onChange }: Props) {
         )}
       </div>
     </div>
-  )
+  );
 }
