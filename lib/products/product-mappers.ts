@@ -106,7 +106,10 @@ function toColorRows(colors: ProductColorOption[]): ProductColorRow[] {
 
 function toOptionValueRows(values: ProductOptionValue[]): ProductOptionValueRow[] {
   const activeValues = values.filter(
-    (item) => item.valueEn.trim() !== "" || item.valueAr.trim() !== ""
+    (item) =>
+      item.valueEn.trim() !== "" ||
+      item.valueAr.trim() !== "" ||
+      item.mainImageUrl.trim() !== ""
   );
   const hasExplicitDefault = activeValues.some((item) => item.isDefault);
 
@@ -115,6 +118,8 @@ function toOptionValueRows(values: ProductOptionValue[]): ProductOptionValueRow[
     value_en: item.valueEn.trim(),
     value_ar: item.valueAr.trim(),
     option_code: item.optionCode.trim(),
+    thumbnail_url: item.thumbnailUrl.trim(),
+    main_image_url: item.mainImageUrl.trim(),
     is_default: hasExplicitDefault ? item.isDefault : index === 0,
   }));
 }
@@ -234,6 +239,8 @@ function fromOptionValueRows(rows: ProductOptionValueRow[]): ProductOptionValue[
     valueEn: item.value_en,
     valueAr: item.value_ar,
     optionCode: item.option_code,
+    thumbnailUrl: item.thumbnail_url,
+    mainImageUrl: item.main_image_url,
     isDefault: item.is_default,
   }));
 }
