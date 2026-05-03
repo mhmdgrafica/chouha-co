@@ -144,7 +144,7 @@ export function ProductColors({
                   {color.nameEn || color.nameAr || "New Colour"}
                 </p>
                 <p className="text-xs text-slate-500">
-                  {color.productCode || "No code yet"}
+                  {color.productCode || "Uses main product code"}
                 </p>
               </button>
 
@@ -201,8 +201,11 @@ export function ProductColors({
 
               <div>
                 <label className="text-sm font-medium text-slate-600">
-                  Product Code
+                  Product Code (Optional)
                 </label>
+                <p className="mt-1 text-xs text-slate-500">
+                  If left empty, the main product code will stay active for this colour.
+                </p>
                 <input
                   type="text"
                   value={color.productCode}
@@ -210,7 +213,7 @@ export function ProductColors({
                     updateColor(color.id, "productCode", e.target.value)
                   }
                   placeholder="660103"
-                  className="mt-1 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-slate-400"
+                  className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-slate-400"
                 />
               </div>
 
@@ -250,7 +253,7 @@ export function ProductColors({
                   <img
                     src={color.thumbnailUrl}
                     alt={`${color.nameEn || color.nameAr || "Colour"} thumbnail`}
-                    className="mt-2 h-20 w-full rounded-2xl border border-slate-200 object-cover"
+                    className="mt-2 h-20 w-full rounded-2xl border border-slate-200 bg-white object-contain p-2"
                   />
                 )}
               </div>
@@ -278,7 +281,7 @@ export function ProductColors({
                   <img
                     src={color.mainImageUrl}
                     alt={`${color.nameEn || color.nameAr || "Colour"} main`}
-                    className="mt-2 h-20 w-full rounded-2xl border border-slate-200 object-cover"
+                    className="mt-2 h-20 w-full rounded-2xl border border-slate-200 bg-white object-contain p-2"
                   />
                 )}
               </div>
