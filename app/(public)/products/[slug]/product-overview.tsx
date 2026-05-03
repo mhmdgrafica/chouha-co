@@ -214,7 +214,7 @@ export function ProductOverview({
                         <img
                           src={color.thumbnailUrl}
                           alt={colorName}
-                          className="h-11 w-11 rounded-xl border border-[#d8d1c4] object-cover"
+                          className="h-11 w-11 rounded-xl border border-[#d8d1c4] bg-white object-contain p-1"
                         />
                       ) : (
                         <div
@@ -274,7 +274,7 @@ export function ProductOverview({
                           <img
                             src={option.thumbnailUrl}
                             alt={optionLabel || "Option"}
-                            className="h-11 w-11 rounded-xl border border-[#d8d1c4] object-cover"
+                            className="h-11 w-11 rounded-xl border border-[#d8d1c4] bg-white object-contain p-1"
                           />
                         ) : null}
                         <div className="min-w-0">
