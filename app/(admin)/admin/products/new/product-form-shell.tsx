@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import type { CatalogItem } from "../../../../../lib/catalog/catalog.types";
 import { defaultProductFormValues } from "./product-form.constants";
 import type {
@@ -34,6 +35,7 @@ export function ProductFormShell({
   categoryOptions = [],
   featureOptions = [],
 }: ProductFormShellProps) {
+  const router = useRouter();
   const [form, setForm] = useState<ProductFormValues>({
     ...initialForm,
     featureIcons:
@@ -130,7 +132,20 @@ export function ProductFormShell({
         throw new Error(payload.error || "Failed to save draft.");
       }
 
-      setSavedProductId(payload.productId ?? null);
+      const nextProductId = payload.productId ?? null;
+      const isNewProductFlow = !initialProductId;
+
+      setSavedProductId(nextProductId);
+
+      if (isNewProductFlow) {
+        router.push(
+          `/admin/products?toast=${
+            status === "published" ? "published" : "saved"
+          }`
+        );
+        return;
+      }
+
       setSaveMessage({
         type: "success",
         text:
