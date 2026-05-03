@@ -12,6 +12,10 @@ type Props = {
 
 export function ProductLivePreview({ form, selectedColor }: Props) {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [selectedOptionValues, setSelectedOptionValues] = useState<
+    Record<string, string | null>
+  >({});
+
   const activeHighlights = form.highlights.filter(
     (item) => item.textEn.trim() !== "" || item.textAr.trim() !== ""
   );
@@ -19,33 +23,83 @@ export function ProductLivePreview({ form, selectedColor }: Props) {
   const activeOptionGroups = form.optionGroups.filter(
     (group) =>
       (group.nameEn.trim() !== "" || group.nameAr.trim() !== "") &&
-      group.options.some((option) => option.valueEn.trim() !== "" || option.valueAr.trim() !== "")
+      group.options.some(
+        (option) => option.valueEn.trim() !== "" || option.valueAr.trim() !== ""
+      )
   );
 
+  useEffect(() => {
+    setSelectedOptionValues((currentValues) => {
+      const nextValues = Object.fromEntries(
+        activeOptionGroups.map((group) => {
+          const currentValueId = currentValues[group.id] ?? null;
+          const hasCurrentValue = group.options.some(
+            (option) => option.id === currentValueId
+          );
+          const defaultValueId =
+            group.selectedValueId ??
+            group.options.find((option) => option.isDefault)?.id ??
+            group.options[0]?.id ??
+            null;
+
+          return [group.id, hasCurrentValue ? currentValueId : defaultValueId];
+        })
+      );
+
+      return nextValues;
+    });
+  }, [activeOptionGroups]);
+
+  const selectedVariantImage = useMemo(() => {
+    for (const group of activeOptionGroups) {
+      const selectedValueId =
+        selectedOptionValues[group.id] ?? group.selectedValueId ?? group.options[0]?.id ?? null;
+      const selectedOption =
+        group.options.find((option) => option.id === selectedValueId) ?? null;
+
+      if (selectedOption?.mainImageUrl) {
+        return {
+          id: `option-${group.id}-${selectedOption.id}`,
+          name:
+            selectedOption.valueEn ||
+            selectedOption.valueAr ||
+            group.nameEn ||
+            group.nameAr ||
+            "Selected option",
+          url: selectedOption.mainImageUrl,
+        };
+      }
+    }
+
+    return null;
+  }, [activeOptionGroups, selectedOptionValues]);
+
   const galleryPreviewItems = useMemo(() => {
-    const selectedColorMainImage = selectedColor?.mainImageUrl
-      ? [
-          {
-            id: `selected-color-${selectedColor.id}`,
-            name: selectedColor.nameEn || selectedColor.nameAr || "Selected color",
-            url: selectedColor.mainImageUrl,
-          },
-        ]
-      : [];
+    const leadingImage = selectedVariantImage
+      ? [selectedVariantImage]
+      : selectedColor?.mainImageUrl
+        ? [
+            {
+              id: `selected-color-${selectedColor.id}`,
+              name: selectedColor.nameEn || selectedColor.nameAr || "Selected color",
+              url: selectedColor.mainImageUrl,
+            },
+          ]
+        : [];
 
     return [
-      ...selectedColorMainImage,
+      ...leadingImage,
       ...form.galleryImages.map((item) => ({
         id: item.id,
         name: item.name,
         url: item.url,
       })),
     ];
-  }, [form.galleryImages, selectedColor]);
+  }, [form.galleryImages, selectedColor, selectedVariantImage]);
 
   useEffect(() => {
     setActiveImageIndex(0);
-  }, [selectedColor?.id]);
+  }, [selectedColor?.id, selectedVariantImage?.id]);
 
   const selectedGalleryImage = galleryPreviewItems[activeImageIndex] ?? null;
   const mainPreviewUrl = selectedGalleryImage?.url || "";
@@ -74,14 +128,14 @@ export function ProductLivePreview({ form, selectedColor }: Props) {
       </div>
 
       <div className="space-y-6 p-6">
-        <div className="rounded-[24px] border border-slate-200 bg-[#f8f6f0] p-6">
+        <div className="rounded-[24px] border border-slate-200 bg-white p-6">
           <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-[20px] bg-white text-center">
             {mainPreviewUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={mainPreviewUrl}
                 alt={selectedColor?.nameEn || form.productNameEn || "Product preview"}
-                className="h-full w-full object-contain"
+                className="h-full w-full bg-white object-contain p-3"
               />
             ) : (
               <div>
@@ -89,7 +143,7 @@ export function ProductLivePreview({ form, selectedColor }: Props) {
                   {selectedColor?.nameEn || form.productNameEn || form.productNameAr || "Product Image"}
                 </p>
                 <p className="mt-2 text-xs text-slate-400">
-                  Main image switches by selected color
+                  Main image switches by selected color or custom option
                 </p>
               </div>
             )}
@@ -130,7 +184,7 @@ export function ProductLivePreview({ form, selectedColor }: Props) {
                 <img
                   src={item.url}
                   alt={item.name}
-                  className="h-16 w-16 object-cover"
+                  className="h-16 w-16 bg-white object-contain p-1.5"
                 />
               </button>
             ))}
@@ -160,15 +214,31 @@ export function ProductLivePreview({ form, selectedColor }: Props) {
 
             <div className="flex flex-wrap gap-3">
               {form.colors.map((color) => (
-                <div key={color.id} className="flex flex-col items-center gap-2 text-center">
-                  <div
-                    className={`h-12 w-12 rounded-full border-2 shadow ring-1 ring-slate-300 ${
-                      color.isDefault ? "border-slate-900" : "border-white"
-                    }`}
-                    style={{ backgroundColor: color.hex || "#ddd" }}
-                  />
+                <button
+                  key={color.id}
+                  type="button"
+                  onClick={() => form.selectedColorId !== color.id && color.id}
+                  className="flex flex-col items-center gap-2 text-center"
+                >
+                  {color.thumbnailUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={color.thumbnailUrl}
+                      alt={color.nameEn || color.nameAr || "Colour"}
+                      className={`h-12 w-12 rounded-xl border bg-white object-contain p-1 ${
+                        color.isDefault ? "border-slate-900" : "border-slate-200"
+                      }`}
+                    />
+                  ) : (
+                    <div
+                      className={`h-12 w-12 rounded-full border-2 shadow ring-1 ring-slate-300 ${
+                        color.isDefault ? "border-slate-900" : "border-white"
+                      }`}
+                      style={{ backgroundColor: color.hex || "#ddd" }}
+                    />
+                  )}
                   <span className="text-xs text-slate-500">{color.nameEn || "Colour"}</span>
-                </div>
+                </button>
               ))}
             </div>
 
@@ -189,27 +259,67 @@ export function ProductLivePreview({ form, selectedColor }: Props) {
 
             {activeOptionGroups.length > 0 && (
               <div className="space-y-4 border-t border-slate-100 pt-4">
-                {activeOptionGroups.map((group) => (
-                  <div key={group.id}>
-                    <p className="text-sm font-semibold text-slate-700">
-                      {group.nameEn || "Option group"}
-                    </p>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {group.options.map((option) => (
-                        <span
-                          key={option.id}
-                          className={`rounded-full border px-3 py-1.5 text-xs font-medium ${
-                            option.isDefault
-                              ? "border-slate-900 bg-slate-900 text-white"
-                              : "border-slate-200 bg-slate-50 text-slate-600"
-                          }`}
-                        >
-                          {option.valueEn || "Option"}
-                        </span>
-                      ))}
+                {activeOptionGroups.map((group) => {
+                  const selectedValueId =
+                    selectedOptionValues[group.id] ??
+                    group.selectedValueId ??
+                    group.options[0]?.id ??
+                    null;
+
+                  return (
+                    <div key={group.id}>
+                      <p className="text-sm font-semibold text-slate-700">
+                        {group.nameEn || "Option group"}
+                      </p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {group.options.map((option) => {
+                          const isActive = option.id === selectedValueId;
+
+                          return (
+                            <button
+                              key={option.id}
+                              type="button"
+                              onClick={() =>
+                                setSelectedOptionValues((currentValues) => ({
+                                  ...currentValues,
+                                  [group.id]: option.id,
+                                }))
+                              }
+                              className={`flex min-w-[120px] items-center gap-3 rounded-2xl border px-3 py-2 text-left ${
+                                isActive
+                                  ? "border-slate-900 bg-slate-900 text-white"
+                                  : "border-slate-200 bg-white text-slate-700"
+                              }`}
+                            >
+                              {option.thumbnailUrl ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                  src={option.thumbnailUrl}
+                                  alt={option.valueEn || option.valueAr || "Option"}
+                                  className="h-10 w-10 rounded-xl border border-slate-200 bg-white object-contain p-1"
+                                />
+                              ) : null}
+                              <div className="min-w-0">
+                                <p className="truncate text-xs font-semibold">
+                                  {option.valueEn || "Option"}
+                                </p>
+                                {option.optionCode ? (
+                                  <p
+                                    className={`mt-1 text-[11px] ${
+                                      isActive ? "text-white/75" : "text-slate-500"
+                                    }`}
+                                  >
+                                    {option.optionCode}
+                                  </p>
+                                ) : null}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -237,12 +347,23 @@ export function ProductLivePreview({ form, selectedColor }: Props) {
             <div className="flex flex-wrap justify-end gap-3">
               {form.colors.map((color) => (
                 <div key={color.id} className="flex flex-col items-center gap-2 text-center">
-                  <div
-                    className={`h-12 w-12 rounded-full border-2 shadow ring-1 ring-slate-300 ${
-                      color.isDefault ? "border-slate-900" : "border-white"
-                    }`}
-                    style={{ backgroundColor: color.hex || "#ddd" }}
-                  />
+                  {color.thumbnailUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={color.thumbnailUrl}
+                      alt={color.nameAr || color.nameEn || "لون"}
+                      className={`h-12 w-12 rounded-xl border bg-white object-contain p-1 ${
+                        color.isDefault ? "border-slate-900" : "border-slate-200"
+                      }`}
+                    />
+                  ) : (
+                    <div
+                      className={`h-12 w-12 rounded-full border-2 shadow ring-1 ring-slate-300 ${
+                        color.isDefault ? "border-slate-900" : "border-white"
+                      }`}
+                      style={{ backgroundColor: color.hex || "#ddd" }}
+                    />
+                  )}
                   <span className="text-xs text-slate-500">{color.nameAr || "لون"}</span>
                 </div>
               ))}
@@ -265,27 +386,67 @@ export function ProductLivePreview({ form, selectedColor }: Props) {
 
             {activeOptionGroups.length > 0 && (
               <div className="space-y-4 border-t border-slate-100 pt-4">
-                {activeOptionGroups.map((group) => (
-                  <div key={group.id}>
-                    <p className="text-sm font-semibold text-slate-700">
-                      {group.nameAr || "خيار"}
-                    </p>
-                    <div className="mt-2 flex flex-wrap justify-end gap-2">
-                      {group.options.map((option) => (
-                        <span
-                          key={option.id}
-                          className={`rounded-full border px-3 py-1.5 text-xs font-medium ${
-                            option.isDefault
-                              ? "border-slate-900 bg-slate-900 text-white"
-                              : "border-slate-200 bg-slate-50 text-slate-600"
-                          }`}
-                        >
-                          {option.valueAr || "خيار"}
-                        </span>
-                      ))}
+                {activeOptionGroups.map((group) => {
+                  const selectedValueId =
+                    selectedOptionValues[group.id] ??
+                    group.selectedValueId ??
+                    group.options[0]?.id ??
+                    null;
+
+                  return (
+                    <div key={group.id}>
+                      <p className="text-sm font-semibold text-slate-700">
+                        {group.nameAr || "خيار"}
+                      </p>
+                      <div className="mt-2 flex flex-wrap justify-end gap-2">
+                        {group.options.map((option) => {
+                          const isActive = option.id === selectedValueId;
+
+                          return (
+                            <button
+                              key={option.id}
+                              type="button"
+                              onClick={() =>
+                                setSelectedOptionValues((currentValues) => ({
+                                  ...currentValues,
+                                  [group.id]: option.id,
+                                }))
+                              }
+                              className={`flex min-w-[120px] items-center gap-3 rounded-2xl border px-3 py-2 text-right ${
+                                isActive
+                                  ? "border-slate-900 bg-slate-900 text-white"
+                                  : "border-slate-200 bg-white text-slate-700"
+                              }`}
+                            >
+                              <div className="min-w-0">
+                                <p className="truncate text-xs font-semibold">
+                                  {option.valueAr || "خيار"}
+                                </p>
+                                {option.optionCode ? (
+                                  <p
+                                    className={`mt-1 text-[11px] ${
+                                      isActive ? "text-white/75" : "text-slate-500"
+                                    }`}
+                                  >
+                                    {option.optionCode}
+                                  </p>
+                                ) : null}
+                              </div>
+                              {option.thumbnailUrl ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                  src={option.thumbnailUrl}
+                                  alt={option.valueAr || option.valueEn || "Option"}
+                                  className="h-10 w-10 rounded-xl border border-slate-200 bg-white object-contain p-1"
+                                />
+                              ) : null}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
