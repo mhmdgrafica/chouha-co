@@ -13,6 +13,8 @@ begin
 end;
 $$;
 
+drop table if exists product_option_values cascade;
+drop table if exists product_option_groups cascade;
 drop table if exists product_features cascade;
 drop table if exists feature_definitions cascade;
 drop table if exists product_media cascade;
@@ -107,6 +109,8 @@ create table product_highlights (
   created_at timestamptz not null default now()
 );
 
+create index idx_product_highlights_product_id on product_highlights(product_id);
+
 create table product_colors (
   id uuid primary key default gen_random_uuid(),
   product_id uuid not null references products(id) on delete cascade,
@@ -117,8 +121,14 @@ create table product_colors (
   thumbnail_url text,
   main_image_url text,
   position int not null default 0,
+  is_default boolean not null default false,
   created_at timestamptz not null default now()
 );
+
+create index idx_product_colors_product_id on product_colors(product_id);
+create unique index uq_product_default_color
+on product_colors(product_id)
+where is_default = true;
 
 create table product_features (
   id uuid primary key default gen_random_uuid(),
@@ -128,6 +138,9 @@ create table product_features (
   created_at timestamptz not null default now(),
   unique(product_id, feature_key)
 );
+
+create index idx_product_features_product_id on product_features(product_id);
+create index idx_product_features_feature_key on product_features(feature_key);
 
 create table product_media (
   id uuid primary key default gen_random_uuid(),
@@ -141,9 +154,44 @@ create table product_media (
   created_at timestamptz not null default now()
 );
 
+create index idx_product_media_product_id on product_media(product_id);
 create unique index uq_product_one_main_media
 on product_media(product_id)
 where is_main = true;
+
+create table product_option_groups (
+  id uuid primary key default gen_random_uuid(),
+  product_id uuid not null references products(id) on delete cascade,
+  name_en text not null,
+  name_ar text not null,
+  slug text not null,
+  position int not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index idx_product_option_groups_product_id on product_option_groups(product_id);
+create unique index uq_product_option_group_slug on product_option_groups(product_id, slug);
+
+create trigger trg_product_option_groups_updated_at
+before update on product_option_groups
+for each row execute function set_updated_at();
+
+create table product_option_values (
+  id uuid primary key default gen_random_uuid(),
+  option_group_id uuid not null references product_option_groups(id) on delete cascade,
+  value_en text not null,
+  value_ar text not null,
+  option_code text not null default '',
+  position int not null default 0,
+  is_default boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+create index idx_product_option_values_group_id on product_option_values(option_group_id);
+create unique index uq_product_option_default_value
+on product_option_values(option_group_id)
+where is_default = true;
 
 alter table brands enable row level security;
 alter table categories enable row level security;
@@ -153,6 +201,8 @@ alter table product_highlights enable row level security;
 alter table product_colors enable row level security;
 alter table product_features enable row level security;
 alter table product_media enable row level security;
+alter table product_option_groups enable row level security;
+alter table product_option_values enable row level security;
 
 create policy "allow read brands" on brands for select to anon, authenticated using (true);
 create policy "allow insert brands" on brands for insert to anon, authenticated with check (true);
@@ -193,6 +243,16 @@ create policy "allow read product_media" on product_media for select to anon, au
 create policy "allow insert product_media" on product_media for insert to anon, authenticated with check (true);
 create policy "allow update product_media" on product_media for update to anon, authenticated using (true) with check (true);
 create policy "allow delete product_media" on product_media for delete to anon, authenticated using (true);
+
+create policy "allow read product_option_groups" on product_option_groups for select to anon, authenticated using (true);
+create policy "allow insert product_option_groups" on product_option_groups for insert to anon, authenticated with check (true);
+create policy "allow update product_option_groups" on product_option_groups for update to anon, authenticated using (true) with check (true);
+create policy "allow delete product_option_groups" on product_option_groups for delete to anon, authenticated using (true);
+
+create policy "allow read product_option_values" on product_option_values for select to anon, authenticated using (true);
+create policy "allow insert product_option_values" on product_option_values for insert to anon, authenticated with check (true);
+create policy "allow update product_option_values" on product_option_values for update to anon, authenticated using (true) with check (true);
+create policy "allow delete product_option_values" on product_option_values for delete to anon, authenticated using (true);
 
 insert into brands (name_en, name_ar, slug) values
   ('Pilot', 'بايلوت', 'pilot'),
