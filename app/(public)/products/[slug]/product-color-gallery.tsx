@@ -9,9 +9,16 @@ import type {
   ProductMediaItem,
 } from "../../../../lib/products/product.types";
 
+type SelectedVariantImage = {
+  id: string;
+  name: string;
+  url: string;
+};
+
 type Props = {
   colors: ProductColorOption[];
   selectedColorId: string | null;
+  selectedVariantImage: SelectedVariantImage | null;
   galleryItems: ProductMediaItem[];
   features: ProductFeatureIcon[];
   productName: string;
@@ -23,6 +30,7 @@ type Props = {
 export function ProductColorGallery({
   colors,
   selectedColorId,
+  selectedVariantImage,
   galleryItems,
   features,
   productName,
@@ -38,31 +46,34 @@ export function ProductColorGallery({
   );
 
   const displayImages = useMemo(() => {
-    const selectedColorMainImage = selectedColor?.mainImageUrl
-      ? [
-          {
-            id: `selected-color-${selectedColor.id}`,
-            name:
-              (isArabic ? selectedColor.nameAr || selectedColor.nameEn : selectedColor.nameEn || selectedColor.nameAr) ||
-              colorFallback,
-            url: selectedColor.mainImageUrl,
-          },
-        ]
-      : [];
+    const leadingImage = selectedVariantImage
+      ? [selectedVariantImage]
+      : selectedColor?.mainImageUrl
+        ? [
+            {
+              id: `selected-color-${selectedColor.id}`,
+              name:
+                (isArabic
+                  ? selectedColor.nameAr || selectedColor.nameEn
+                  : selectedColor.nameEn || selectedColor.nameAr) || colorFallback,
+              url: selectedColor.mainImageUrl,
+            },
+          ]
+        : [];
 
     return [
-      ...selectedColorMainImage,
+      ...leadingImage,
       ...galleryItems.map((item) => ({
         id: item.id,
         name: item.name,
         url: item.url,
       })),
     ];
-  }, [colorFallback, galleryItems, isArabic, selectedColor]);
+  }, [colorFallback, galleryItems, isArabic, selectedColor, selectedVariantImage]);
 
   useEffect(() => {
     setActiveImageIndex(0);
-  }, [selectedColorId]);
+  }, [selectedColorId, selectedVariantImage?.id]);
 
   useEffect(() => {
     if (activeImageIndex > displayImages.length - 1) {
@@ -89,7 +100,7 @@ export function ProductColorGallery({
   return (
     <div className="space-y-4">
       <div className="overflow-hidden rounded-[30px] border border-[#e6dfd3] bg-white shadow-sm">
-        <div className="relative flex min-h-[500px] items-center justify-center overflow-hidden bg-[linear-gradient(135deg,#f4eee2_0%,#dbe6f2_100%)] px-6 py-8">
+        <div className="relative flex min-h-[500px] items-center justify-center overflow-hidden bg-white px-6 py-8">
           {activeImage?.url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -110,7 +121,7 @@ export function ProductColorGallery({
                 type="button"
                 onClick={() => cycleImage("prev")}
                 aria-label={isArabic ? "الصورة السابقة" : "Previous image"}
-                className="absolute left-4 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/70 bg-white/90 text-[#1f2f4d] shadow-sm transition hover:bg-white"
+                className="absolute left-4 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-[#d8d1c4] bg-white text-[#1f2f4d] shadow-sm transition hover:bg-[#f8f6f2]"
               >
                 <ChevronLeft className="h-5 w-5" />
               </button>
@@ -119,7 +130,7 @@ export function ProductColorGallery({
                 type="button"
                 onClick={() => cycleImage("next")}
                 aria-label={isArabic ? "الصورة التالية" : "Next image"}
-                className="absolute right-4 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/70 bg-white/90 text-[#1f2f4d] shadow-sm transition hover:bg-white"
+                className="absolute right-4 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-[#d8d1c4] bg-white text-[#1f2f4d] shadow-sm transition hover:bg-[#f8f6f2]"
               >
                 <ChevronRight className="h-5 w-5" />
               </button>
