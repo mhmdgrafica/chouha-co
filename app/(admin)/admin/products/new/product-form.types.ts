@@ -4,6 +4,8 @@ export type {
   ProductFormValues,
   ProductHighlight,
   ProductMediaItem,
+  ProductOptionGroup,
+  ProductOptionValue,
   ProductPublishStatus,
   ProductStockStatus,
 } from "../../../../../lib/products/product.types";
