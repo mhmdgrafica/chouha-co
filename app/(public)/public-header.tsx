@@ -22,7 +22,6 @@ export function PublicHeader() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const lang = searchParams.get("lang") === "ar" ? "ar" : "en";
   const isArabic = lang === "ar";
-  const inquiryLabel = isArabic ? "استفسار" : "Inquiry";
   const brandLabel = "Chouha";
 
   const links = useMemo(
@@ -77,13 +76,6 @@ export function PublicHeader() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <Link
-            href={appendLang("/contact", lang)}
-            className="hidden rounded-full bg-[#243b6b] px-5 py-2.5 text-sm font-medium text-white transition hover:translate-y-[-1px] hover:shadow-[0_14px_32px_rgba(36,59,107,0.2)] md:inline-flex"
-          >
-            {inquiryLabel}
-          </Link>
-
           <LanguageSwitcher />
 
           <button
@@ -111,14 +103,6 @@ export function PublicHeader() {
                 {item.label}
               </Link>
             ))}
-
-            <Link
-              href={appendLang("/contact", lang)}
-              onClick={() => setIsMenuOpen(false)}
-              className="rounded-2xl bg-[#243b6b] px-4 py-3 text-center text-sm font-medium text-white"
-            >
-              {inquiryLabel}
-            </Link>
           </div>
         </div>
       )}
