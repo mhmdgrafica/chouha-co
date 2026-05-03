@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { FeatureIcon } from "../../../../components/feature-icon";
 import type {
   ProductColorOption,
   ProductFeatureIcon,
@@ -28,120 +30,150 @@ export function ProductColorGallery({
   colorFallback,
   mainImagePlaceholder,
 }: Props) {
-  const [selectedGalleryImageId, setSelectedGalleryImageId] = useState<string | null>(null);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   const selectedColor = useMemo(
     () => colors.find((item) => item.id === selectedColorId) ?? colors[0] ?? null,
     [colors, selectedColorId]
   );
 
+  const displayImages = useMemo(() => {
+    const selectedColorMainImage = selectedColor?.mainImageUrl
+      ? [
+          {
+            id: `selected-color-${selectedColor.id}`,
+            name:
+              (isArabic ? selectedColor.nameAr || selectedColor.nameEn : selectedColor.nameEn || selectedColor.nameAr) ||
+              colorFallback,
+            url: selectedColor.mainImageUrl,
+          },
+        ]
+      : [];
+
+    return [
+      ...selectedColorMainImage,
+      ...galleryItems.map((item) => ({
+        id: item.id,
+        name: item.name,
+        url: item.url,
+      })),
+    ];
+  }, [colorFallback, galleryItems, isArabic, selectedColor]);
+
   useEffect(() => {
-    setSelectedGalleryImageId(null);
+    setActiveImageIndex(0);
   }, [selectedColorId]);
 
-  const selectedGalleryImage = useMemo(
-    () =>
-      galleryItems.find((item) => item.id === selectedGalleryImageId) ??
-      galleryItems[0] ??
-      null,
-    [galleryItems, selectedGalleryImageId]
-  );
+  useEffect(() => {
+    if (activeImageIndex > displayImages.length - 1) {
+      setActiveImageIndex(0);
+    }
+  }, [activeImageIndex, displayImages.length]);
 
-  const mainImageUrl =
-    selectedGalleryImage?.url ||
-    selectedColor?.mainImageUrl ||
-    galleryItems[0]?.url ||
-    "";
+  const activeImage = displayImages[activeImageIndex] ?? null;
+
+  const cycleImage = (direction: "prev" | "next") => {
+    if (displayImages.length <= 1) {
+      return;
+    }
+
+    setActiveImageIndex((currentIndex) => {
+      if (direction === "next") {
+        return (currentIndex + 1) % displayImages.length;
+      }
+
+      return (currentIndex - 1 + displayImages.length) % displayImages.length;
+    });
+  };
 
   return (
     <div className="space-y-4">
-      <div className="space-y-4">
-        <div className="overflow-hidden rounded-[28px] border border-[#e6dfd3] bg-white shadow-sm">
-          <div className="flex items-center justify-between border-b border-[#efe8db] bg-[#fbf8f2] px-5 py-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#7b8796]">
-                {isArabic ? "المعرض الرئيسي" : "Main Gallery"}
-              </p>
-              <p className="mt-1 text-sm font-semibold text-[#1f2f4d]">
-                {isArabic
-                  ? selectedColor?.nameAr || selectedColor?.nameEn || colorFallback
-                  : selectedColor?.nameEn || selectedColor?.nameAr || colorFallback}
-              </p>
+      <div className="overflow-hidden rounded-[30px] border border-[#e6dfd3] bg-white shadow-sm">
+        <div className="relative flex min-h-[500px] items-center justify-center overflow-hidden bg-[linear-gradient(135deg,#f4eee2_0%,#dbe6f2_100%)] px-6 py-8">
+          {activeImage?.url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={activeImage.url}
+              alt={activeImage.name || productName}
+              className="h-full max-h-[460px] w-full object-contain"
+            />
+          ) : (
+            <div className="px-6 text-center">
+              <p className="text-lg font-semibold text-[#1f2f4d]">{productName}</p>
+              <p className="mt-2 text-sm text-[#6a7483]">{mainImagePlaceholder}</p>
             </div>
+          )}
 
-            {selectedColor && (
-              <div className="flex items-center gap-2 rounded-full border border-[#d8d1c4] bg-white px-3 py-1.5">
-                <span
-                  className="h-3 w-3 rounded-full border border-white shadow-sm ring-1 ring-[#d8d1c4]"
-                  style={{ backgroundColor: selectedColor.hex || "#ddd" }}
-                />
-                <span className="text-xs font-medium text-[#5b6472]">
-                  {selectedColor.productCode || productName}
-                </span>
-              </div>
-            )}
-          </div>
+          {displayImages.length > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={() => cycleImage("prev")}
+                aria-label={isArabic ? "الصورة السابقة" : "Previous image"}
+                className="absolute left-4 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/70 bg-white/90 text-[#1f2f4d] shadow-sm transition hover:bg-white"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
 
-          <div className="flex h-[420px] items-center justify-center bg-[linear-gradient(135deg,#eee7dc_0%,#dbe6f2_100%)]">
-            {mainImageUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={mainImageUrl} alt={productName} className="h-full w-full object-cover" />
-            ) : (
-              <div className="px-6 text-center">
-                <p className="text-lg font-semibold text-[#1f2f4d]">{productName}</p>
-                <p className="mt-2 text-sm text-[#6a7483]">{mainImagePlaceholder}</p>
-              </div>
-            )}
-          </div>
+              <button
+                type="button"
+                onClick={() => cycleImage("next")}
+                aria-label={isArabic ? "الصورة التالية" : "Next image"}
+                className="absolute right-4 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/70 bg-white/90 text-[#1f2f4d] shadow-sm transition hover:bg-white"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+            </>
+          )}
         </div>
 
-        <div className="grid grid-cols-4 gap-3">
-          {galleryItems.slice(0, 4).map((item, index) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => setSelectedGalleryImageId(item.id)}
-              className={`overflow-hidden rounded-[18px] border bg-white transition ${
-                selectedGalleryImage?.id === item.id
-                  ? "border-[#243b6b] shadow-[0_0_0_2px_rgba(36,59,107,0.12)]"
-                  : "border-[#e6dfd3]"
-              }`}
-            >
-              {item.url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={item.url}
-                  alt={item.name || `Gallery ${index + 1}`}
-                  className="h-24 w-full object-cover"
-                />
-              ) : (
-                <div className="flex h-24 items-center justify-center px-3 text-center text-xs font-medium text-[#5b6472]">
-                  {item.name || `Gallery ${index + 1}`}
-                </div>
-              )}
-            </button>
-          ))}
-        </div>
+        {displayImages.length > 0 && (
+          <div className="border-t border-[#efe8db] bg-[#fbf8f2] px-4 py-4">
+            <div className="flex flex-wrap gap-3">
+              {displayImages.map((item, index) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => setActiveImageIndex(index)}
+                  className={`overflow-hidden rounded-[18px] border bg-white transition ${
+                    activeImageIndex === index
+                      ? "border-[#243b6b] shadow-[0_0_0_2px_rgba(36,59,107,0.12)]"
+                      : "border-[#e6dfd3]"
+                  }`}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={item.url}
+                    alt={item.name || `Image ${index + 1}`}
+                    className="h-20 w-20 object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="rounded-[28px] border border-[#e6dfd3] bg-white p-5 shadow-sm">
-        <p className="mb-3 text-sm font-semibold text-[#1f2f4d]">
-          {isArabic ? "الميزات" : "Features"}
-        </p>
-        <div className="grid gap-3 sm:grid-cols-2">
-          {features.slice(0, 4).map((item) => (
-            <div
-              key={item.id}
-              className="rounded-[18px] border border-[#d8d1c4] bg-[#fbfaf7] px-4 py-4"
-            >
-              <p className="text-sm font-semibold text-[#1f2f4d]">
-                {isArabic ? item.labelAr || item.labelEn : item.labelEn || item.labelAr}
-              </p>
-              <p className="mt-1 text-xs text-[#7b8796]">{item.key}</p>
-            </div>
-          ))}
-          {features.length === 0 && (
-            <div className="rounded-[18px] border border-[#d8d1c4] bg-[#fbfaf7] px-4 py-4 text-sm text-[#6a7483] sm:col-span-2">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {features.length > 0 ? (
+            features.map((item) => (
+              <div
+                key={item.id}
+                className="flex items-center gap-3 rounded-[20px] border border-[#e6dfd3] bg-[#fbfaf7] px-4 py-4"
+              >
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#eef3f8] text-[#243b6b]">
+                  <FeatureIcon name={item.iconName} className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-[#1f2f4d]">
+                    {isArabic ? item.labelAr || item.labelEn : item.labelEn || item.labelAr}
+                  </p>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="rounded-[20px] border border-[#e6dfd3] bg-[#fbfaf7] px-4 py-4 text-sm text-[#6a7483] sm:col-span-2 xl:col-span-4">
               {isArabic ? "لا توجد ميزات مفعلة لهذا المنتج بعد." : "No product features are active yet."}
             </div>
           )}
