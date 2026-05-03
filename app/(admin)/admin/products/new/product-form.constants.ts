@@ -19,6 +19,7 @@ export const defaultProductFormValues: ProductFormValues = {
   featureIcons: [],
   colors: [],
   selectedColorId: null,
+  optionGroups: [],
   galleryImages: [],
   video: null,
 };
