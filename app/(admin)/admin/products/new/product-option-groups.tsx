@@ -315,7 +315,7 @@ export function ProductOptionGroups({ optionGroups, onChange }: Props) {
                         <img
                           src={option.thumbnailUrl}
                           alt={`${option.valueEn || option.valueAr || "Option"} thumbnail`}
-                          className="mt-2 h-20 w-full rounded-2xl border border-slate-200 object-cover"
+                          className="mt-2 h-20 w-full rounded-2xl border border-slate-200 bg-white object-contain p-2"
                         />
                       )}
                     </div>
@@ -343,7 +343,7 @@ export function ProductOptionGroups({ optionGroups, onChange }: Props) {
                         <img
                           src={option.mainImageUrl}
                           alt={`${option.valueEn || option.valueAr || "Option"} display`}
-                          className="mt-2 h-20 w-full rounded-2xl border border-slate-200 object-cover"
+                          className="mt-2 h-20 w-full rounded-2xl border border-slate-200 bg-white object-contain p-2"
                         />
                       )}
                     </div>
