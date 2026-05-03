@@ -30,6 +30,24 @@ export type ProductColorOption = {
   productCode: string;
   thumbnailUrl: string;
   mainImageUrl: string;
+  isDefault: boolean;
+};
+
+export type ProductOptionValue = {
+  id: string;
+  valueEn: string;
+  valueAr: string;
+  optionCode: string;
+  isDefault: boolean;
+};
+
+export type ProductOptionGroup = {
+  id: string;
+  nameEn: string;
+  nameAr: string;
+  slug: string;
+  options: ProductOptionValue[];
+  selectedValueId: string | null;
 };
 
 export type ProductStockStatus = "in_stock" | "out_of_stock";
@@ -50,6 +68,7 @@ export type ProductFormValues = {
   featureIcons: ProductFeatureIcon[];
   colors: ProductColorOption[];
   selectedColorId: string | null;
+  optionGroups: ProductOptionGroup[];
   galleryImages: ProductMediaItem[];
   video: ProductMediaItem | null;
 };
@@ -96,6 +115,7 @@ export type ProductColorRow = {
   product_code: string;
   thumbnail_url: string;
   main_image_url: string;
+  is_default: boolean;
 };
 
 export type ProductMediaRow = {
@@ -109,12 +129,33 @@ export type ProductMediaRow = {
   is_main: boolean;
 };
 
+export type ProductOptionGroupRow = {
+  id?: string;
+  product_id?: string;
+  position: number;
+  name_en: string;
+  name_ar: string;
+  slug: string;
+  values: ProductOptionValueRow[];
+};
+
+export type ProductOptionValueRow = {
+  id?: string;
+  option_group_id?: string;
+  position: number;
+  value_en: string;
+  value_ar: string;
+  option_code: string;
+  is_default: boolean;
+};
+
 export type ProductRecord = {
   product: ProductRow;
   highlights: ProductHighlightRow[];
   features: ProductFeatureRow[];
   colors: ProductColorRow[];
   media: ProductMediaRow[];
+  optionGroups: ProductOptionGroupRow[];
   brands?: {
     name_en: string | null;
     name_ar: string | null;
