@@ -9,12 +9,14 @@ import type {
   ProductFormValues,
   ProductPublishStatus,
   ProductHighlight,
+  ProductOptionGroup,
 } from "./product-form.types";
 import { ProductBasicInfo } from "./product-basic-info";
 import { ProductHighlights } from "./product-highlights";
 import { ProductFeatureIcons } from "./product-feature-icons";
 import { ProductMediaUpload } from "./product-media-upload";
 import { ProductColors } from "./product-colors";
+import { ProductOptionGroups } from "./product-option-groups";
 import { ProductLivePreview } from "./product-live-preview";
 
 type ProductFormShellProps = {
@@ -78,13 +80,22 @@ export function ProductFormShell({
   };
 
   const updateColors = (colors: ProductColorOption[]) => {
+    const defaultColor = colors.find((item) => item.isDefault) ?? colors[0] ?? null;
+
     setForm((prev) => ({
       ...prev,
       colors,
       selectedColorId:
         prev.selectedColorId && colors.some((item) => item.id === prev.selectedColorId)
           ? prev.selectedColorId
-          : colors[0]?.id ?? null,
+          : defaultColor?.id ?? null,
+    }));
+  };
+
+  const updateOptionGroups = (optionGroups: ProductOptionGroup[]) => {
+    setForm((prev) => ({
+      ...prev,
+      optionGroups,
     }));
   };
 
@@ -179,6 +190,11 @@ export function ProductFormShell({
           onSelectColor={(colorId: string) =>
             updateField("selectedColorId", colorId)
           }
+        />
+
+        <ProductOptionGroups
+          optionGroups={form.optionGroups}
+          onChange={updateOptionGroups}
         />
 
         <div className="flex flex-wrap items-center gap-3">
