@@ -106,7 +106,7 @@ export function ProductColorGallery({
             <img
               src={activeImage.url}
               alt={activeImage.name || productName}
-              className="h-full max-h-[460px] w-full object-contain"
+              className="h-full max-h-[460px] w-full bg-white object-contain p-3"
             />
           ) : (
             <div className="px-6 text-center">
@@ -139,7 +139,7 @@ export function ProductColorGallery({
         </div>
 
         {displayImages.length > 0 && (
-          <div className="border-t border-[#efe8db] bg-[#fbf8f2] px-4 py-4">
+          <div className="border-t border-[#efe8db] bg-white px-4 py-4">
             <div className="flex flex-wrap gap-3">
               {displayImages.map((item, index) => (
                 <button
@@ -156,7 +156,7 @@ export function ProductColorGallery({
                   <img
                     src={item.url}
                     alt={item.name || `Image ${index + 1}`}
-                    className="h-20 w-20 object-cover"
+                    className="h-20 w-20 bg-white object-contain p-1.5"
                   />
                 </button>
               ))}
