@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "../../../../lib/supabase-server";
 import { listAdminProducts } from "../../../../lib/products/product-repository";
+import { ProductsToast } from "./products-toast";
 
 function getPublishStatusLabel(status: "draft" | "published") {
   return status === "published" ? "Published" : "Draft";
@@ -10,7 +11,15 @@ function getStockStatusLabel(status: "in_stock" | "out_of_stock") {
   return status === "in_stock" ? "In Stock" : "Out of Stock";
 }
 
-export default async function AdminProductsPage() {
+type AdminProductsPageProps = {
+  searchParams?: Promise<{
+    toast?: string;
+  }>;
+};
+
+export default async function AdminProductsPage({
+  searchParams,
+}: AdminProductsPageProps) {
   let products: Awaited<ReturnType<typeof listAdminProducts>> = [];
   let loadError: string | null = null;
 
@@ -24,8 +33,12 @@ export default async function AdminProductsPage() {
         : "Unable to load products right now.";
   }
 
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
+
   return (
     <section className="space-y-6">
+      <ProductsToast toast={resolvedSearchParams?.toast} />
+
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-3xl font-bold tracking-tight text-slate-900">
