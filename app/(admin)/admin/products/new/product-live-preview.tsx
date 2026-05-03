@@ -213,33 +213,32 @@ export function ProductLivePreview({ form, selectedColor }: Props) {
             </p>
 
             <div className="flex flex-wrap gap-3">
-              {form.colors.map((color) => (
-                <button
-                  key={color.id}
-                  type="button"
-                  onClick={() => form.selectedColorId !== color.id && color.id}
-                  className="flex flex-col items-center gap-2 text-center"
-                >
-                  {color.thumbnailUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={color.thumbnailUrl}
-                      alt={color.nameEn || color.nameAr || "Colour"}
-                      className={`h-12 w-12 rounded-xl border bg-white object-contain p-1 ${
-                        color.isDefault ? "border-slate-900" : "border-slate-200"
-                      }`}
-                    />
-                  ) : (
-                    <div
-                      className={`h-12 w-12 rounded-full border-2 shadow ring-1 ring-slate-300 ${
-                        color.isDefault ? "border-slate-900" : "border-white"
-                      }`}
-                      style={{ backgroundColor: color.hex || "#ddd" }}
-                    />
-                  )}
-                  <span className="text-xs text-slate-500">{color.nameEn || "Colour"}</span>
-                </button>
-              ))}
+              {form.colors.map((color) => {
+                const isActive = color.id === selectedColor?.id;
+
+                return (
+                  <div key={color.id} className="flex flex-col items-center gap-2 text-center">
+                    {color.thumbnailUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={color.thumbnailUrl}
+                        alt={color.nameEn || color.nameAr || "Colour"}
+                        className={`h-12 w-12 rounded-xl border bg-white object-contain p-1 ${
+                          isActive ? "border-slate-900" : "border-slate-200"
+                        }`}
+                      />
+                    ) : (
+                      <div
+                        className={`h-12 w-12 rounded-full border-2 shadow ring-1 ring-slate-300 ${
+                          isActive ? "border-slate-900" : "border-white"
+                        }`}
+                        style={{ backgroundColor: color.hex || "#ddd" }}
+                      />
+                    )}
+                    <span className="text-xs text-slate-500">{color.nameEn || "Colour"}</span>
+                  </div>
+                );
+              })}
             </div>
 
             <div className="space-y-3">
@@ -345,28 +344,32 @@ export function ProductLivePreview({ form, selectedColor }: Props) {
             </p>
 
             <div className="flex flex-wrap justify-end gap-3">
-              {form.colors.map((color) => (
-                <div key={color.id} className="flex flex-col items-center gap-2 text-center">
-                  {color.thumbnailUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={color.thumbnailUrl}
-                      alt={color.nameAr || color.nameEn || "لون"}
-                      className={`h-12 w-12 rounded-xl border bg-white object-contain p-1 ${
-                        color.isDefault ? "border-slate-900" : "border-slate-200"
-                      }`}
-                    />
-                  ) : (
-                    <div
-                      className={`h-12 w-12 rounded-full border-2 shadow ring-1 ring-slate-300 ${
-                        color.isDefault ? "border-slate-900" : "border-white"
-                      }`}
-                      style={{ backgroundColor: color.hex || "#ddd" }}
-                    />
-                  )}
-                  <span className="text-xs text-slate-500">{color.nameAr || "لون"}</span>
-                </div>
-              ))}
+              {form.colors.map((color) => {
+                const isActive = color.id === selectedColor?.id;
+
+                return (
+                  <div key={color.id} className="flex flex-col items-center gap-2 text-center">
+                    {color.thumbnailUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={color.thumbnailUrl}
+                        alt={color.nameAr || color.nameEn || "لون"}
+                        className={`h-12 w-12 rounded-xl border bg-white object-contain p-1 ${
+                          isActive ? "border-slate-900" : "border-slate-200"
+                        }`}
+                      />
+                    ) : (
+                      <div
+                        className={`h-12 w-12 rounded-full border-2 shadow ring-1 ring-slate-300 ${
+                          isActive ? "border-slate-900" : "border-white"
+                        }`}
+                        style={{ backgroundColor: color.hex || "#ddd" }}
+                      />
+                    )}
+                    <span className="text-xs text-slate-500">{color.nameAr || "لون"}</span>
+                  </div>
+                );
+              })}
             </div>
 
             <div className="space-y-3">
