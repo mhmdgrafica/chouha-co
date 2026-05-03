@@ -23,18 +23,12 @@ const copy = {
     highlights: "Product Highlights",
     inquiry: "Send Inquiry",
     back: "Back to Products",
-    info: "Product information",
-    infoBody: "Additional features will appear here when available.",
-    details: "Product Details",
-    detailsTitle: "Description & specifications",
     detailsFallback:
       "Full product description will appear here once it is added from the admin panel.",
-    brand: "Brand",
-    category: "Category",
     availableColors: "Available Colors",
     noColors: "No colors added yet.",
     productCode: "Product Code",
-    stock: "Availability",
+    descriptionTitle: "Description",
     inStock: "In Stock",
     outOfStock: "Out of Stock",
     related: "Related Products",
@@ -49,17 +43,11 @@ const copy = {
     highlights: "أبرز الميزات",
     inquiry: "إرسال استفسار",
     back: "العودة إلى المنتجات",
-    info: "معلومات المنتج",
-    infoBody: "ستظهر الميزات الإضافية هنا عند توفرها.",
-    details: "تفاصيل المنتج",
-    detailsTitle: "الوصف والمواصفات",
     detailsFallback: "سيظهر الوصف الكامل هنا بعد إضافته من لوحة الأدمن.",
-    brand: "العلامة التجارية",
-    category: "الفئة",
     availableColors: "الألوان المتوفرة",
     noColors: "لا توجد ألوان مضافة بعد.",
     productCode: "رمز المنتج",
-    stock: "التوفر",
+    descriptionTitle: "الوصف",
     inStock: "متوفر",
     outOfStock: "غير متوفر",
     related: "منتجات ذات صلة",
@@ -121,6 +109,7 @@ export default async function ProductDetailsPage({
         galleryItems={form.galleryImages}
         features={features}
         highlights={highlights}
+        optionGroups={form.optionGroups}
         productName={productName}
         brandName={
           isArabic
@@ -142,6 +131,15 @@ export default async function ProductDetailsPage({
               productRecord.product.short_description_ar ||
               t.detailsFallback
         }
+        fullDescription={
+          isArabic
+            ? productRecord.product.full_description_ar ||
+              productRecord.product.full_description_en ||
+              t.detailsFallback
+            : productRecord.product.full_description_en ||
+              productRecord.product.full_description_ar ||
+              t.detailsFallback
+        }
         stockStatus={productRecord.product.stock_status}
         fallbackProductCode={productRecord.product.product_code}
         isArabic={isArabic}
@@ -156,125 +154,47 @@ export default async function ProductDetailsPage({
           back: t.back,
           inStock: t.inStock,
           outOfStock: t.outOfStock,
+          productCode: t.productCode,
+          descriptionTitle: t.descriptionTitle,
         }}
       />
 
-      <section className="grid gap-6 lg:grid-cols-[1fr_320px]">
-        <div className="rounded-[28px] border border-[#e6dfd3] bg-white p-6 shadow-sm md:p-8">
-          <p className="text-sm font-medium uppercase tracking-[0.15em] text-[#7b8796]">
-            {t.details}
-          </p>
+      <section className="rounded-[28px] border border-[#e6dfd3] bg-white p-6 shadow-sm">
+        <p className="text-sm font-medium uppercase tracking-[0.15em] text-[#7b8796]">
+          {t.related}
+        </p>
 
-          <h2 className="mt-2 text-3xl font-semibold text-[#1f2f4d]">
-            {t.detailsTitle}
-          </h2>
-
-          <div
-            className={`mt-6 space-y-4 text-[15px] leading-8 text-[#4f5a69] ${
-              isArabic ? "font-arabic-medium" : "font-medium"
-            }`}
-          >
-            <p>
-              {isArabic
-                ? productRecord.product.full_description_ar ||
-                  productRecord.product.full_description_en ||
-                  t.detailsFallback
-                : productRecord.product.full_description_en ||
-                  productRecord.product.full_description_ar ||
-                  t.detailsFallback}
-            </p>
-          </div>
-
-          <div className="mt-8 grid gap-4 sm:grid-cols-2">
-            <div className="rounded-[20px] bg-[#f8f6f2] p-5">
-              <p className="text-sm font-semibold text-[#1f2f4d]">{t.brand}</p>
-              <p className="mt-2 text-sm text-[#5b6472]">
-                {isArabic
-                  ? productRecord.brands?.name_ar || productRecord.brands?.name_en
-                  : productRecord.brands?.name_en || productRecord.brands?.name_ar}
-              </p>
+        <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {relatedProducts.length > 0 ? (
+            relatedProducts.map((item) => (
+              <Link
+                key={item.id}
+                href={`/products/${item.slug}?lang=${lang}`}
+                className="block rounded-[20px] bg-[#f8f6f2] p-4 transition hover:bg-[#eef3f8]"
+              >
+                <p className="font-semibold text-[#1f2f4d]">
+                  {isArabic ? item.name_ar || item.name_en : item.name_en || item.name_ar}
+                </p>
+                <p className="mt-1 text-sm text-[#5b6472]">
+                  {isArabic
+                    ? item.short_description_ar ||
+                      item.short_description_en ||
+                      item.category_name_ar ||
+                      item.category_name_en
+                    : item.short_description_en ||
+                      item.short_description_ar ||
+                      item.category_name_en ||
+                      item.category_name_ar}
+                </p>
+              </Link>
+            ))
+          ) : (
+            <div className="rounded-[20px] bg-[#f8f6f2] p-4 md:col-span-2 xl:col-span-3">
+              <p className="font-semibold text-[#1f2f4d]">{t.relatedEmptyTitle}</p>
+              <p className="mt-1 text-sm text-[#5b6472]">{t.relatedEmptyBody}</p>
             </div>
-
-            <div className="rounded-[20px] bg-[#f8f6f2] p-5">
-              <p className="text-sm font-semibold text-[#1f2f4d]">{t.category}</p>
-              <p className="mt-2 text-sm text-[#5b6472]">
-                {isArabic
-                  ? productRecord.categories?.name_ar || productRecord.categories?.name_en
-                  : productRecord.categories?.name_en || productRecord.categories?.name_ar}
-              </p>
-            </div>
-
-            <div className="rounded-[20px] bg-[#f8f6f2] p-5">
-              <p className="text-sm font-semibold text-[#1f2f4d]">
-                {t.availableColors}
-              </p>
-              <p className="mt-2 text-sm text-[#5b6472]">
-                {form.colors.length > 0
-                  ? form.colors
-                      .map((item) =>
-                        isArabic ? item.nameAr || item.nameEn : item.nameEn || item.nameAr
-                      )
-                      .filter(Boolean)
-                      .join(", ")
-                  : t.noColors}
-              </p>
-            </div>
-
-            <div className="rounded-[20px] bg-[#f8f6f2] p-5">
-              <p className="text-sm font-semibold text-[#1f2f4d]">{t.stock}</p>
-              <p className="mt-2 text-sm text-[#5b6472]">
-                {productRecord.product.stock_status === "in_stock"
-                  ? t.inStock
-                  : t.outOfStock}
-              </p>
-            </div>
-
-            <div className="rounded-[20px] bg-[#f8f6f2] p-5">
-              <p className="text-sm font-semibold text-[#1f2f4d]">{t.productCode}</p>
-              <p className="mt-2 text-sm text-[#5b6472]">
-                {productRecord.product.product_code}
-              </p>
-            </div>
-          </div>
+          )}
         </div>
-
-        <aside className="rounded-[28px] border border-[#e6dfd3] bg-white p-6 shadow-sm">
-          <p className="text-sm font-medium uppercase tracking-[0.15em] text-[#7b8796]">
-            {t.related}
-          </p>
-
-          <div className="mt-5 space-y-4">
-            {relatedProducts.length > 0 ? (
-              relatedProducts.map((item) => (
-                <Link
-                  key={item.id}
-                  href={`/products/${item.slug}?lang=${lang}`}
-                  className="block rounded-[20px] bg-[#f8f6f2] p-4 transition hover:bg-[#eef3f8]"
-                >
-                  <p className="font-semibold text-[#1f2f4d]">
-                    {isArabic ? item.name_ar || item.name_en : item.name_en || item.name_ar}
-                  </p>
-                  <p className="mt-1 text-sm text-[#5b6472]">
-                    {isArabic
-                      ? item.short_description_ar ||
-                        item.short_description_en ||
-                        item.category_name_ar ||
-                        item.category_name_en
-                      : item.short_description_en ||
-                        item.short_description_ar ||
-                        item.category_name_en ||
-                        item.category_name_ar}
-                  </p>
-                </Link>
-              ))
-            ) : (
-              <div className="rounded-[20px] bg-[#f8f6f2] p-4">
-                <p className="font-semibold text-[#1f2f4d]">{t.relatedEmptyTitle}</p>
-                <p className="mt-1 text-sm text-[#5b6472]">{t.relatedEmptyBody}</p>
-              </div>
-            )}
-          </div>
-        </aside>
       </section>
     </div>
   );
