@@ -20,12 +20,16 @@ export function ProductLivePreview({ form, selectedColor }: Props) {
     (item) => item.textEn.trim() !== "" || item.textAr.trim() !== ""
   );
   const activeFeatures = form.featureIcons.filter((item) => item.selected);
-  const activeOptionGroups = form.optionGroups.filter(
-    (group) =>
-      (group.nameEn.trim() !== "" || group.nameAr.trim() !== "") &&
-      group.options.some(
-        (option) => option.valueEn.trim() !== "" || option.valueAr.trim() !== ""
-      )
+  const activeOptionGroups = useMemo(
+    () =>
+      form.optionGroups.filter(
+        (group) =>
+          (group.nameEn.trim() !== "" || group.nameAr.trim() !== "") &&
+          group.options.some(
+            (option) => option.valueEn.trim() !== "" || option.valueAr.trim() !== ""
+          )
+      ),
+    [form.optionGroups]
   );
 
   useEffect(() => {
@@ -45,6 +49,16 @@ export function ProductLivePreview({ form, selectedColor }: Props) {
           return [group.id, hasCurrentValue ? currentValueId : defaultValueId];
         })
       );
+
+      const currentEntries = Object.entries(currentValues);
+      const nextEntries = Object.entries(nextValues);
+
+      if (
+        currentEntries.length === nextEntries.length &&
+        nextEntries.every(([groupId, valueId]) => currentValues[groupId] === valueId)
+      ) {
+        return currentValues;
+      }
 
       return nextValues;
     });
