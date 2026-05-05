@@ -4,10 +4,12 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Globe } from "lucide-react";
 import { usePathname, useSearchParams } from "next/navigation";
+import { languageSwitcherCopy } from "./copy/header-copy";
+import { resolvePublicLang } from "./copy/shared";
 
 const languages = [
-  { code: "en", label: "English" },
-  { code: "ar", label: "العربية" },
+  { code: "en", labelKey: "english" },
+  { code: "ar", labelKey: "arabic" },
 ] as const;
 
 export function LanguageSwitcher() {
@@ -15,7 +17,8 @@ export function LanguageSwitcher() {
   const searchParams = useSearchParams();
   const [isOpen, setIsOpen] = useState(false);
 
-  const currentLang = searchParams.get("lang") === "ar" ? "ar" : "en";
+  const currentLang = resolvePublicLang(searchParams.get("lang"));
+  const t = languageSwitcherCopy[currentLang];
 
   const links = useMemo(() => {
     return languages.map((language) => {
@@ -23,18 +26,19 @@ export function LanguageSwitcher() {
       params.set("lang", language.code);
 
       return {
-        ...language,
+        code: language.code,
+        label: t[language.labelKey],
         href: `${pathname}?${params.toString()}`,
         isActive: language.code === currentLang,
       };
     });
-  }, [currentLang, pathname, searchParams]);
+  }, [currentLang, pathname, searchParams, t]);
 
   return (
     <div className="relative">
       <button
         type="button"
-        aria-label="Change language"
+        aria-label={t.changeLanguage}
         aria-expanded={isOpen}
         onClick={() => setIsOpen((prev) => !prev)}
         className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#d8d1c4] bg-white text-[#243b6b] transition hover:bg-[#f8f6f2]"
