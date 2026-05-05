@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { createClient } from "../../../lib/supabase-server";
 import { listPublishedProducts } from "../../../lib/products/product-repository";
+import { productsPageCopy } from "../copy/products-copy";
+import { resolvePublicLang } from "../copy/shared";
 
 type ProductsPageProps = {
   searchParams?: Promise<{
@@ -10,52 +12,17 @@ type ProductsPageProps = {
   }>;
 };
 
-const copy = {
-  en: {
-    badge: "PRODUCT CATALOG",
-    title: "Explore our stationery and office product range.",
-    description:
-      "Browse a modern collection of writing instruments, markers, office tools, and school essentials presented in a clean and professional catalog style.",
-    showing: "Showing",
-    publishedProducts: "published products",
-    sectionTitle: "Product catalog",
-    inStock: "In Stock",
-    outOfStock: "Out of Stock",
-    fallbackDescription: "Product description will appear here.",
-    viewProduct: "View Product",
-    empty: "No published products are available yet.",
-    clearFilter: "Clear filter",
-    filteredBy: "Filtered by",
-  },
-  ar: {
-    badge: "كتالوج المنتجات",
-    title: "اكتشف مجموعة القرطاسية واللوازم المكتبية لدينا.",
-    description:
-      "تصفح تشكيلة احترافية من أدوات الكتابة والأقلام واللوازم المكتبية والاحتياجات المدرسية ضمن عرض منظم وواضح.",
-    showing: "عرض",
-    publishedProducts: "منتج منشور",
-    sectionTitle: "كتالوج المنتجات",
-    inStock: "متوفر",
-    outOfStock: "غير متوفر",
-    fallbackDescription: "سيظهر وصف المنتج هنا.",
-    viewProduct: "عرض المنتج",
-    empty: "لا توجد منتجات منشورة حالياً.",
-    clearFilter: "إزالة الفلتر",
-    filteredBy: "تصفية حسب",
-  },
-} as const;
-
 export default async function ProductsPage({
   searchParams,
 }: ProductsPageProps) {
   let products: Awaited<ReturnType<typeof listPublishedProducts>> = [];
   let loadError: string | null = null;
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
-  const lang = resolvedSearchParams?.lang === "ar" ? "ar" : "en";
+  const lang = resolvePublicLang(resolvedSearchParams?.lang);
   const brandFilter = resolvedSearchParams?.brand?.trim() || "";
   const categoryFilter = resolvedSearchParams?.category?.trim() || "";
   const isArabic = lang === "ar";
-  const t = copy[lang];
+  const t = productsPageCopy[lang];
 
   try {
     const supabase = await createClient();
@@ -64,7 +31,7 @@ export default async function ProductsPage({
     loadError =
       error instanceof Error
         ? error.message
-        : "Unable to load products right now.";
+        : t.loadErrorFallback;
   }
 
   const filteredProducts = products.filter((product) => {
