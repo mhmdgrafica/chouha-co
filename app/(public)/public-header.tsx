@@ -5,29 +5,21 @@ import { useMemo, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { LanguageSwitcher } from "./language-switcher";
-
-const navigation = [
-  { href: "/", labelEn: "Home", labelAr: "الرئيسية" },
-  { href: "/products", labelEn: "Products", labelAr: "المنتجات" },
-  { href: "/contact", labelEn: "Contact Us", labelAr: "تواصل معنا" },
-] as const;
-
-function appendLang(href: string, lang: "en" | "ar") {
-  return href === "/" ? `/?lang=${lang}` : `${href}?lang=${lang}`;
-}
+import { publicHeaderNavigation } from "./copy/header-copy";
+import { appendPublicLang, resolvePublicLang } from "./copy/shared";
 
 export function PublicHeader() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const lang = searchParams.get("lang") === "ar" ? "ar" : "en";
+  const lang = resolvePublicLang(searchParams.get("lang"));
   const isArabic = lang === "ar";
   const brandLabel = "Chouha";
 
   const links = useMemo(
     () =>
-      navigation.map((item) => ({
-        href: appendLang(item.href, lang),
+      publicHeaderNavigation.map((item) => ({
+        href: appendPublicLang(item.href, lang),
         label: isArabic ? item.labelAr : item.labelEn,
         isActive:
           item.href === "/"
@@ -53,7 +45,7 @@ export function PublicHeader() {
     <header className="sticky top-0 z-50 border-b border-[#e6dfd3] bg-[#f8f6f2]/88 backdrop-blur-xl">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
         <Link
-          href={appendLang("/", lang)}
+          href={appendPublicLang("/", lang)}
           className="inline-flex items-center gap-3 text-[#1f2f4d]"
         >
           <span className="flex h-11 w-11 items-center justify-center rounded-full border border-[#d9d2c7] bg-white text-base font-semibold shadow-sm">
