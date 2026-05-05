@@ -1,0 +1,43 @@
+import type { PublicLang } from "./shared";
+
+export const productDetailsCopy = {
+  en: {
+    home: "Home",
+    products: "Products",
+    mainImagePlaceholder: "Main product image",
+    colorFallback: "Colour",
+    highlights: "Product Highlights",
+    inquiry: "Send Inquiry",
+    back: "Back to Products",
+    detailsFallback:
+      "Full product description will appear here once it is added from the admin panel.",
+    availableColors: "Available Colors",
+    noColors: "No colors added yet.",
+    productCode: "Product Code",
+    descriptionTitle: "Description",
+    inStock: "In Stock",
+    outOfStock: "Out of Stock",
+    related: "Related Products",
+    relatedEmptyTitle: "More products coming soon",
+    relatedEmptyBody: "Related published products will appear here automatically.",
+  },
+  ar: {
+    home: "الرئيسية",
+    products: "المنتجات",
+    mainImagePlaceholder: "الصورة الرئيسية للمنتج",
+    colorFallback: "لون",
+    highlights: "أبرز الميزات",
+    inquiry: "إرسال استفسار",
+    back: "العودة إلى المنتجات",
+    detailsFallback: "سيظهر الوصف الكامل هنا بعد إضافته من لوحة الأدمن.",
+    availableColors: "الألوان المتوفرة",
+    noColors: "لا توجد ألوان مضافة بعد.",
+    productCode: "رمز المنتج",
+    descriptionTitle: "الوصف",
+    inStock: "متوفر",
+    outOfStock: "غير متوفر",
+    related: "منتجات ذات صلة",
+    relatedEmptyTitle: "منتجات أخرى قريباً",
+    relatedEmptyBody: "ستظهر المنتجات المنشورة ذات الصلة هنا تلقائياً.",
+  },
+} as const satisfies Record<PublicLang, Record<string, string>>;
