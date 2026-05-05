@@ -8,53 +8,13 @@ import {
 } from "../../../../lib/products/product-repository";
 import { createClient } from "../../../../lib/supabase-server";
 import { ProductOverview } from "./product-overview";
+import { productDetailsCopy } from "../../copy/product-details-copy";
+import { resolvePublicLang } from "../../copy/shared";
 
 type ProductPageProps = {
   params: Promise<{ slug: string }>;
   searchParams?: Promise<{ lang?: string }>;
 };
-
-const copy = {
-  en: {
-    home: "Home",
-    products: "Products",
-    mainImagePlaceholder: "Main product image",
-    colorFallback: "Colour",
-    highlights: "Product Highlights",
-    inquiry: "Send Inquiry",
-    back: "Back to Products",
-    detailsFallback:
-      "Full product description will appear here once it is added from the admin panel.",
-    availableColors: "Available Colors",
-    noColors: "No colors added yet.",
-    productCode: "Product Code",
-    descriptionTitle: "Description",
-    inStock: "In Stock",
-    outOfStock: "Out of Stock",
-    related: "Related Products",
-    relatedEmptyTitle: "More products coming soon",
-    relatedEmptyBody: "Related published products will appear here automatically.",
-  },
-  ar: {
-    home: "الرئيسية",
-    products: "المنتجات",
-    mainImagePlaceholder: "الصورة الرئيسية للمنتج",
-    colorFallback: "لون",
-    highlights: "أبرز الميزات",
-    inquiry: "إرسال استفسار",
-    back: "العودة إلى المنتجات",
-    detailsFallback: "سيظهر الوصف الكامل هنا بعد إضافته من لوحة الأدمن.",
-    availableColors: "الألوان المتوفرة",
-    noColors: "لا توجد ألوان مضافة بعد.",
-    productCode: "رمز المنتج",
-    descriptionTitle: "الوصف",
-    inStock: "متوفر",
-    outOfStock: "غير متوفر",
-    related: "منتجات ذات صلة",
-    relatedEmptyTitle: "منتجات أخرى قريباً",
-    relatedEmptyBody: "ستظهر المنتجات المنشورة ذات الصلة هنا تلقائياً.",
-  },
-} as const;
 
 export default async function ProductDetailsPage({
   params,
@@ -62,9 +22,9 @@ export default async function ProductDetailsPage({
 }: ProductPageProps) {
   const { slug } = await params;
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
-  const lang = resolvedSearchParams?.lang === "ar" ? "ar" : "en";
+  const lang = resolvePublicLang(resolvedSearchParams?.lang);
   const isArabic = lang === "ar";
-  const t = copy[lang];
+  const t = productDetailsCopy[lang];
   const supabase = await createClient();
   const featureOptions = await listActiveFeatureIcons(supabase);
   const productRecord = await getPublishedProductRecordBySlug(supabase, slug);
