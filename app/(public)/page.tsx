@@ -12,6 +12,8 @@ import { listPublishedProducts } from "../../lib/products/product-repository";
 import { createClient } from "../../lib/supabase-server";
 import { HomeBrandsCarousel } from "./home-brands-carousel";
 import { HomeProductsCarousel } from "./home-products-carousel";
+import { homePageCopy } from "./copy/home-copy";
+import { appendPublicLang, resolvePublicLang } from "./copy/shared";
 
 type HomePageProps = {
   searchParams?: Promise<{
@@ -19,104 +21,11 @@ type HomePageProps = {
   }>;
 };
 
-const copy = {
-  en: {
-    heroBadge: "CHOUHA STATIONERY & OFFICE SUPPLIES",
-    heroTitle: "Real products, cleaner browsing, and a front page that feels ready for business.",
-    heroBody:
-      "Browse published products, move through brands directly from the homepage, and reach the right inquiry path without guessing.",
-    exploreProducts: "Explore Products",
-    contactUs: "Contact Us",
-    totalProducts: "Published products",
-    totalBrands: "Brands",
-    totalCategories: "Categories",
-    familiesBadge: "PRODUCT FAMILIES",
-    familiesTitle: "Browse product families from real catalog data",
-    familiesAction: "Open catalog",
-    productsTitle: "Featured products",
-    productsAction: "View all products",
-    viewProduct: "View Product",
-    inStock: "In Stock",
-    outOfStock: "Out of Stock",
-    fallbackDescription: "Product description will appear here.",
-    brandTitle: "Brands we present",
-    brandAction: "See all brands",
-    brandFallbackPrefix: "Brand:",
-    contactBadge: "CONTACT & INQUIRY",
-    contactTitle: "Need a product, a brand, or a wholesale conversation?",
-    contactBody:
-      "Direct visitors toward product discovery, brand-based browsing, and quick support without forcing them through a long path.",
-    contactAction: "Get In Touch",
-    supportBadge: "WE'RE HERE TO HELP",
-    supportTitle: "Support & quick access",
-    supportAction: "Open",
-    inquiryTitle: "Product Inquiry",
-    inquiryText: "Jump into the product list and pick the item you want to ask about.",
-    brandSupportTitle: "Brand Support",
-    brandSupportText: "Browse by brand and head straight into the filtered catalog.",
-    contactCardTitle: "Contact Us",
-    contactCardText: "Open the contact page for location details and direct communication.",
-    corporateTitle: "Corporate Orders",
-    corporateText: "Use the contact route for bulk and business supply requests.",
-    productCountSuffix: "products",
-    loadErrorFallback: "Unable to load homepage data right now.",
-    noProducts: "Published products will appear here after they are added from the admin panel.",
-    noBrands: "Brands will appear here once they are added to the catalog.",
-  },
-  ar: {
-    heroBadge: "شوحة للقرطاسية واللوازم المكتبية",
-    heroTitle: "منتجات حقيقية، تصفح أوضح، وصفحة رئيسية جاهزة للشغل.",
-    heroBody:
-      "تصفح المنتجات المنشورة، انتقل بين البراندات مباشرة من الصفحة الرئيسية، ووصل الزائر للمسار الصحيح بدون تعقيد.",
-    exploreProducts: "استعرض المنتجات",
-    contactUs: "تواصل معنا",
-    totalProducts: "منتجات منشورة",
-    totalBrands: "براندات",
-    totalCategories: "فئات",
-    familiesBadge: "عائلات المنتجات",
-    familiesTitle: "تصفح عائلات المنتجات من بيانات الكتالوج الحقيقية",
-    familiesAction: "فتح الكتالوج",
-    productsTitle: "منتجات مميزة",
-    productsAction: "كل المنتجات",
-    viewProduct: "عرض المنتج",
-    inStock: "متوفر",
-    outOfStock: "غير متوفر",
-    fallbackDescription: "سيظهر وصف المنتج هنا.",
-    brandTitle: "البراندات التي نعرضها",
-    brandAction: "عرض كل البراندات",
-    brandFallbackPrefix: "براند:",
-    contactBadge: "التواصل والاستفسارات",
-    contactTitle: "تبحث عن منتج أو براند أو طلب جملة؟",
-    contactBody:
-      "وجّه الزائر إلى استكشاف المنتجات أو التصفح حسب البراند أو الوصول السريع للدعم بدون لف طويل.",
-    contactAction: "تواصل الآن",
-    supportBadge: "نحن هنا للمساعدة",
-    supportTitle: "الدعم والوصول السريع",
-    supportAction: "فتح",
-    inquiryTitle: "استفسار عن منتج",
-    inquiryText: "ادخل إلى قائمة المنتجات واختر المنتج الذي تريد السؤال عنه.",
-    brandSupportTitle: "دعم البراندات",
-    brandSupportText: "تصفح حسب البراند وادخل مباشرة إلى الكتالوج المفلتر.",
-    contactCardTitle: "تواصل معنا",
-    contactCardText: "افتح صفحة التواصل لمعلومات الموقع ووسائل التواصل المباشر.",
-    corporateTitle: "طلبات الشركات",
-    corporateText: "استخدم مسار التواصل لطلبات الجملة والتوريد التجاري.",
-    productCountSuffix: "منتج",
-    loadErrorFallback: "تعذر تحميل بيانات الصفحة الرئيسية حالياً.",
-    noProducts: "ستظهر المنتجات المنشورة هنا بعد إضافتها من لوحة الأدمن.",
-    noBrands: "ستظهر البراندات هنا بعد إضافتها إلى الكتالوج.",
-  },
-} as const;
-
-function buildHref(path: string, lang: "en" | "ar") {
-  return path === "/" ? `/?lang=${lang}` : `${path}?lang=${lang}`;
-}
-
 export default async function HomePage({ searchParams }: HomePageProps) {
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
-  const lang = resolvedSearchParams?.lang === "ar" ? "ar" : "en";
+  const lang = resolvePublicLang(resolvedSearchParams?.lang);
   const isArabic = lang === "ar";
-  const t = copy[lang];
+  const t = homePageCopy[lang];
 
   let products: Awaited<ReturnType<typeof listPublishedProducts>> = [];
   let brands: Awaited<ReturnType<typeof listCatalogItems>> = [];
@@ -151,25 +60,25 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     {
       title: t.inquiryTitle,
       text: t.inquiryText,
-      href: buildHref("/products", lang),
+      href: appendPublicLang("/products", lang),
       icon: <MessageSquareMore className="h-5 w-5" />,
     },
     {
       title: t.brandSupportTitle,
       text: t.brandSupportText,
-      href: buildHref("/products", lang),
+      href: appendPublicLang("/products", lang),
       icon: <BadgeHelp className="h-5 w-5" />,
     },
     {
       title: t.contactCardTitle,
       text: t.contactCardText,
-      href: buildHref("/contact", lang),
+      href: appendPublicLang("/contact", lang),
       icon: <PhoneCall className="h-5 w-5" />,
     },
     {
       title: t.corporateTitle,
       text: t.corporateText,
-      href: buildHref("/contact", lang),
+      href: appendPublicLang("/contact", lang),
       icon: <BriefcaseBusiness className="h-5 w-5" />,
     },
   ];
@@ -192,7 +101,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
           <div className={`mt-8 flex flex-wrap gap-3 ${isArabic ? "justify-end" : ""}`}>
             <Link
-              href={buildHref("/products", lang)}
+              href={appendPublicLang("/products", lang)}
               className="inline-flex items-center gap-2 rounded-full bg-[#243b6b] px-5 py-3 text-sm font-medium text-white transition hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(36,59,107,0.2)]"
             >
               {t.exploreProducts}
@@ -200,7 +109,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             </Link>
 
             <Link
-              href={buildHref("/contact", lang)}
+              href={appendPublicLang("/contact", lang)}
               className="rounded-full border border-[#cfd6df] bg-white px-5 py-3 text-sm font-medium text-[#243b6b] transition hover:border-[#243b6b]/35 hover:bg-[#f7f9fc]"
             >
               {t.contactUs}
@@ -268,7 +177,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
               <h2 className="mt-2 text-3xl font-semibold text-[#1f2f4d]">{t.familiesTitle}</h2>
             </div>
 
-            <Link href={buildHref("/products", lang)} className="text-sm font-medium text-[#243b6b] hover:underline">
+            <Link href={appendPublicLang("/products", lang)} className="text-sm font-medium text-[#243b6b] hover:underline">
               {t.familiesAction}
             </Link>
           </div>
@@ -355,7 +264,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             {t.contactBody}
           </p>
           <Link
-            href={buildHref("/contact", lang)}
+            href={appendPublicLang("/contact", lang)}
             className="mt-6 inline-flex w-fit rounded-full bg-[#243b6b] px-5 py-3 text-sm font-medium text-white transition hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(36,59,107,0.2)]"
           >
             {t.contactAction}
