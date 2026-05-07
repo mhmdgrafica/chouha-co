@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { PublicHeader } from "./public-header";
+import { PUBLIC_LANGUAGE_COOKIE, resolvePublicLang } from "./copy/shared";
 
 export default async function PublicLayout({
   children,
@@ -7,7 +8,7 @@ export default async function PublicLayout({
   children: React.ReactNode;
 }) {
   const cookieStore = await cookies();
-  const lang = cookieStore.get("site_lang")?.value === "ar" ? "ar" : "en";
+  const lang = resolvePublicLang(cookieStore.get(PUBLIC_LANGUAGE_COOKIE)?.value);
 
   return (
     <>
