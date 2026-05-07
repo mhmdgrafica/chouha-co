@@ -323,14 +323,14 @@ export function ProductOverview({
 
         <div className="mt-8 flex flex-wrap gap-3">
           <a
-            href={`/contact?lang=${lang}`}
+            href="/contact"
             className="rounded-xl bg-[#003b51] px-5 py-3 text-sm font-medium text-white transition hover:opacity-90"
           >
             {copy.inquiry}
           </a>
 
           <a
-            href={`/products?lang=${lang}`}
+            href="/products"
             className="rounded-xl border border-[#d8d1c4] bg-white px-5 py-3 text-sm font-medium text-[#003b51] transition hover:bg-[#f8f6f2]"
           >
             {copy.back}
