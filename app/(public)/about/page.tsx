@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { PUBLIC_LANGUAGE_COOKIE, resolvePublicLang } from "../copy/shared";
 
 const copy = {
   en: {
@@ -35,7 +36,7 @@ const copy = {
 
 export default async function AboutPage() {
   const cookieStore = await cookies();
-  const lang = cookieStore.get("site_lang")?.value === "ar" ? "ar" : "en";
+  const lang = resolvePublicLang(cookieStore.get(PUBLIC_LANGUAGE_COOKIE)?.value);
   const isArabic = lang === "ar";
   const t = copy[lang];
 
