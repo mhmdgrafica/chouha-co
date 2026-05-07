@@ -1,38 +1,31 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import Link from "next/link";
+import { useState } from "react";
 import { Globe } from "lucide-react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { languageSwitcherCopy } from "./copy/header-copy";
-import { resolvePublicLang } from "./copy/shared";
+
+type Language = "en" | "ar";
+
+type LanguageSwitcherProps = {
+  lang: Language;
+};
 
 const languages = [
   { code: "en", labelKey: "english" },
   { code: "ar", labelKey: "arabic" },
 ] as const;
 
-export function LanguageSwitcher() {
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+export function LanguageSwitcher({ lang }: LanguageSwitcherProps) {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
+  const t = languageSwitcherCopy[lang];
 
-  const currentLang = resolvePublicLang(searchParams.get("lang"));
-  const t = languageSwitcherCopy[currentLang];
-
-  const links = useMemo(() => {
-    return languages.map((language) => {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set("lang", language.code);
-
-      return {
-        code: language.code,
-        label: t[language.labelKey],
-        href: `${pathname}?${params.toString()}`,
-        isActive: language.code === currentLang,
-      };
-    });
-  }, [currentLang, pathname, searchParams, t]);
+  function changeLanguage(nextLang: Language) {
+    document.cookie = `site_lang=${nextLang}; path=/; max-age=31536000; SameSite=Lax`;
+    setIsOpen(false);
+    router.refresh();
+  }
 
   return (
     <div className="relative">
@@ -41,26 +34,26 @@ export function LanguageSwitcher() {
         aria-label={t.changeLanguage}
         aria-expanded={isOpen}
         onClick={() => setIsOpen((prev) => !prev)}
-        className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#d8d1c4] bg-white text-[#243b6b] transition hover:bg-[#f8f6f2]"
+        className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#d8d1c4] bg-white text-[#003b51] transition hover:bg-[#f8f6f2]"
       >
         <Globe className="h-4 w-4" />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-12 z-50 min-w-40 rounded-2xl border border-[#e6dfd3] bg-white p-2 shadow-lg">
-          {links.map((language) => (
-            <Link
+        <div className="absolute right-0 top-12 z-50 min-w-40 rounded-2xl border border-[#e6dfd3] bg-white p-2 text-left shadow-lg">
+          {languages.map((language) => (
+            <button
               key={language.code}
-              href={language.href}
-              onClick={() => setIsOpen(false)}
-              className={`block rounded-xl px-4 py-2.5 text-sm transition ${
-                language.isActive
-                  ? "bg-[#eef3f8] font-medium text-[#243b6b]"
-                  : "text-[#5b6472] hover:bg-[#f8f6f2]"
+              type="button"
+              onClick={() => changeLanguage(language.code)}
+              className={`block w-full rounded-xl px-4 py-2.5 text-left text-sm transition ${
+                language.code === lang
+                  ? "bg-[#eaf4f3] font-medium text-[#003b51]"
+                  : "text-[#5b6472] hover:bg-[#f8f6f2] hover:text-[#003b51]"
               }`}
             >
-              {language.label}
-            </Link>
+              {t[language.labelKey]}
+            </button>
           ))}
         </div>
       )}

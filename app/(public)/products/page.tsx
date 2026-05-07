@@ -1,12 +1,11 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { createClient } from "../../../lib/supabase-server";
 import { listPublishedProducts } from "../../../lib/products/product-repository";
 import { productsPageCopy } from "../copy/products-copy";
-import { resolvePublicLang } from "../copy/shared";
 
 type ProductsPageProps = {
   searchParams?: Promise<{
-    lang?: string;
     brand?: string;
     category?: string;
   }>;
@@ -16,27 +15,30 @@ export default async function ProductsPage({
   searchParams,
 }: ProductsPageProps) {
   let products: Awaited<ReturnType<typeof listPublishedProducts>> = [];
-  let loadError: string | null = null;
-  const resolvedSearchParams = searchParams ? await searchParams : undefined;
-  const lang = resolvePublicLang(resolvedSearchParams?.lang);
-  const brandFilter = resolvedSearchParams?.brand?.trim() || "";
-  const categoryFilter = resolvedSearchParams?.category?.trim() || "";
+
+  const cookieStore = await cookies();
+  const lang = cookieStore.get("site_lang")?.value === "ar" ? "ar" : "en";
   const isArabic = lang === "ar";
   const t = productsPageCopy[lang];
+
+  let loadError: string | null = null;
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
+  const brandFilter = resolvedSearchParams?.brand?.trim() || "";
+  const categoryFilter = resolvedSearchParams?.category?.trim() || "";
 
   try {
     const supabase = await createClient();
     products = await listPublishedProducts(supabase);
   } catch (error) {
     loadError =
-      error instanceof Error
-        ? error.message
-        : t.loadErrorFallback;
+      error instanceof Error ? error.message : t.loadErrorFallback;
   }
 
   const filteredProducts = products.filter((product) => {
     const matchesBrand = brandFilter ? product.brand_slug === brandFilter : true;
-    const matchesCategory = categoryFilter ? product.category_slug === categoryFilter : true;
+    const matchesCategory = categoryFilter
+      ? product.category_slug === categoryFilter
+      : true;
 
     return matchesBrand && matchesCategory;
   });
@@ -44,6 +46,7 @@ export default async function ProductsPage({
   const selectedBrand = brandFilter
     ? products.find((product) => product.brand_slug === brandFilter)
     : null;
+
   const selectedCategory = categoryFilter
     ? products.find((product) => product.category_slug === categoryFilter)
     : null;
@@ -64,12 +67,12 @@ export default async function ProductsPage({
   return (
     <div className="space-y-10">
       <section className="rounded-[28px] bg-[#f3efe7] p-6 md:p-8 lg:p-10">
-        <div className={`max-w-3xl ${isArabic ? "mr-auto text-right" : ""}`}>
-          <span className="inline-flex rounded-full border border-[#d8d1c4] bg-white px-3 py-1 text-xs font-medium tracking-wide text-[#243b6b]">
+        <div className="max-w-3xl">
+          <span className="inline-flex rounded-full border border-[#d8d1c4] bg-white px-3 py-1 text-xs font-medium tracking-wide text-[#003b51]">
             {t.badge}
           </span>
 
-          <h1 className="mt-4 text-4xl font-semibold leading-tight text-[#1f2f4d] md:text-5xl">
+          <h1 className="mt-4 text-4xl font-semibold leading-tight text-[#003b51] md:text-5xl">
             {t.title}
           </h1>
 
@@ -88,118 +91,129 @@ export default async function ProductsPage({
 
         <div className="space-y-6">
           <div className="rounded-[24px] border border-[#e6dfd3] bg-white p-5 shadow-sm">
-            <div className={isArabic ? "text-right" : ""}>
-              <p className="text-sm text-[#7b8796]">
-                {t.showing} {filteredProducts.length} {t.publishedProducts}
-              </p>
-              <h2 className="mt-1 text-2xl font-semibold text-[#1f2f4d]">
-                {t.sectionTitle}
-              </h2>
-              {selectedFilters.length > 0 && (
-                <div className="mt-4 flex flex-wrap items-center gap-2">
-                  <span className="text-sm text-[#7b8796]">{t.filteredBy}</span>
-                  {selectedFilters.map((filterLabel) => (
-                    <span
-                      key={filterLabel}
-                      className="rounded-full bg-[#eef3f8] px-3 py-1 text-xs font-medium text-[#243b6b]"
-                    >
-                      {filterLabel}
-                    </span>
-                  ))}
-                  <Link
-                    href={`/products?lang=${lang}`}
-                    className="text-sm font-medium text-[#243b6b] hover:underline"
+            <p className="text-sm text-[#7b8796]">
+              {t.showing} {filteredProducts.length} {t.publishedProducts}
+            </p>
+
+            <h2 className="mt-1 text-2xl font-semibold text-[#003b51]">
+              {t.sectionTitle}
+            </h2>
+
+            {selectedFilters.length > 0 && (
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <span className="text-sm text-[#7b8796]">{t.filteredBy}</span>
+
+                {selectedFilters.map((filterLabel) => (
+                  <span
+                    key={filterLabel}
+                    className="rounded-full bg-[#eaf4f3] px-3 py-1 text-xs font-medium text-[#003b51]"
                   >
-                    {t.clearFilter}
-                  </Link>
-                </div>
-              )}
-            </div>
+                    {filterLabel}
+                  </span>
+                ))}
+
+                <Link
+                  href="/products"
+                  className="text-sm font-medium text-[#003b51] hover:underline"
+                >
+                  {t.clearFilter}
+                </Link>
+              </div>
+            )}
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {filteredProducts.map((product) => (
-              <article
-                key={product.id}
-                className="overflow-hidden rounded-[24px] border border-[#e6dfd3] bg-white shadow-sm transition hover:-translate-y-0.5"
-              >
-                <div className="h-56 overflow-hidden bg-[linear-gradient(135deg,#ede6db_0%,#dce7f1_100%)]">
-                  {product.card_image_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={product.card_image_url}
-                      alt={isArabic ? product.name_ar || product.name_en : product.name_en || product.name_ar}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <div className="h-full w-full" />
-                  )}
-                </div>
+          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            {filteredProducts.map((product) => {
+              const productName = isArabic
+                ? product.name_ar || product.name_en
+                : product.name_en || product.name_ar;
 
-                <div className={`p-5 ${isArabic ? "text-right" : ""}`}>
-                  <div className="flex items-center gap-3">
-                    {product.brand_logo_url ? (
+              const brandName = isArabic
+                ? product.brand_name_ar || product.brand_name_en
+                : product.brand_name_en || product.brand_name_ar;
+
+              const categoryName = isArabic
+                ? product.category_name_ar || product.category_name_en
+                : product.category_name_en || product.category_name_ar;
+
+              const description = isArabic
+                ? product.short_description_ar ||
+                  product.short_description_en ||
+                  t.fallbackDescription
+                : product.short_description_en ||
+                  product.short_description_ar ||
+                  t.fallbackDescription;
+
+              return (
+                <Link
+                  key={product.id}
+                  href={`/products/${product.slug}`}
+                  className="group block overflow-hidden rounded-[24px] border border-[#e6dfd3] bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-[0_18px_45px_rgba(0,59,81,0.10)]"
+                >
+                  <div className="flex h-64 items-center justify-center overflow-hidden bg-white p-5">
+                    {product.card_image_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
-                        src={product.brand_logo_url}
-                        alt={product.brand_name_en || "Brand logo"}
-                        className="h-10 w-10 rounded-xl border border-[#d8d1c4] bg-white object-contain p-1"
+                        src={product.card_image_url}
+                        alt={productName}
+                        className="h-full w-full object-contain transition duration-300 group-hover:scale-[1.03]"
                       />
-                    ) : null}
-                    <span className="rounded-full bg-[#eef3f8] px-3 py-1 text-xs font-medium text-[#243b6b]">
-                      {isArabic
-                        ? product.brand_name_ar || product.brand_name_en
-                        : product.brand_name_en || product.brand_name_ar}
-                    </span>
+                    ) : (
+                      <div className="h-full w-full rounded-[20px] bg-[#f3efe7]" />
+                    )}
                   </div>
 
-                  <h3 className="mt-4 text-xl font-semibold leading-snug text-[#1f2f4d]">
-                    {isArabic
-                      ? product.name_ar || product.name_en
-                      : product.name_en || product.name_ar}
-                  </h3>
+                  <div className="p-5">
+                    <div className="flex flex-wrap items-center gap-3">
+                      {product.brand_logo_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={product.brand_logo_url}
+                          alt={product.brand_name_en || "Brand logo"}
+                          className="h-8 max-w-[110px] object-contain"
+                        />
+                      ) : null}
 
-                  <p className="mt-2 text-sm font-medium text-[#7b8796]">
-                    {isArabic
-                      ? product.category_name_ar || product.category_name_en
-                      : product.category_name_en || product.category_name_ar}
-                  </p>
+                      {brandName ? (
+                        <span className="rounded-full bg-[#eaf4f3] px-3 py-1 text-xs font-medium text-[#003b51]">
+                          {brandName}
+                        </span>
+                      ) : null}
+                    </div>
 
-                  <p
-                    className={`mt-3 text-[15px] leading-7 text-[#4f5a69] ${
-                      isArabic ? "font-arabic-medium" : "font-medium"
-                    }`}
-                  >
-                    {isArabic
-                      ? product.short_description_ar ||
-                        product.short_description_en ||
-                        t.fallbackDescription
-                      : product.short_description_en ||
-                        product.short_description_ar ||
-                        t.fallbackDescription}
-                  </p>
+                    <h3 className="mt-4 text-xl font-semibold leading-snug text-[#003b51]">
+                      {productName}
+                    </h3>
 
-                  <div className="mt-3 flex items-center gap-2 text-xs font-medium">
-                    <span
-                      className={`rounded-full px-3 py-1 ${
-                        product.stock_status === "in_stock"
-                          ? "bg-blue-50 text-blue-700"
-                          : "bg-rose-50 text-rose-700"
+                    <p className="mt-2 text-sm font-medium text-[#7b8796]">
+                      {categoryName}
+                    </p>
+
+                    <p
+                      className={`mt-3 line-clamp-3 text-[15px] leading-7 text-[#4f5a69] ${
+                        isArabic ? "font-arabic-medium" : "font-medium"
                       }`}
                     >
-                      {product.stock_status === "in_stock" ? t.inStock : t.outOfStock}
-                    </span>
-                  </div>
+                      {description}
+                    </p>
 
-                  <Link
-                    href={`/products/${product.slug}?lang=${lang}`}
-                    className="mt-5 inline-flex rounded-xl border border-[#d7dfe8] bg-[#f8fbff] px-4 py-2.5 text-sm font-medium text-[#243b6b] transition hover:bg-[#eef3f8]"
-                  >
-                    {t.viewProduct}
-                  </Link>
-                </div>
-              </article>
-            ))}
+                    <div className="mt-4 flex items-center gap-2 text-xs font-medium">
+                      <span
+                        className={`rounded-full px-3 py-1 ${
+                          product.stock_status === "in_stock"
+                            ? "bg-[#eaf4f3] text-[#003b51]"
+                            : "bg-rose-50 text-rose-700"
+                        }`}
+                      >
+                        {product.stock_status === "in_stock"
+                          ? t.inStock
+                          : t.outOfStock}
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
 
           {filteredProducts.length === 0 && !loadError && (

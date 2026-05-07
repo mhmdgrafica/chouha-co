@@ -105,7 +105,7 @@ export function ProductOverview({
     .filter(Boolean);
 
   return (
-    <section className="grid gap-6 lg:grid-cols-[1.02fr_0.98fr]">
+    <section className="grid gap-6 lg:grid-cols-[1.04fr_0.96fr]">
       <ProductColorGallery
         colors={colors}
         selectedColorId={selectedColor?.id ?? null}
@@ -118,30 +118,25 @@ export function ProductOverview({
         mainImagePlaceholder={copy.mainImagePlaceholder}
       />
 
-      <div
-        className={`rounded-[30px] border border-[#e6dfd3] bg-white p-6 shadow-sm md:p-8 ${
-          isArabic ? "text-right" : ""
-        }`}
-      >
-        <div className={`flex flex-wrap items-center gap-3 ${isArabic ? "justify-end" : ""}`}>
-          <div className="flex items-center gap-3 rounded-full bg-[#eef3f8] px-3 py-1.5">
-            {brandLogoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={brandLogoUrl}
-                alt={brandName || "Brand logo"}
-                className="h-8 w-8 rounded-full bg-white object-contain p-1"
-              />
-            ) : null}
-            <span className="text-xs font-medium text-[#243b6b]">{brandName}</span>
-          </div>
+      <div className="rounded-[30px] border border-[#e6dfd3] bg-white p-6 shadow-sm md:p-8">
+        <div className="flex flex-wrap items-center gap-3">
+          {brandLogoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={brandLogoUrl}
+              alt={brandName || "Brand logo"}
+              className="h-10 max-w-[120px] object-contain"
+            />
+          ) : null}
+
           <span className="rounded-full bg-[#f4f0e7] px-3 py-1 text-xs font-medium text-[#6a7483]">
             {categoryName}
           </span>
+
           <span
             className={`rounded-full px-3 py-1 text-xs font-medium ${
               stockStatus === "in_stock"
-                ? "bg-blue-50 text-blue-700"
+                ? "bg-[#eaf4f3] text-[#003b51]"
                 : "bg-rose-50 text-rose-700"
             }`}
           >
@@ -149,7 +144,7 @@ export function ProductOverview({
           </span>
         </div>
 
-        <h1 className="mt-5 text-4xl font-semibold leading-tight text-[#1f2f4d] md:text-[2.65rem]">
+        <h1 className="mt-5 text-4xl font-semibold leading-tight text-[#003b51] md:text-[2.65rem]">
           {productName}
         </h1>
 
@@ -169,13 +164,14 @@ export function ProductOverview({
 
         {highlights.length > 0 && (
           <div className="mt-8">
-            <p className="mb-4 text-sm font-semibold text-[#1f2f4d]">
+            <p className="mb-4 text-sm font-semibold text-[#003b51]">
               {copy.highlights}
             </p>
+
             <div className="space-y-3">
               {highlights.map((item) => (
-                <div key={item.id} className={`flex gap-3 ${isArabic ? "flex-row-reverse" : ""}`}>
-                  <span className="mt-2 h-2.5 w-2.5 rounded-full bg-[#243b6b]" />
+                <div key={item.id} className="flex gap-3">
+                  <span className="mt-2 h-2.5 w-2.5 shrink-0 rounded-full bg-[#003b51]" />
                   <p className="text-sm leading-7 text-[#4f5a69]">
                     {isArabic ? item.textAr || item.textEn : item.textEn || item.textAr}
                   </p>
@@ -185,12 +181,13 @@ export function ProductOverview({
           </div>
         )}
 
-        <div className="mt-8 space-y-6">
+        <div className="mt-8 space-y-7">
           <div>
-            <p className="mb-3 text-sm font-semibold text-[#1f2f4d]">
+            <p className="mb-4 text-sm font-semibold text-[#003b51]">
               {copy.availableColors}
             </p>
-            <div className="flex flex-wrap gap-3">
+
+            <div className="flex flex-wrap gap-4">
               {colors.length > 0 ? (
                 colors.map((color) => {
                   const isActive = color.id === selectedColor?.id;
@@ -203,30 +200,29 @@ export function ProductOverview({
                       key={color.id}
                       type="button"
                       onClick={() => setSelectedColorId(color.id)}
-                      className={`flex min-w-[120px] items-center gap-3 rounded-[18px] border px-3 py-3 text-left transition ${
-                        isActive
-                          ? "border-[#243b6b] bg-[#eef3f8] shadow-[0_0_0_2px_rgba(36,59,107,0.12)]"
-                          : "border-[#d8d1c4] bg-[#fbfaf7]"
-                      }`}
+                      className="group flex w-20 flex-col items-center gap-2 text-center"
                     >
-                      {color.thumbnailUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={color.thumbnailUrl}
-                          alt={colorName}
-                          className="h-11 w-11 rounded-xl border border-[#d8d1c4] bg-white object-contain p-1"
-                        />
-                      ) : (
-                        <div
-                          className="h-11 w-11 rounded-xl border border-[#d8d1c4]"
-                          style={{ backgroundColor: color.hex || "#ddd" }}
-                        />
-                      )}
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold text-[#1f2f4d]">
-                          {colorName}
-                        </p>
-                      </div>
+                      <span
+                        className={`flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border bg-white transition ${
+                          isActive
+                            ? "border-[#003b51] shadow-[0_0_0_3px_rgba(0,59,81,0.14)]"
+                            : "border-[#d8d1c4] group-hover:border-[#003b51]/50"
+                        }`}
+                        style={!color.thumbnailUrl ? { backgroundColor: color.hex || "#ddd" } : undefined}
+                      >
+                        {color.thumbnailUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={color.thumbnailUrl}
+                            alt={colorName}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : null}
+                      </span>
+
+                      <span className="line-clamp-2 text-xs font-semibold leading-5 text-[#1f2f4d]">
+                        {colorName}
+                      </span>
                     </button>
                   );
                 })
@@ -243,10 +239,11 @@ export function ProductOverview({
 
             return (
               <div key={group.id}>
-                <p className="mb-3 text-sm font-semibold text-[#1f2f4d]">
+                <p className="mb-4 text-sm font-semibold text-[#003b51]">
                   {isArabic ? group.nameAr || group.nameEn : group.nameEn || group.nameAr}
                 </p>
-                <div className="flex flex-wrap gap-3">
+
+                <div className="flex flex-wrap gap-4">
                   {group.options.map((option) => {
                     const isActive = option.id === selectedValueId;
                     const optionLabel = isArabic
@@ -263,30 +260,38 @@ export function ProductOverview({
                             [group.id]: option.id,
                           }))
                         }
-                        className={`flex min-w-[120px] items-center gap-3 rounded-[18px] border px-3 py-3 text-left transition ${
-                          isActive
-                            ? "border-[#243b6b] bg-[#243b6b] text-white shadow-[0_0_0_2px_rgba(36,59,107,0.12)]"
-                            : "border-[#d8d1c4] bg-[#fbfaf7] text-[#4f5a69]"
-                        }`}
+                        className="group flex w-20 flex-col items-center gap-2 text-center"
                       >
-                        {option.thumbnailUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={option.thumbnailUrl}
-                            alt={optionLabel || "Option"}
-                            className="h-11 w-11 rounded-xl border border-[#d8d1c4] bg-white object-contain p-1"
-                          />
+                        <span
+                          className={`flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border bg-white transition ${
+                            isActive
+                              ? "border-[#003b51] shadow-[0_0_0_3px_rgba(0,59,81,0.14)]"
+                              : "border-[#d8d1c4] group-hover:border-[#003b51]/50"
+                          }`}
+                        >
+                          {option.thumbnailUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={option.thumbnailUrl}
+                              alt={optionLabel || "Option"}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <span className="text-sm font-semibold text-[#003b51]">
+                              {optionLabel?.slice(0, 2)}
+                            </span>
+                          )}
+                        </span>
+
+                        <span className="line-clamp-2 text-xs font-semibold leading-5 text-[#1f2f4d]">
+                          {optionLabel}
+                        </span>
+
+                        {option.optionCode ? (
+                          <span className="text-[11px] leading-none text-[#7b8796]">
+                            {option.optionCode}
+                          </span>
                         ) : null}
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold">
-                            {optionLabel}
-                          </p>
-                          {option.optionCode ? (
-                            <p className={`mt-1 text-xs ${isActive ? "text-white/75" : "text-[#7b8796]"}`}>
-                              {option.optionCode}
-                            </p>
-                          ) : null}
-                        </div>
                       </button>
                     );
                   })}
@@ -300,6 +305,7 @@ export function ProductOverview({
           <p className="mb-4 text-sm font-semibold uppercase tracking-[0.12em] text-[#7b8796]">
             {copy.descriptionTitle}
           </p>
+
           <div
             className={`space-y-4 text-[15px] leading-8 text-[#4f5a69] ${
               isArabic ? "font-arabic-medium" : "font-medium"
@@ -315,17 +321,17 @@ export function ProductOverview({
           </div>
         </div>
 
-        <div className={`mt-8 flex flex-wrap gap-3 ${isArabic ? "justify-end" : ""}`}>
+        <div className="mt-8 flex flex-wrap gap-3">
           <a
             href={`/contact?lang=${lang}`}
-            className="rounded-xl bg-[#243b6b] px-5 py-3 text-sm font-medium text-white transition hover:opacity-90"
+            className="rounded-xl bg-[#003b51] px-5 py-3 text-sm font-medium text-white transition hover:opacity-90"
           >
             {copy.inquiry}
           </a>
 
           <a
             href={`/products?lang=${lang}`}
-            className="rounded-xl border border-[#d8d1c4] bg-white px-5 py-3 text-sm font-medium text-[#243b6b] transition hover:bg-[#f8f6f2]"
+            className="rounded-xl border border-[#d8d1c4] bg-white px-5 py-3 text-sm font-medium text-[#003b51] transition hover:bg-[#f8f6f2]"
           >
             {copy.back}
           </a>

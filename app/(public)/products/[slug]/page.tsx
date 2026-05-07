@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { listActiveFeatureIcons } from "../../../../lib/features/feature-definitions-repository";
 import { mapProductRecordToForm } from "../../../../lib/products/product-mappers";
@@ -9,22 +10,19 @@ import {
 import { createClient } from "../../../../lib/supabase-server";
 import { ProductOverview } from "./product-overview";
 import { productDetailsCopy } from "../../copy/product-details-copy";
-import { resolvePublicLang } from "../../copy/shared";
 
 type ProductPageProps = {
   params: Promise<{ slug: string }>;
-  searchParams?: Promise<{ lang?: string }>;
 };
 
-export default async function ProductDetailsPage({
-  params,
-  searchParams,
-}: ProductPageProps) {
+export default async function ProductDetailsPage({ params }: ProductPageProps) {
   const { slug } = await params;
-  const resolvedSearchParams = searchParams ? await searchParams : undefined;
-  const lang = resolvePublicLang(resolvedSearchParams?.lang);
+
+  const cookieStore = await cookies();
+  const lang = cookieStore.get("site_lang")?.value === "ar" ? "ar" : "en";
   const isArabic = lang === "ar";
   const t = productDetailsCopy[lang];
+
   const supabase = await createClient();
   const featureOptions = await listActiveFeatureIcons(supabase);
   const productRecord = await getPublishedProductRecordBySlug(supabase, slug);
@@ -34,6 +32,7 @@ export default async function ProductDetailsPage({
   }
 
   const form = mapProductRecordToForm(productRecord, featureOptions);
+
   const relatedProducts = (await listPublishedProducts(supabase))
     .filter((item) => item.slug !== slug)
     .filter(
@@ -42,10 +41,13 @@ export default async function ProductDetailsPage({
         item.category_name_ar === productRecord.categories?.name_ar
     )
     .slice(0, 3);
+
   const highlights = form.highlights.filter(
     (item) => item.textEn.trim() !== "" || item.textAr.trim() !== ""
   );
+
   const features = form.featureIcons.filter((item) => item.selected);
+
   const productName = isArabic
     ? productRecord.product.name_ar || productRecord.product.name_en
     : productRecord.product.name_en || productRecord.product.name_ar;
@@ -53,15 +55,15 @@ export default async function ProductDetailsPage({
   return (
     <div className="space-y-10">
       <div className="text-sm text-[#7b8796]">
-        <Link href="/" className="hover:text-[#1f2f4d]">
+        <Link href="/" className="hover:text-[#003b51]">
           {t.home}
         </Link>
         <span className="mx-2">/</span>
-        <Link href={`/products?lang=${lang}`} className="hover:text-[#1f2f4d]">
+        <Link href="/products" className="hover:text-[#003b51]">
           {t.products}
         </Link>
         <span className="mx-2">/</span>
-        <span className="text-[#1f2f4d]">{productName}</span>
+        <span className="text-[#003b51]">{productName}</span>
       </div>
 
       <ProductOverview
@@ -79,8 +81,12 @@ export default async function ProductDetailsPage({
         brandLogoUrl={productRecord.brands?.logo_url || ""}
         categoryName={
           isArabic
-            ? productRecord.categories?.name_ar || productRecord.categories?.name_en || ""
-            : productRecord.categories?.name_en || productRecord.categories?.name_ar || ""
+            ? productRecord.categories?.name_ar ||
+              productRecord.categories?.name_en ||
+              ""
+            : productRecord.categories?.name_en ||
+              productRecord.categories?.name_ar ||
+              ""
         }
         shortDescription={
           isArabic
@@ -126,32 +132,42 @@ export default async function ProductDetailsPage({
 
         <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {relatedProducts.length > 0 ? (
-            relatedProducts.map((item) => (
-              <Link
-                key={item.id}
-                href={`/products/${item.slug}?lang=${lang}`}
-                className="block rounded-[20px] bg-[#f8f6f2] p-4 transition hover:bg-[#eef3f8]"
-              >
-                <p className="font-semibold text-[#1f2f4d]">
-                  {isArabic ? item.name_ar || item.name_en : item.name_en || item.name_ar}
-                </p>
-                <p className="mt-1 text-sm text-[#5b6472]">
-                  {isArabic
-                    ? item.short_description_ar ||
-                      item.short_description_en ||
-                      item.category_name_ar ||
-                      item.category_name_en
-                    : item.short_description_en ||
-                      item.short_description_ar ||
-                      item.category_name_en ||
-                      item.category_name_ar}
-                </p>
-              </Link>
-            ))
+            relatedProducts.map((item) => {
+              const relatedName = isArabic
+                ? item.name_ar || item.name_en
+                : item.name_en || item.name_ar;
+
+              const relatedDescription = isArabic
+                ? item.short_description_ar ||
+                  item.short_description_en ||
+                  item.category_name_ar ||
+                  item.category_name_en
+                : item.short_description_en ||
+                  item.short_description_ar ||
+                  item.category_name_en ||
+                  item.category_name_ar;
+
+              return (
+                <Link
+                  key={item.id}
+                  href={`/products/${item.slug}`}
+                  className="group block rounded-[20px] border border-[#e6dfd3] bg-[#f8f6f2] p-4 transition hover:-translate-y-0.5 hover:border-[#003b51]/25 hover:bg-white hover:shadow-[0_14px_35px_rgba(0,59,81,0.08)]"
+                >
+                  <p className="font-semibold text-[#003b51]">{relatedName}</p>
+                  <p className="mt-1 line-clamp-2 text-sm leading-6 text-[#5b6472]">
+                    {relatedDescription}
+                  </p>
+                </Link>
+              );
+            })
           ) : (
             <div className="rounded-[20px] bg-[#f8f6f2] p-4 md:col-span-2 xl:col-span-3">
-              <p className="font-semibold text-[#1f2f4d]">{t.relatedEmptyTitle}</p>
-              <p className="mt-1 text-sm text-[#5b6472]">{t.relatedEmptyBody}</p>
+              <p className="font-semibold text-[#003b51]">
+                {t.relatedEmptyTitle}
+              </p>
+              <p className="mt-1 text-sm text-[#5b6472]">
+                {t.relatedEmptyBody}
+              </p>
             </div>
           )}
         </div>

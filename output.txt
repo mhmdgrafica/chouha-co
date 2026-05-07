@@ -1,827 +1,4 @@
-===== about\page.tsx =====
-export default function AboutPage() {
-  return <div>About page</div>;
-}
-
-
-===== contact\page.tsx =====
-export default function ContactPage() {
-  return <div>Contact page</div>;
-}
-
-
-===== home-brands-carousel.tsx =====
-"use client";
-
-import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import type { CatalogItem } from "../../lib/catalog/catalog.types";
-
-type HomeBrandsCarouselProps = {
-  brands: CatalogItem[];
-  lang: "en" | "ar";
-  isArabic: boolean;
-  copy: {
-    title: string;
-    action: string;
-    fallbackPrefix: string;
-  };
-};
-
-export function HomeBrandsCarousel({
-  brands,
-  lang,
-  isArabic,
-  copy,
-}: HomeBrandsCarouselProps) {
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const [canScrollPrev, setCanScrollPrev] = useState(false);
-  const [canScrollNext, setCanScrollNext] = useState(brands.length > 0);
-
-  useEffect(() => {
-    const container = containerRef.current;
-
-    if (!container) {
-      return;
-    }
-
-    const updateScrollState = () => {
-      const maxScrollLeft = container.scrollWidth - container.clientWidth;
-      setCanScrollPrev(container.scrollLeft > 8);
-      setCanScrollNext(container.scrollLeft < maxScrollLeft - 8);
-    };
-
-    updateScrollState();
-    container.addEventListener("scroll", updateScrollState, { passive: true });
-    window.addEventListener("resize", updateScrollState);
-
-    return () => {
-      container.removeEventListener("scroll", updateScrollState);
-      window.removeEventListener("resize", updateScrollState);
-    };
-  }, [brands.length]);
-
-  const scrollByCard = (direction: "prev" | "next") => {
-    const container = containerRef.current;
-
-    if (!container) {
-      return;
-    }
-
-    const amount = Math.max(container.clientWidth * 0.72, 220);
-    container.scrollBy({
-      left: direction === "next" ? amount : -amount,
-      behavior: "smooth",
-    });
-  };
-
-  return (
-    <section className="space-y-5 rounded-[28px] bg-white p-6 shadow-sm md:p-8">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <h2 className={`text-3xl font-semibold text-[#1f2f4d] ${isArabic ? "sm:text-right" : ""}`}>
-          {copy.title}
-        </h2>
-
-        <div className="flex items-center justify-between gap-3">
-          <Link href={`/products?lang=${lang}`} className="text-sm font-medium text-[#243b6b] hover:underline">
-            {copy.action}
-          </Link>
-
-          <div className="inline-flex items-center rounded-full border border-[#d8d1c4] bg-[#fbfaf7] p-1">
-            <button
-              type="button"
-              aria-label="Previous brands"
-              onClick={() => scrollByCard("prev")}
-              disabled={!canScrollPrev}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full text-[#243b6b] transition hover:bg-[#eef3f8] disabled:cursor-not-allowed disabled:opacity-35"
-            >
-              {isArabic ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-            </button>
-            <button
-              type="button"
-              aria-label="Next brands"
-              onClick={() => scrollByCard("next")}
-              disabled={!canScrollNext}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full text-[#243b6b] transition hover:bg-[#eef3f8] disabled:cursor-not-allowed disabled:opacity-35"
-            >
-              {isArabic ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div
-        ref={containerRef}
-        className="flex snap-x snap-mandatory gap-6 overflow-x-auto py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-      >
-        {brands.map((brand) => (
-          <Link
-            key={brand.id}
-            href={`/products?brand=${brand.slug}&lang=${lang}`}
-            className="group flex min-w-[180px] snap-start items-center justify-center rounded-[24px] px-5 py-6 transition duration-300 hover:-translate-y-1 hover:bg-[#f8f6f2]"
-          >
-            {brand.logo_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={brand.logo_url}
-                alt={brand.name_en}
-                className="h-16 w-full object-contain opacity-90 transition duration-300 group-hover:opacity-100 group-hover:scale-[1.03]"
-              />
-            ) : (
-              <span className="text-center text-base font-semibold text-[#243b6b]">
-                {copy.fallbackPrefix} {isArabic ? brand.name_ar : brand.name_en}
-              </span>
-            )}
-          </Link>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-
-
-===== home-products-carousel.tsx =====
-"use client";
-
-import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import type { PublicProductListItem } from "../../lib/products/product-repository";
-
-type HomeProductsCarouselProps = {
-  products: PublicProductListItem[];
-  lang: "en" | "ar";
-  isArabic: boolean;
-  copy: {
-    title: string;
-    action: string;
-    viewProduct: string;
-    inStock: string;
-    outOfStock: string;
-    fallbackDescription: string;
-  };
-};
-
-export function HomeProductsCarousel({
-  products,
-  lang,
-  isArabic,
-  copy,
-}: HomeProductsCarouselProps) {
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const [canScrollPrev, setCanScrollPrev] = useState(false);
-  const [canScrollNext, setCanScrollNext] = useState(products.length > 0);
-
-  useEffect(() => {
-    const container = containerRef.current;
-
-    if (!container) {
-      return;
-    }
-
-    const updateScrollState = () => {
-      const maxScrollLeft = container.scrollWidth - container.clientWidth;
-      setCanScrollPrev(container.scrollLeft > 8);
-      setCanScrollNext(container.scrollLeft < maxScrollLeft - 8);
-    };
-
-    updateScrollState();
-    container.addEventListener("scroll", updateScrollState, { passive: true });
-    window.addEventListener("resize", updateScrollState);
-
-    return () => {
-      container.removeEventListener("scroll", updateScrollState);
-      window.removeEventListener("resize", updateScrollState);
-    };
-  }, [products.length]);
-
-  const scrollByCard = (direction: "prev" | "next") => {
-    const container = containerRef.current;
-
-    if (!container) {
-      return;
-    }
-
-    const amount = Math.max(container.clientWidth * 0.82, 280);
-    container.scrollBy({
-      left: direction === "next" ? amount : -amount,
-      behavior: "smooth",
-    });
-  };
-
-  return (
-    <section className="space-y-5">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div className={isArabic ? "sm:text-right" : ""}>
-          <h2 className="text-3xl font-semibold text-[#1f2f4d]">{copy.title}</h2>
-        </div>
-
-        <div className="flex items-center justify-between gap-3">
-          <Link href={`/products?lang=${lang}`} className="text-sm font-medium text-[#243b6b] hover:underline">
-            {copy.action}
-          </Link>
-
-          <div className="inline-flex items-center rounded-full border border-[#d8d1c4] bg-white p-1 shadow-sm">
-            <button
-              type="button"
-              aria-label="Previous products"
-              onClick={() => scrollByCard("prev")}
-              disabled={!canScrollPrev}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full text-[#243b6b] transition hover:bg-[#eef3f8] disabled:cursor-not-allowed disabled:opacity-35"
-            >
-              {isArabic ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-            </button>
-            <button
-              type="button"
-              aria-label="Next products"
-              onClick={() => scrollByCard("next")}
-              disabled={!canScrollNext}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full text-[#243b6b] transition hover:bg-[#eef3f8] disabled:cursor-not-allowed disabled:opacity-35"
-            >
-              {isArabic ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div
-        ref={containerRef}
-        className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-      >
-        {products.map((product) => (
-          <article
-            key={product.id}
-            className="group min-w-[280px] flex-1 snap-start overflow-hidden rounded-[24px] border border-[#e6dfd3] bg-white shadow-sm transition duration-300 hover:-translate-y-2 hover:shadow-[0_22px_60px_rgba(31,47,77,0.12)] sm:min-w-[320px] lg:min-w-[360px]"
-          >
-            <div className="relative h-56 overflow-hidden bg-[linear-gradient(135deg,#ede6db_0%,#dce7f1_100%)]">
-              {product.card_image_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={product.card_image_url}
-                  alt={isArabic ? product.name_ar || product.name_en : product.name_en || product.name_ar}
-                  className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
-                />
-              ) : (
-                <div className="flex h-full items-end bg-[linear-gradient(180deg,rgba(255,255,255,0.08)_0%,rgba(36,59,107,0.22)_100%)] p-6">
-                  <span className="text-lg font-semibold text-[#1f2f4d]">
-                    {isArabic ? product.name_ar || product.name_en : product.name_en || product.name_ar}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            <div className={`space-y-4 p-5 ${isArabic ? "text-right" : ""}`}>
-              <div className="flex items-center gap-3">
-                {product.brand_logo_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={product.brand_logo_url}
-                    alt={product.brand_name_en || "Brand logo"}
-                    className="h-10 w-16 object-contain"
-                  />
-                ) : null}
-                <span className="rounded-full bg-[#eef3f8] px-3 py-1 text-xs font-medium text-[#243b6b]">
-                  {isArabic
-                    ? product.brand_name_ar || product.brand_name_en
-                    : product.brand_name_en || product.brand_name_ar}
-                </span>
-              </div>
-
-              <div>
-                <h3 className="text-xl font-semibold leading-snug text-[#1f2f4d]">
-                  {isArabic ? product.name_ar || product.name_en : product.name_en || product.name_ar}
-                </h3>
-                <p className="mt-2 text-sm font-medium text-[#7b8796]">
-                  {isArabic
-                    ? product.category_name_ar || product.category_name_en
-                    : product.category_name_en || product.category_name_ar}
-                </p>
-              </div>
-
-              <p className={`text-[15px] leading-7 text-[#4f5a69] ${isArabic ? "font-arabic-medium" : "font-medium"}`}>
-                {isArabic
-                  ? product.short_description_ar || product.short_description_en || copy.fallbackDescription
-                  : product.short_description_en || product.short_description_ar || copy.fallbackDescription}
-              </p>
-
-              <div className="flex items-center justify-between gap-3">
-                <span
-                  className={`rounded-full px-3 py-1 text-xs font-medium ${
-                    product.stock_status === "in_stock"
-                      ? "bg-blue-50 text-blue-700"
-                      : "bg-rose-50 text-rose-700"
-                  }`}
-                >
-                  {product.stock_status === "in_stock" ? copy.inStock : copy.outOfStock}
-                </span>
-
-                <Link
-                  href={`/products/${product.slug}?lang=${lang}`}
-                  className="inline-flex rounded-full border border-[#d7dfe8] bg-[#f8fbff] px-4 py-2 text-sm font-medium text-[#243b6b] transition hover:bg-[#eef3f8]"
-                >
-                  {copy.viewProduct}
-                </Link>
-              </div>
-            </div>
-          </article>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-
-
-===== language-switcher.tsx =====
-"use client";
-
-import { useMemo, useState } from "react";
-import Link from "next/link";
-import { Globe } from "lucide-react";
-import { usePathname, useSearchParams } from "next/navigation";
-
-const languages = [
-  { code: "en", label: "English" },
-  { code: "ar", label: "العربية" },
-] as const;
-
-export function LanguageSwitcher() {
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const [isOpen, setIsOpen] = useState(false);
-
-  const currentLang = searchParams.get("lang") === "ar" ? "ar" : "en";
-
-  const links = useMemo(() => {
-    return languages.map((language) => {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set("lang", language.code);
-
-      return {
-        ...language,
-        href: `${pathname}?${params.toString()}`,
-        isActive: language.code === currentLang,
-      };
-    });
-  }, [currentLang, pathname, searchParams]);
-
-  return (
-    <div className="relative">
-      <button
-        type="button"
-        aria-label="Change language"
-        aria-expanded={isOpen}
-        onClick={() => setIsOpen((prev) => !prev)}
-        className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#d8d1c4] bg-white text-[#243b6b] transition hover:bg-[#f8f6f2]"
-      >
-        <Globe className="h-4 w-4" />
-      </button>
-
-      {isOpen && (
-        <div className="absolute right-0 top-12 z-50 min-w-40 rounded-2xl border border-[#e6dfd3] bg-white p-2 shadow-lg">
-          {links.map((language) => (
-            <Link
-              key={language.code}
-              href={language.href}
-              onClick={() => setIsOpen(false)}
-              className={`block rounded-xl px-4 py-2.5 text-sm transition ${
-                language.isActive
-                  ? "bg-[#eef3f8] font-medium text-[#243b6b]"
-                  : "text-[#5b6472] hover:bg-[#f8f6f2]"
-              }`}
-            >
-              {language.label}
-            </Link>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-
-
-===== layout.tsx =====
-import { PublicHeader } from "./public-header";
-
-export default function PublicLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <>
-      <PublicHeader />
-
-      <main className="min-h-screen bg-[#f8f6f2]">
-        <div className="mx-auto max-w-6xl px-6 py-10">{children}</div>
-      </main>
-
-      <footer className="border-t border-[#e6dfd3] bg-white">
-        <div className="mx-auto max-w-6xl p-4 text-center text-sm text-gray-500">
-          © 2026 Chouha Company
-        </div>
-      </footer>
-    </>
-  );
-}
-
-
-
 ===== page.tsx =====
-import Link from "next/link";
-import {
-  ArrowRight,
-  BadgeHelp,
-  BriefcaseBusiness,
-  FolderKanban,
-  MessageSquareMore,
-  PhoneCall,
-} from "lucide-react";
-import { listCatalogItems } from "../../lib/catalog/catalog-repository";
-import { listPublishedProducts } from "../../lib/products/product-repository";
-import { createClient } from "../../lib/supabase-server";
-import { HomeBrandsCarousel } from "./home-brands-carousel";
-import { HomeProductsCarousel } from "./home-products-carousel";
-
-type HomePageProps = {
-  searchParams?: Promise<{
-    lang?: string;
-  }>;
-};
-
-const copy = {
-  en: {
-    heroBadge: "CHOUHA STATIONERY & OFFICE SUPPLIES",
-    heroTitle: "Real products, cleaner browsing, and a front page that feels ready for business.",
-    heroBody:
-      "Browse published products, move through brands directly from the homepage, and reach the right inquiry path without guessing.",
-    exploreProducts: "Explore Products",
-    contactUs: "Contact Us",
-    totalProducts: "Published products",
-    totalBrands: "Brands",
-    totalCategories: "Categories",
-    familiesBadge: "PRODUCT FAMILIES",
-    familiesTitle: "Browse product families from real catalog data",
-    familiesAction: "Open catalog",
-    productsTitle: "Featured products",
-    productsAction: "View all products",
-    viewProduct: "View Product",
-    inStock: "In Stock",
-    outOfStock: "Out of Stock",
-    fallbackDescription: "Product description will appear here.",
-    brandTitle: "Brands we present",
-    brandAction: "See all brands",
-    brandFallbackPrefix: "Brand:",
-    contactBadge: "CONTACT & INQUIRY",
-    contactTitle: "Need a product, a brand, or a wholesale conversation?",
-    contactBody:
-      "Direct visitors toward product discovery, brand-based browsing, and quick support without forcing them through a long path.",
-    contactAction: "Get In Touch",
-    supportBadge: "WE'RE HERE TO HELP",
-    supportTitle: "Support & quick access",
-    supportAction: "Open",
-    inquiryTitle: "Product Inquiry",
-    inquiryText: "Jump into the product list and pick the item you want to ask about.",
-    brandSupportTitle: "Brand Support",
-    brandSupportText: "Browse by brand and head straight into the filtered catalog.",
-    contactCardTitle: "Contact Us",
-    contactCardText: "Open the contact page for location details and direct communication.",
-    corporateTitle: "Corporate Orders",
-    corporateText: "Use the contact route for bulk and business supply requests.",
-    productCountSuffix: "products",
-    loadErrorFallback: "Unable to load homepage data right now.",
-    noProducts: "Published products will appear here after they are added from the admin panel.",
-    noBrands: "Brands will appear here once they are added to the catalog.",
-  },
-  ar: {
-    heroBadge: "شوحة للقرطاسية واللوازم المكتبية",
-    heroTitle: "منتجات حقيقية، تصفح أوضح، وصفحة رئيسية جاهزة للشغل.",
-    heroBody:
-      "تصفح المنتجات المنشورة، انتقل بين البراندات مباشرة من الصفحة الرئيسية، ووصل الزائر للمسار الصحيح بدون تعقيد.",
-    exploreProducts: "استعرض المنتجات",
-    contactUs: "تواصل معنا",
-    totalProducts: "منتجات منشورة",
-    totalBrands: "براندات",
-    totalCategories: "فئات",
-    familiesBadge: "عائلات المنتجات",
-    familiesTitle: "تصفح عائلات المنتجات من بيانات الكتالوج الحقيقية",
-    familiesAction: "فتح الكتالوج",
-    productsTitle: "منتجات مميزة",
-    productsAction: "كل المنتجات",
-    viewProduct: "عرض المنتج",
-    inStock: "متوفر",
-    outOfStock: "غير متوفر",
-    fallbackDescription: "سيظهر وصف المنتج هنا.",
-    brandTitle: "البراندات التي نعرضها",
-    brandAction: "عرض كل البراندات",
-    brandFallbackPrefix: "براند:",
-    contactBadge: "التواصل والاستفسارات",
-    contactTitle: "تبحث عن منتج أو براند أو طلب جملة؟",
-    contactBody:
-      "وجّه الزائر إلى استكشاف المنتجات أو التصفح حسب البراند أو الوصول السريع للدعم بدون لف طويل.",
-    contactAction: "تواصل الآن",
-    supportBadge: "نحن هنا للمساعدة",
-    supportTitle: "الدعم والوصول السريع",
-    supportAction: "فتح",
-    inquiryTitle: "استفسار عن منتج",
-    inquiryText: "ادخل إلى قائمة المنتجات واختر المنتج الذي تريد السؤال عنه.",
-    brandSupportTitle: "دعم البراندات",
-    brandSupportText: "تصفح حسب البراند وادخل مباشرة إلى الكتالوج المفلتر.",
-    contactCardTitle: "تواصل معنا",
-    contactCardText: "افتح صفحة التواصل لمعلومات الموقع ووسائل التواصل المباشر.",
-    corporateTitle: "طلبات الشركات",
-    corporateText: "استخدم مسار التواصل لطلبات الجملة والتوريد التجاري.",
-    productCountSuffix: "منتج",
-    loadErrorFallback: "تعذر تحميل بيانات الصفحة الرئيسية حالياً.",
-    noProducts: "ستظهر المنتجات المنشورة هنا بعد إضافتها من لوحة الأدمن.",
-    noBrands: "ستظهر البراندات هنا بعد إضافتها إلى الكتالوج.",
-  },
-} as const;
-
-function buildHref(path: string, lang: "en" | "ar") {
-  return path === "/" ? `/?lang=${lang}` : `${path}?lang=${lang}`;
-}
-
-export default async function HomePage({ searchParams }: HomePageProps) {
-  const resolvedSearchParams = searchParams ? await searchParams : undefined;
-  const lang = resolvedSearchParams?.lang === "ar" ? "ar" : "en";
-  const isArabic = lang === "ar";
-  const t = copy[lang];
-
-  let products: Awaited<ReturnType<typeof listPublishedProducts>> = [];
-  let brands: Awaited<ReturnType<typeof listCatalogItems>> = [];
-  let categories: Awaited<ReturnType<typeof listCatalogItems>> = [];
-  let loadError: string | null = null;
-
-  try {
-    const supabase = await createClient();
-    [products, brands, categories] = await Promise.all([
-      listPublishedProducts(supabase),
-      listCatalogItems(supabase, "brands"),
-      listCatalogItems(supabase, "categories"),
-    ]);
-  } catch (error) {
-    loadError =
-      error instanceof Error ? error.message : t.loadErrorFallback;
-  }
-
-  const featuredCategories = categories
-    .map((category) => {
-      const count = products.filter((product) => product.category_slug === category.slug).length;
-
-      return {
-        ...category,
-        count,
-      };
-    })
-    .filter((category) => category.count > 0)
-    .slice(0, 4);
-
-  const supportCards = [
-    {
-      title: t.inquiryTitle,
-      text: t.inquiryText,
-      href: buildHref("/products", lang),
-      icon: <MessageSquareMore className="h-5 w-5" />,
-    },
-    {
-      title: t.brandSupportTitle,
-      text: t.brandSupportText,
-      href: buildHref("/products", lang),
-      icon: <BadgeHelp className="h-5 w-5" />,
-    },
-    {
-      title: t.contactCardTitle,
-      text: t.contactCardText,
-      href: buildHref("/contact", lang),
-      icon: <PhoneCall className="h-5 w-5" />,
-    },
-    {
-      title: t.corporateTitle,
-      text: t.corporateText,
-      href: buildHref("/contact", lang),
-      icon: <BriefcaseBusiness className="h-5 w-5" />,
-    },
-  ];
-
-  return (
-    <div className="space-y-10 md:space-y-14">
-      <section className="grid gap-6 overflow-hidden rounded-[30px] bg-[#f2ede3] p-5 md:grid-cols-[1.05fr_0.95fr] md:p-8 lg:p-10">
-        <div className={`flex flex-col justify-center ${isArabic ? "text-right" : ""}`}>
-          <span className="inline-flex w-fit rounded-full border border-[#d8d1c4] bg-white px-3 py-1 text-xs font-medium tracking-[0.16em] text-[#243b6b]">
-            {t.heroBadge}
-          </span>
-
-          <h1 className="mt-5 max-w-2xl text-4xl font-semibold leading-tight text-[#1f2f4d] md:text-5xl">
-            {t.heroTitle}
-          </h1>
-
-          <p className="mt-5 max-w-xl text-base leading-8 text-[#566274]">
-            {t.heroBody}
-          </p>
-
-          <div className={`mt-8 flex flex-wrap gap-3 ${isArabic ? "justify-end" : ""}`}>
-            <Link
-              href={buildHref("/products", lang)}
-              className="inline-flex items-center gap-2 rounded-full bg-[#243b6b] px-5 py-3 text-sm font-medium text-white transition hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(36,59,107,0.2)]"
-            >
-              {t.exploreProducts}
-              <ArrowRight className={`h-4 w-4 ${isArabic ? "rotate-180" : ""}`} />
-            </Link>
-
-            <Link
-              href={buildHref("/contact", lang)}
-              className="rounded-full border border-[#cfd6df] bg-white px-5 py-3 text-sm font-medium text-[#243b6b] transition hover:border-[#243b6b]/35 hover:bg-[#f7f9fc]"
-            >
-              {t.contactUs}
-            </Link>
-          </div>
-        </div>
-
-        <div className="relative min-h-[360px] overflow-hidden rounded-[28px] bg-[linear-gradient(135deg,#f8f5ef_0%,#e5ebf3_55%,#d7e1ee_100%)] p-6 md:min-h-[440px]">
-          <div className="absolute inset-x-0 bottom-0 h-40 bg-[linear-gradient(180deg,rgba(255,255,255,0)_0%,rgba(31,47,77,0.12)_100%)]" />
-          <div className="absolute left-8 top-8 h-28 w-28 rounded-full bg-white/45 blur-2xl" />
-          <div className="absolute right-10 top-12 h-24 w-24 rounded-[28px] bg-[#d5dfec]/70" />
-
-          <div className="relative flex h-full flex-col justify-between">
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div className="rounded-[22px] bg-white/82 p-4 shadow-sm backdrop-blur">
-                <p className="text-xs font-medium uppercase tracking-[0.16em] text-[#7b8796]">
-                  {t.totalProducts}
-                </p>
-                <p className="mt-3 text-3xl font-semibold text-[#1f2f4d]">{products.length}</p>
-              </div>
-              <div className="rounded-[22px] bg-white/72 p-4 shadow-sm backdrop-blur">
-                <p className="text-xs font-medium uppercase tracking-[0.16em] text-[#7b8796]">
-                  {t.totalBrands}
-                </p>
-                <p className="mt-3 text-3xl font-semibold text-[#1f2f4d]">{brands.length}</p>
-              </div>
-              <div className="rounded-[22px] bg-white/72 p-4 shadow-sm backdrop-blur">
-                <p className="text-xs font-medium uppercase tracking-[0.16em] text-[#7b8796]">
-                  {t.totalCategories}
-                </p>
-                <p className="mt-3 text-3xl font-semibold text-[#1f2f4d]">{categories.length}</p>
-              </div>
-            </div>
-
-            <div className="relative mt-6 rounded-[28px] bg-[#1f2f4d] p-6 text-white shadow-[0_24px_60px_rgba(31,47,77,0.18)]">
-              <p className="text-xs font-medium uppercase tracking-[0.18em] text-white/60">
-                Chouha Catalog
-              </p>
-              <h2 className="mt-3 max-w-sm text-3xl font-semibold leading-tight">
-                {t.productsTitle}
-              </h2>
-              <p className="mt-3 max-w-md text-sm leading-7 text-white/78">
-                {products.length > 0
-                  ? `${products.length} ${t.productCountSuffix}`
-                  : t.noProducts}
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {loadError && (
-        <div className="rounded-[24px] border border-rose-200 bg-rose-50 px-5 py-4 text-sm text-rose-700">
-          {loadError}
-        </div>
-      )}
-
-      {featuredCategories.length > 0 && (
-        <section className="space-y-5">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div className={isArabic ? "sm:text-right" : ""}>
-              <p className="text-sm font-medium uppercase tracking-[0.15em] text-[#7b8796]">
-                {t.familiesBadge}
-              </p>
-              <h2 className="mt-2 text-3xl font-semibold text-[#1f2f4d]">{t.familiesTitle}</h2>
-            </div>
-
-            <Link href={buildHref("/products", lang)} className="text-sm font-medium text-[#243b6b] hover:underline">
-              {t.familiesAction}
-            </Link>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            {featuredCategories.map((category) => (
-              <Link
-                key={category.id}
-                href={`/products?category=${category.slug}&lang=${lang}`}
-                className="group rounded-[24px] border border-[#e6dfd3] bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-2 hover:shadow-[0_24px_60px_rgba(31,47,77,0.12)]"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eef3f8] text-[#243b6b] transition group-hover:bg-[#243b6b] group-hover:text-white">
-                    <FolderKanban className="h-5 w-5" />
-                  </div>
-                  <span className="rounded-full bg-[#f8f6f2] px-3 py-1 text-xs font-medium text-[#7b8796]">
-                    {category.count}
-                  </span>
-                </div>
-
-                <h3 className="mt-5 text-lg font-semibold text-[#1f2f4d]">
-                  {isArabic ? category.name_ar : category.name_en}
-                </h3>
-                <p className="mt-2 text-sm leading-6 text-[#5b6472]">
-                  {category.count} {t.productCountSuffix}
-                </p>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {products.length > 0 ? (
-        <HomeProductsCarousel
-          products={products.slice(0, 10)}
-          lang={lang}
-          isArabic={isArabic}
-          copy={{
-            title: t.productsTitle,
-            action: t.productsAction,
-            viewProduct: t.viewProduct,
-            inStock: t.inStock,
-            outOfStock: t.outOfStock,
-            fallbackDescription: t.fallbackDescription,
-          }}
-        />
-      ) : (
-        <div className="rounded-[28px] border border-[#e6dfd3] bg-white px-6 py-12 text-center text-sm text-[#6a7483] shadow-sm">
-          {t.noProducts}
-        </div>
-      )}
-
-      {brands.length > 0 ? (
-        <HomeBrandsCarousel
-          brands={brands}
-          lang={lang}
-          isArabic={isArabic}
-          copy={{
-            title: t.brandTitle,
-            action: t.brandAction,
-            fallbackPrefix: t.brandFallbackPrefix,
-          }}
-        />
-      ) : (
-        <div className="rounded-[28px] border border-[#e6dfd3] bg-white px-6 py-12 text-center text-sm text-[#6a7483] shadow-sm">
-          {t.noBrands}
-        </div>
-      )}
-
-      <section className="grid gap-6 rounded-[30px] bg-[#dde7df] p-6 md:grid-cols-[0.94fr_1.06fr] md:p-8">
-        <div className={`flex flex-col justify-center ${isArabic ? "text-right" : ""}`}>
-          <div className="space-y-2">
-            <p className="text-sm font-medium uppercase tracking-[0.15em] text-[#7b8796]">
-              {t.contactBadge}
-            </p>
-            <p className="text-sm font-medium uppercase tracking-[0.15em] text-[#7b8796]">
-              {t.supportBadge}
-            </p>
-          </div>
-          <h2 className="mt-2 text-3xl font-semibold leading-tight text-[#1f2f4d]">
-            {t.contactTitle}
-          </h2>
-          <p className="mt-4 text-sm leading-7 text-[#5b6472]">
-            {t.contactBody}
-          </p>
-          <Link
-            href={buildHref("/contact", lang)}
-            className="mt-6 inline-flex w-fit rounded-full bg-[#243b6b] px-5 py-3 text-sm font-medium text-white transition hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(36,59,107,0.2)]"
-          >
-            {t.contactAction}
-          </Link>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          {supportCards.map((item) => (
-            <Link
-              key={item.title}
-              href={item.href}
-              className="group rounded-[24px] border border-white/50 bg-white/80 p-5 shadow-sm backdrop-blur transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_50px_rgba(31,47,77,0.12)]"
-            >
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eef3f8] text-[#243b6b] transition group-hover:bg-[#243b6b] group-hover:text-white">
-                {item.icon}
-              </div>
-              <h3 className="mt-5 text-lg font-semibold text-[#1f2f4d]">{item.title}</h3>
-              <p className="mt-2 text-sm leading-6 text-[#5b6472]">{item.text}</p>
-              <span className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-[#243b6b]">
-                {t.supportAction}
-                <ArrowRight className={`h-4 w-4 ${isArabic ? "rotate-180" : ""}`} />
-              </span>
-            </Link>
-          ))}
-        </div>
-      </section>
-    </div>
-  );
-}
-
-
-
-===== products\page.tsx =====
 import Link from "next/link";
 import { createClient } from "../../../lib/supabase-server";
 import { listPublishedProducts } from "../../../lib/products/product-repository";
@@ -1072,7 +249,7 @@ export default async function ProductsPage({
 
 
 
-===== products\[slug]\page.tsx =====
+===== [slug]\page.tsx =====
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { listActiveFeatureIcons } from "../../../../lib/features/feature-definitions-repository";
@@ -1098,18 +275,12 @@ const copy = {
     highlights: "Product Highlights",
     inquiry: "Send Inquiry",
     back: "Back to Products",
-    info: "Product information",
-    infoBody: "Additional features will appear here when available.",
-    details: "Product Details",
-    detailsTitle: "Description & specifications",
     detailsFallback:
       "Full product description will appear here once it is added from the admin panel.",
-    brand: "Brand",
-    category: "Category",
     availableColors: "Available Colors",
     noColors: "No colors added yet.",
     productCode: "Product Code",
-    stock: "Availability",
+    descriptionTitle: "Description",
     inStock: "In Stock",
     outOfStock: "Out of Stock",
     related: "Related Products",
@@ -1124,17 +295,11 @@ const copy = {
     highlights: "أبرز الميزات",
     inquiry: "إرسال استفسار",
     back: "العودة إلى المنتجات",
-    info: "معلومات المنتج",
-    infoBody: "ستظهر الميزات الإضافية هنا عند توفرها.",
-    details: "تفاصيل المنتج",
-    detailsTitle: "الوصف والمواصفات",
     detailsFallback: "سيظهر الوصف الكامل هنا بعد إضافته من لوحة الأدمن.",
-    brand: "العلامة التجارية",
-    category: "الفئة",
     availableColors: "الألوان المتوفرة",
     noColors: "لا توجد ألوان مضافة بعد.",
     productCode: "رمز المنتج",
-    stock: "التوفر",
+    descriptionTitle: "الوصف",
     inStock: "متوفر",
     outOfStock: "غير متوفر",
     related: "منتجات ذات صلة",
@@ -1196,6 +361,7 @@ export default async function ProductDetailsPage({
         galleryItems={form.galleryImages}
         features={features}
         highlights={highlights}
+        optionGroups={form.optionGroups}
         productName={productName}
         brandName={
           isArabic
@@ -1217,6 +383,15 @@ export default async function ProductDetailsPage({
               productRecord.product.short_description_ar ||
               t.detailsFallback
         }
+        fullDescription={
+          isArabic
+            ? productRecord.product.full_description_ar ||
+              productRecord.product.full_description_en ||
+              t.detailsFallback
+            : productRecord.product.full_description_en ||
+              productRecord.product.full_description_ar ||
+              t.detailsFallback
+        }
         stockStatus={productRecord.product.stock_status}
         fallbackProductCode={productRecord.product.product_code}
         isArabic={isArabic}
@@ -1231,145 +406,75 @@ export default async function ProductDetailsPage({
           back: t.back,
           inStock: t.inStock,
           outOfStock: t.outOfStock,
+          productCode: t.productCode,
+          descriptionTitle: t.descriptionTitle,
         }}
       />
 
-      <section className="grid gap-6 lg:grid-cols-[1fr_320px]">
-        <div className="rounded-[28px] border border-[#e6dfd3] bg-white p-6 shadow-sm md:p-8">
-          <p className="text-sm font-medium uppercase tracking-[0.15em] text-[#7b8796]">
-            {t.details}
-          </p>
+      <section className="rounded-[28px] border border-[#e6dfd3] bg-white p-6 shadow-sm">
+        <p className="text-sm font-medium uppercase tracking-[0.15em] text-[#7b8796]">
+          {t.related}
+        </p>
 
-          <h2 className="mt-2 text-3xl font-semibold text-[#1f2f4d]">
-            {t.detailsTitle}
-          </h2>
-
-          <div
-            className={`mt-6 space-y-4 text-[15px] leading-8 text-[#4f5a69] ${
-              isArabic ? "font-arabic-medium" : "font-medium"
-            }`}
-          >
-            <p>
-              {isArabic
-                ? productRecord.product.full_description_ar ||
-                  productRecord.product.full_description_en ||
-                  t.detailsFallback
-                : productRecord.product.full_description_en ||
-                  productRecord.product.full_description_ar ||
-                  t.detailsFallback}
-            </p>
-          </div>
-
-          <div className="mt-8 grid gap-4 sm:grid-cols-2">
-            <div className="rounded-[20px] bg-[#f8f6f2] p-5">
-              <p className="text-sm font-semibold text-[#1f2f4d]">{t.brand}</p>
-              <p className="mt-2 text-sm text-[#5b6472]">
-                {isArabic
-                  ? productRecord.brands?.name_ar || productRecord.brands?.name_en
-                  : productRecord.brands?.name_en || productRecord.brands?.name_ar}
-              </p>
+        <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {relatedProducts.length > 0 ? (
+            relatedProducts.map((item) => (
+              <Link
+                key={item.id}
+                href={`/products/${item.slug}?lang=${lang}`}
+                className="block rounded-[20px] bg-[#f8f6f2] p-4 transition hover:bg-[#eef3f8]"
+              >
+                <p className="font-semibold text-[#1f2f4d]">
+                  {isArabic ? item.name_ar || item.name_en : item.name_en || item.name_ar}
+                </p>
+                <p className="mt-1 text-sm text-[#5b6472]">
+                  {isArabic
+                    ? item.short_description_ar ||
+                      item.short_description_en ||
+                      item.category_name_ar ||
+                      item.category_name_en
+                    : item.short_description_en ||
+                      item.short_description_ar ||
+                      item.category_name_en ||
+                      item.category_name_ar}
+                </p>
+              </Link>
+            ))
+          ) : (
+            <div className="rounded-[20px] bg-[#f8f6f2] p-4 md:col-span-2 xl:col-span-3">
+              <p className="font-semibold text-[#1f2f4d]">{t.relatedEmptyTitle}</p>
+              <p className="mt-1 text-sm text-[#5b6472]">{t.relatedEmptyBody}</p>
             </div>
-
-            <div className="rounded-[20px] bg-[#f8f6f2] p-5">
-              <p className="text-sm font-semibold text-[#1f2f4d]">{t.category}</p>
-              <p className="mt-2 text-sm text-[#5b6472]">
-                {isArabic
-                  ? productRecord.categories?.name_ar || productRecord.categories?.name_en
-                  : productRecord.categories?.name_en || productRecord.categories?.name_ar}
-              </p>
-            </div>
-
-            <div className="rounded-[20px] bg-[#f8f6f2] p-5">
-              <p className="text-sm font-semibold text-[#1f2f4d]">
-                {t.availableColors}
-              </p>
-              <p className="mt-2 text-sm text-[#5b6472]">
-                {form.colors.length > 0
-                  ? form.colors
-                      .map((item) =>
-                        isArabic ? item.nameAr || item.nameEn : item.nameEn || item.nameAr
-                      )
-                      .filter(Boolean)
-                      .join(", ")
-                  : t.noColors}
-              </p>
-            </div>
-
-            <div className="rounded-[20px] bg-[#f8f6f2] p-5">
-              <p className="text-sm font-semibold text-[#1f2f4d]">{t.stock}</p>
-              <p className="mt-2 text-sm text-[#5b6472]">
-                {productRecord.product.stock_status === "in_stock"
-                  ? t.inStock
-                  : t.outOfStock}
-              </p>
-            </div>
-
-            <div className="rounded-[20px] bg-[#f8f6f2] p-5">
-              <p className="text-sm font-semibold text-[#1f2f4d]">{t.productCode}</p>
-              <p className="mt-2 text-sm text-[#5b6472]">
-                {productRecord.product.product_code}
-              </p>
-            </div>
-          </div>
+          )}
         </div>
-
-        <aside className="rounded-[28px] border border-[#e6dfd3] bg-white p-6 shadow-sm">
-          <p className="text-sm font-medium uppercase tracking-[0.15em] text-[#7b8796]">
-            {t.related}
-          </p>
-
-          <div className="mt-5 space-y-4">
-            {relatedProducts.length > 0 ? (
-              relatedProducts.map((item) => (
-                <Link
-                  key={item.id}
-                  href={`/products/${item.slug}?lang=${lang}`}
-                  className="block rounded-[20px] bg-[#f8f6f2] p-4 transition hover:bg-[#eef3f8]"
-                >
-                  <p className="font-semibold text-[#1f2f4d]">
-                    {isArabic ? item.name_ar || item.name_en : item.name_en || item.name_ar}
-                  </p>
-                  <p className="mt-1 text-sm text-[#5b6472]">
-                    {isArabic
-                      ? item.short_description_ar ||
-                        item.short_description_en ||
-                        item.category_name_ar ||
-                        item.category_name_en
-                      : item.short_description_en ||
-                        item.short_description_ar ||
-                        item.category_name_en ||
-                        item.category_name_ar}
-                  </p>
-                </Link>
-              ))
-            ) : (
-              <div className="rounded-[20px] bg-[#f8f6f2] p-4">
-                <p className="font-semibold text-[#1f2f4d]">{t.relatedEmptyTitle}</p>
-                <p className="mt-1 text-sm text-[#5b6472]">{t.relatedEmptyBody}</p>
-              </div>
-            )}
-          </div>
-        </aside>
       </section>
     </div>
   );
 }
 
 
-
-===== products\[slug]\product-color-gallery.tsx =====
+===== [slug]\product-color-gallery.tsx =====
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { FeatureIcon } from "../../../../components/feature-icon";
 import type {
   ProductColorOption,
   ProductFeatureIcon,
   ProductMediaItem,
 } from "../../../../lib/products/product.types";
 
+type SelectedVariantImage = {
+  id: string;
+  name: string;
+  url: string;
+};
+
 type Props = {
   colors: ProductColorOption[];
   selectedColorId: string | null;
+  selectedVariantImage: SelectedVariantImage | null;
   galleryItems: ProductMediaItem[];
   features: ProductFeatureIcon[];
   productName: string;
@@ -1381,6 +486,7 @@ type Props = {
 export function ProductColorGallery({
   colors,
   selectedColorId,
+  selectedVariantImage,
   galleryItems,
   features,
   productName,
@@ -1388,120 +494,153 @@ export function ProductColorGallery({
   colorFallback,
   mainImagePlaceholder,
 }: Props) {
-  const [selectedGalleryImageId, setSelectedGalleryImageId] = useState<string | null>(null);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   const selectedColor = useMemo(
     () => colors.find((item) => item.id === selectedColorId) ?? colors[0] ?? null,
     [colors, selectedColorId]
   );
 
+  const displayImages = useMemo(() => {
+    const leadingImage = selectedVariantImage
+      ? [selectedVariantImage]
+      : selectedColor?.mainImageUrl
+        ? [
+            {
+              id: `selected-color-${selectedColor.id}`,
+              name:
+                (isArabic
+                  ? selectedColor.nameAr || selectedColor.nameEn
+                  : selectedColor.nameEn || selectedColor.nameAr) || colorFallback,
+              url: selectedColor.mainImageUrl,
+            },
+          ]
+        : [];
+
+    return [
+      ...leadingImage,
+      ...galleryItems.map((item) => ({
+        id: item.id,
+        name: item.name,
+        url: item.url,
+      })),
+    ];
+  }, [colorFallback, galleryItems, isArabic, selectedColor, selectedVariantImage]);
+
   useEffect(() => {
-    setSelectedGalleryImageId(null);
-  }, [selectedColorId]);
+    setActiveImageIndex(0);
+  }, [selectedColorId, selectedVariantImage?.id]);
 
-  const selectedGalleryImage = useMemo(
-    () =>
-      galleryItems.find((item) => item.id === selectedGalleryImageId) ??
-      galleryItems[0] ??
-      null,
-    [galleryItems, selectedGalleryImageId]
-  );
+  useEffect(() => {
+    if (activeImageIndex > displayImages.length - 1) {
+      setActiveImageIndex(0);
+    }
+  }, [activeImageIndex, displayImages.length]);
 
-  const mainImageUrl =
-    selectedGalleryImage?.url ||
-    selectedColor?.mainImageUrl ||
-    galleryItems[0]?.url ||
-    "";
+  const activeImage = displayImages[activeImageIndex] ?? null;
+
+  const cycleImage = (direction: "prev" | "next") => {
+    if (displayImages.length <= 1) {
+      return;
+    }
+
+    setActiveImageIndex((currentIndex) => {
+      if (direction === "next") {
+        return (currentIndex + 1) % displayImages.length;
+      }
+
+      return (currentIndex - 1 + displayImages.length) % displayImages.length;
+    });
+  };
 
   return (
     <div className="space-y-4">
-      <div className="space-y-4">
-        <div className="overflow-hidden rounded-[28px] border border-[#e6dfd3] bg-white shadow-sm">
-          <div className="flex items-center justify-between border-b border-[#efe8db] bg-[#fbf8f2] px-5 py-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#7b8796]">
-                {isArabic ? "المعرض الرئيسي" : "Main Gallery"}
-              </p>
-              <p className="mt-1 text-sm font-semibold text-[#1f2f4d]">
-                {isArabic
-                  ? selectedColor?.nameAr || selectedColor?.nameEn || colorFallback
-                  : selectedColor?.nameEn || selectedColor?.nameAr || colorFallback}
-              </p>
+      <div className="overflow-hidden rounded-[30px] border border-[#e6dfd3] bg-white shadow-sm">
+        <div className="relative flex min-h-[500px] items-center justify-center overflow-hidden bg-white px-6 py-8">
+          {activeImage?.url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={activeImage.url}
+              alt={activeImage.name || productName}
+              className="h-full max-h-[460px] w-full bg-white object-contain p-3"
+            />
+          ) : (
+            <div className="px-6 text-center">
+              <p className="text-lg font-semibold text-[#1f2f4d]">{productName}</p>
+              <p className="mt-2 text-sm text-[#6a7483]">{mainImagePlaceholder}</p>
             </div>
+          )}
 
-            {selectedColor && (
-              <div className="flex items-center gap-2 rounded-full border border-[#d8d1c4] bg-white px-3 py-1.5">
-                <span
-                  className="h-3 w-3 rounded-full border border-white shadow-sm ring-1 ring-[#d8d1c4]"
-                  style={{ backgroundColor: selectedColor.hex || "#ddd" }}
-                />
-                <span className="text-xs font-medium text-[#5b6472]">
-                  {selectedColor.productCode || productName}
-                </span>
-              </div>
-            )}
-          </div>
+          {displayImages.length > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={() => cycleImage("prev")}
+                aria-label={isArabic ? "الصورة السابقة" : "Previous image"}
+                className="absolute left-4 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-[#d8d1c4] bg-white text-[#1f2f4d] shadow-sm transition hover:bg-[#f8f6f2]"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
 
-          <div className="flex h-[420px] items-center justify-center bg-[linear-gradient(135deg,#eee7dc_0%,#dbe6f2_100%)]">
-            {mainImageUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={mainImageUrl} alt={productName} className="h-full w-full object-cover" />
-            ) : (
-              <div className="px-6 text-center">
-                <p className="text-lg font-semibold text-[#1f2f4d]">{productName}</p>
-                <p className="mt-2 text-sm text-[#6a7483]">{mainImagePlaceholder}</p>
-              </div>
-            )}
-          </div>
+              <button
+                type="button"
+                onClick={() => cycleImage("next")}
+                aria-label={isArabic ? "الصورة التالية" : "Next image"}
+                className="absolute right-4 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-[#d8d1c4] bg-white text-[#1f2f4d] shadow-sm transition hover:bg-[#f8f6f2]"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+            </>
+          )}
         </div>
 
-        <div className="grid grid-cols-4 gap-3">
-          {galleryItems.slice(0, 4).map((item, index) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => setSelectedGalleryImageId(item.id)}
-              className={`overflow-hidden rounded-[18px] border bg-white transition ${
-                selectedGalleryImage?.id === item.id
-                  ? "border-[#243b6b] shadow-[0_0_0_2px_rgba(36,59,107,0.12)]"
-                  : "border-[#e6dfd3]"
-              }`}
-            >
-              {item.url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={item.url}
-                  alt={item.name || `Gallery ${index + 1}`}
-                  className="h-24 w-full object-cover"
-                />
-              ) : (
-                <div className="flex h-24 items-center justify-center px-3 text-center text-xs font-medium text-[#5b6472]">
-                  {item.name || `Gallery ${index + 1}`}
-                </div>
-              )}
-            </button>
-          ))}
-        </div>
+        {displayImages.length > 0 && (
+          <div className="border-t border-[#efe8db] bg-white px-4 py-4">
+            <div className="flex flex-wrap gap-3">
+              {displayImages.map((item, index) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => setActiveImageIndex(index)}
+                  className={`overflow-hidden rounded-[18px] border bg-white transition ${
+                    activeImageIndex === index
+                      ? "border-[#243b6b] shadow-[0_0_0_2px_rgba(36,59,107,0.12)]"
+                      : "border-[#e6dfd3]"
+                  }`}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={item.url}
+                    alt={item.name || `Image ${index + 1}`}
+                    className="h-20 w-20 bg-white object-contain p-1.5"
+                  />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="rounded-[28px] border border-[#e6dfd3] bg-white p-5 shadow-sm">
-        <p className="mb-3 text-sm font-semibold text-[#1f2f4d]">
-          {isArabic ? "الميزات" : "Features"}
-        </p>
-        <div className="grid gap-3 sm:grid-cols-2">
-          {features.slice(0, 4).map((item) => (
-            <div
-              key={item.id}
-              className="rounded-[18px] border border-[#d8d1c4] bg-[#fbfaf7] px-4 py-4"
-            >
-              <p className="text-sm font-semibold text-[#1f2f4d]">
-                {isArabic ? item.labelAr || item.labelEn : item.labelEn || item.labelAr}
-              </p>
-              <p className="mt-1 text-xs text-[#7b8796]">{item.key}</p>
-            </div>
-          ))}
-          {features.length === 0 && (
-            <div className="rounded-[18px] border border-[#d8d1c4] bg-[#fbfaf7] px-4 py-4 text-sm text-[#6a7483] sm:col-span-2">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {features.length > 0 ? (
+            features.map((item) => (
+              <div
+                key={item.id}
+                className="flex items-center gap-3 rounded-[20px] border border-[#e6dfd3] bg-[#fbfaf7] px-4 py-4"
+              >
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#eef3f8] text-[#243b6b]">
+                  <FeatureIcon name={item.iconName} className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-[#1f2f4d]">
+                    {isArabic ? item.labelAr || item.labelEn : item.labelEn || item.labelAr}
+                  </p>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="rounded-[20px] border border-[#e6dfd3] bg-[#fbfaf7] px-4 py-4 text-sm text-[#6a7483] sm:col-span-2 xl:col-span-4">
               {isArabic ? "لا توجد ميزات مفعلة لهذا المنتج بعد." : "No product features are active yet."}
             </div>
           )}
@@ -1513,15 +652,16 @@ export function ProductColorGallery({
 
 
 
-===== products\[slug]\product-overview.tsx =====
+===== [slug]\product-overview.tsx =====
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type {
   ProductColorOption,
   ProductFeatureIcon,
   ProductHighlight,
   ProductMediaItem,
+  ProductOptionGroup,
   ProductStockStatus,
 } from "../../../../lib/products/product.types";
 import { ProductColorGallery } from "./product-color-gallery";
@@ -1536,6 +676,8 @@ type OverviewCopy = {
   back: string;
   inStock: string;
   outOfStock: string;
+  productCode: string;
+  descriptionTitle: string;
 };
 
 type ProductOverviewProps = {
@@ -1543,11 +685,13 @@ type ProductOverviewProps = {
   galleryItems: ProductMediaItem[];
   features: ProductFeatureIcon[];
   highlights: ProductHighlight[];
+  optionGroups: ProductOptionGroup[];
   productName: string;
   brandName: string;
   brandLogoUrl: string;
   categoryName: string;
   shortDescription: string;
+  fullDescription: string;
   stockStatus: ProductStockStatus;
   fallbackProductCode: string;
   isArabic: boolean;
@@ -1560,26 +704,67 @@ export function ProductOverview({
   galleryItems,
   features,
   highlights,
+  optionGroups,
   productName,
   brandName,
   brandLogoUrl,
   categoryName,
   shortDescription,
+  fullDescription,
   stockStatus,
   fallbackProductCode,
   isArabic,
   lang,
   copy,
 }: ProductOverviewProps) {
+  const defaultColor = colors.find((item) => item.isDefault) ?? colors[0] ?? null;
   const [selectedColorId, setSelectedColorId] = useState<string | null>(
-    colors[0]?.id ?? null
+    defaultColor?.id ?? null
+  );
+  const [selectedOptionValues, setSelectedOptionValues] = useState<Record<string, string | null>>(
+    () =>
+      Object.fromEntries(
+        optionGroups.map((group) => [group.id, group.selectedValueId ?? group.options[0]?.id ?? null])
+      )
   );
 
+  const selectedColor = useMemo(
+    () => colors.find((item) => item.id === selectedColorId) ?? defaultColor,
+    [colors, defaultColor, selectedColorId]
+  );
+
+  const selectedVariantImage = useMemo(() => {
+    for (const group of optionGroups) {
+      const selectedValueId = selectedOptionValues[group.id] ?? group.options[0]?.id ?? null;
+      const selectedOption = group.options.find((option) => option.id === selectedValueId) ?? null;
+
+      if (selectedOption?.mainImageUrl) {
+        const optionLabel = isArabic
+          ? selectedOption.valueAr || selectedOption.valueEn
+          : selectedOption.valueEn || selectedOption.valueAr;
+
+        return {
+          id: `option-${group.id}-${selectedOption.id}`,
+          name: optionLabel || productName,
+          url: selectedOption.mainImageUrl,
+        };
+      }
+    }
+
+    return null;
+  }, [isArabic, optionGroups, productName, selectedOptionValues]);
+
+  const descriptionParagraphs = fullDescription
+    .split("\n")
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean);
+
   return (
-    <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
+    <section className="grid gap-6 lg:grid-cols-[1.02fr_0.98fr]">
       <ProductColorGallery
         colors={colors}
-        selectedColorId={selectedColorId}
+        selectedColorId={selectedColor?.id ?? null}
+        selectedVariantImage={selectedVariantImage}
         galleryItems={galleryItems}
         features={features}
         productName={productName}
@@ -1589,11 +774,11 @@ export function ProductOverview({
       />
 
       <div
-        className={`rounded-[28px] border border-[#e6dfd3] bg-white p-6 shadow-sm md:p-8 ${
+        className={`rounded-[30px] border border-[#e6dfd3] bg-white p-6 shadow-sm md:p-8 ${
           isArabic ? "text-right" : ""
         }`}
       >
-        <div className="flex flex-wrap items-center gap-3">
+        <div className={`flex flex-wrap items-center gap-3 ${isArabic ? "justify-end" : ""}`}>
           <div className="flex items-center gap-3 rounded-full bg-[#eef3f8] px-3 py-1.5">
             {brandLogoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -1619,27 +804,51 @@ export function ProductOverview({
           </span>
         </div>
 
-        <h1 className="mt-4 text-4xl font-semibold leading-tight text-[#1f2f4d]">
+        <h1 className="mt-5 text-4xl font-semibold leading-tight text-[#1f2f4d] md:text-[2.65rem]">
           {productName}
         </h1>
 
-        <p
-          className={`mt-4 text-lg leading-8 text-[#4f5a69] ${
-            isArabic ? "font-arabic-medium" : "font-medium"
-          }`}
-        >
-          {shortDescription}
+        <p className="mt-3 text-sm font-medium tracking-[0.08em] text-[#7b8796]">
+          {copy.productCode}: {selectedColor?.productCode || fallbackProductCode || "—"}
         </p>
+
+        {shortDescription && (
+          <p
+            className={`mt-5 text-base leading-8 text-[#4f5a69] ${
+              isArabic ? "font-arabic-medium" : "font-medium"
+            }`}
+          >
+            {shortDescription}
+          </p>
+        )}
+
+        {highlights.length > 0 && (
+          <div className="mt-8">
+            <p className="mb-4 text-sm font-semibold text-[#1f2f4d]">
+              {copy.highlights}
+            </p>
+            <div className="space-y-3">
+              {highlights.map((item) => (
+                <div key={item.id} className={`flex gap-3 ${isArabic ? "flex-row-reverse" : ""}`}>
+                  <span className="mt-2 h-2.5 w-2.5 rounded-full bg-[#243b6b]" />
+                  <p className="text-sm leading-7 text-[#4f5a69]">
+                    {isArabic ? item.textAr || item.textEn : item.textEn || item.textAr}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="mt-8 space-y-6">
           <div>
             <p className="mb-3 text-sm font-semibold text-[#1f2f4d]">
               {copy.availableColors}
             </p>
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="flex flex-wrap gap-3">
               {colors.length > 0 ? (
                 colors.map((color) => {
-                  const isActive = color.id === selectedColorId;
+                  const isActive = color.id === selectedColor?.id;
                   const colorName = isArabic
                     ? color.nameAr || color.nameEn || copy.colorFallback
                     : color.nameEn || color.nameAr || copy.colorFallback;
@@ -1649,7 +858,7 @@ export function ProductOverview({
                       key={color.id}
                       type="button"
                       onClick={() => setSelectedColorId(color.id)}
-                      className={`flex items-center gap-3 rounded-[18px] border px-3 py-3 text-left transition ${
+                      className={`flex min-w-[120px] items-center gap-3 rounded-[18px] border px-3 py-3 text-left transition ${
                         isActive
                           ? "border-[#243b6b] bg-[#eef3f8] shadow-[0_0_0_2px_rgba(36,59,107,0.12)]"
                           : "border-[#d8d1c4] bg-[#fbfaf7]"
@@ -1660,11 +869,11 @@ export function ProductOverview({
                         <img
                           src={color.thumbnailUrl}
                           alt={colorName}
-                          className="h-12 w-12 rounded-xl border border-[#d8d1c4] object-cover"
+                          className="h-11 w-11 rounded-xl border border-[#d8d1c4] bg-white object-contain p-1"
                         />
                       ) : (
                         <div
-                          className="h-12 w-12 rounded-xl border border-[#d8d1c4]"
+                          className="h-11 w-11 rounded-xl border border-[#d8d1c4]"
                           style={{ backgroundColor: color.hex || "#ddd" }}
                         />
                       )}
@@ -1672,43 +881,98 @@ export function ProductOverview({
                         <p className="truncate text-sm font-semibold text-[#1f2f4d]">
                           {colorName}
                         </p>
-                        <p className="mt-1 text-xs text-[#6a7483]">
-                          {color.productCode || fallbackProductCode}
-                        </p>
                       </div>
                     </button>
                   );
                 })
               ) : (
-                <div className="rounded-[18px] border border-[#d8d1c4] bg-[#fbfaf7] px-4 py-4 text-sm text-[#6a7483] sm:col-span-2">
+                <div className="rounded-[18px] border border-[#d8d1c4] bg-[#fbfaf7] px-4 py-4 text-sm text-[#6a7483]">
                   {copy.noColors}
                 </div>
               )}
             </div>
           </div>
 
-          {highlights.length > 0 && (
-            <div>
-              <p className="mb-3 text-sm font-semibold text-[#1f2f4d]">
-                {copy.highlights}
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {highlights.map((item) => (
-                  <span
-                    key={item.id}
-                    className="rounded-full border border-[#d8d1c4] bg-[#fbfaf7] px-4 py-2 text-sm text-[#4f5968]"
-                  >
-                    {isArabic ? item.textAr || item.textEn : item.textEn || item.textAr}
-                  </span>
-                ))}
+          {optionGroups.map((group) => {
+            const selectedValueId = selectedOptionValues[group.id] ?? group.options[0]?.id ?? null;
+
+            return (
+              <div key={group.id}>
+                <p className="mb-3 text-sm font-semibold text-[#1f2f4d]">
+                  {isArabic ? group.nameAr || group.nameEn : group.nameEn || group.nameAr}
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  {group.options.map((option) => {
+                    const isActive = option.id === selectedValueId;
+                    const optionLabel = isArabic
+                      ? option.valueAr || option.valueEn
+                      : option.valueEn || option.valueAr;
+
+                    return (
+                      <button
+                        key={option.id}
+                        type="button"
+                        onClick={() =>
+                          setSelectedOptionValues((currentValues) => ({
+                            ...currentValues,
+                            [group.id]: option.id,
+                          }))
+                        }
+                        className={`flex min-w-[120px] items-center gap-3 rounded-[18px] border px-3 py-3 text-left transition ${
+                          isActive
+                            ? "border-[#243b6b] bg-[#243b6b] text-white shadow-[0_0_0_2px_rgba(36,59,107,0.12)]"
+                            : "border-[#d8d1c4] bg-[#fbfaf7] text-[#4f5a69]"
+                        }`}
+                      >
+                        {option.thumbnailUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={option.thumbnailUrl}
+                            alt={optionLabel || "Option"}
+                            className="h-11 w-11 rounded-xl border border-[#d8d1c4] bg-white object-contain p-1"
+                          />
+                        ) : null}
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold">
+                            {optionLabel}
+                          </p>
+                          {option.optionCode ? (
+                            <p className={`mt-1 text-xs ${isActive ? "text-white/75" : "text-[#7b8796]"}`}>
+                              {option.optionCode}
+                            </p>
+                          ) : null}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })}
         </div>
 
-        <div className="mt-8 flex flex-wrap gap-3">
+        <div className="mt-8 border-t border-[#efe8db] pt-8">
+          <p className="mb-4 text-sm font-semibold uppercase tracking-[0.12em] text-[#7b8796]">
+            {copy.descriptionTitle}
+          </p>
+          <div
+            className={`space-y-4 text-[15px] leading-8 text-[#4f5a69] ${
+              isArabic ? "font-arabic-medium" : "font-medium"
+            }`}
+          >
+            {descriptionParagraphs.length > 0 ? (
+              descriptionParagraphs.map((paragraph, index) => (
+                <p key={`${paragraph}-${index}`}>{paragraph}</p>
+              ))
+            ) : (
+              <p>{shortDescription}</p>
+            )}
+          </div>
+        </div>
+
+        <div className={`mt-8 flex flex-wrap gap-3 ${isArabic ? "justify-end" : ""}`}>
           <a
-            href="/contact"
+            href={`/contact?lang=${lang}`}
             className="rounded-xl bg-[#243b6b] px-5 py-3 text-sm font-medium text-white transition hover:opacity-90"
           >
             {copy.inquiry}
@@ -1723,137 +987,6 @@ export function ProductOverview({
         </div>
       </div>
     </section>
-  );
-}
-
-
-
-===== public-header.tsx =====
-"use client";
-
-import Link from "next/link";
-import { useMemo, useState } from "react";
-import { Menu, X } from "lucide-react";
-import { usePathname, useSearchParams } from "next/navigation";
-import { LanguageSwitcher } from "./language-switcher";
-
-const navigation = [
-  { href: "/", labelEn: "Home", labelAr: "الرئيسية" },
-  { href: "/products", labelEn: "Products", labelAr: "المنتجات" },
-  { href: "/contact", labelEn: "Contact Us", labelAr: "تواصل معنا" },
-] as const;
-
-function appendLang(href: string, lang: "en" | "ar") {
-  return href === "/" ? `/?lang=${lang}` : `${href}?lang=${lang}`;
-}
-
-export function PublicHeader() {
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const lang = searchParams.get("lang") === "ar" ? "ar" : "en";
-  const isArabic = lang === "ar";
-  const inquiryLabel = isArabic ? "استفسار" : "Inquiry";
-  const brandLabel = "Chouha";
-
-  const links = useMemo(
-    () =>
-      navigation.map((item) => ({
-        href: appendLang(item.href, lang),
-        label: isArabic ? item.labelAr : item.labelEn,
-        isActive:
-          item.href === "/"
-            ? pathname === "/"
-            : pathname === item.href || pathname.startsWith(`${item.href}/`),
-      })),
-    [isArabic, lang, pathname]
-  );
-
-  const linkClassName = (isActive: boolean) =>
-    `group relative inline-flex items-center rounded-full px-4 py-2 text-sm font-medium transition ${
-      isActive ? "text-[#1f2f4d]" : "text-[#5b6472] hover:text-[#1f2f4d]"
-    }`;
-
-  const frameClassName = (isActive: boolean) =>
-    `pointer-events-none absolute inset-0 rounded-full border transition duration-300 ${
-      isActive
-        ? "border-[#243b6b]/50"
-        : "border-[#243b6b]/0 group-hover:border-[#243b6b]/35 group-hover:scale-100 scale-[0.94]"
-    }`;
-
-  return (
-    <header className="sticky top-0 z-50 border-b border-[#e6dfd3] bg-[#f8f6f2]/88 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
-        <Link
-          href={appendLang("/", lang)}
-          className="inline-flex items-center gap-3 text-[#1f2f4d]"
-        >
-          <span className="flex h-11 w-11 items-center justify-center rounded-full border border-[#d9d2c7] bg-white text-base font-semibold shadow-sm">
-            C
-          </span>
-          <span className="text-lg font-semibold tracking-[0.08em]">{brandLabel}</span>
-        </Link>
-
-        <nav className="hidden items-center gap-2 md:flex">
-          {links.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={linkClassName(item.isActive)}
-            >
-              <span aria-hidden="true" className={frameClassName(item.isActive)} />
-              <span className="relative z-10">{item.label}</span>
-            </Link>
-          ))}
-        </nav>
-
-        <div className="flex items-center gap-3">
-          <Link
-            href={appendLang("/contact", lang)}
-            className="hidden rounded-full bg-[#243b6b] px-5 py-2.5 text-sm font-medium text-white transition hover:translate-y-[-1px] hover:shadow-[0_14px_32px_rgba(36,59,107,0.2)] md:inline-flex"
-          >
-            {inquiryLabel}
-          </Link>
-
-          <LanguageSwitcher />
-
-          <button
-            type="button"
-            aria-label={isMenuOpen ? "Close navigation" : "Open navigation"}
-            aria-expanded={isMenuOpen}
-            onClick={() => setIsMenuOpen((prev) => !prev)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#d8d1c4] bg-white text-[#243b6b] transition hover:bg-[#f8f6f2] md:hidden"
-          >
-            {isMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-          </button>
-        </div>
-      </div>
-
-      {isMenuOpen && (
-        <div className="border-t border-[#e6dfd3] bg-[#f8f6f2] md:hidden">
-          <div className="mx-auto flex max-w-6xl flex-col gap-2 px-6 py-4">
-            {links.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setIsMenuOpen(false)}
-                className="rounded-2xl border border-[#e1dbd0] bg-white px-4 py-3 text-sm font-medium text-[#1f2f4d]"
-              >
-                {item.label}
-              </Link>
-            ))}
-
-            <Link
-              href={appendLang("/contact", lang)}
-              onClick={() => setIsMenuOpen(false)}
-              className="rounded-2xl bg-[#243b6b] px-4 py-3 text-center text-sm font-medium text-white"
-            >
-              {inquiryLabel}
-            </Link>
-          </div>
-        </div>
-      )}
-    </header>
   );
 }
 

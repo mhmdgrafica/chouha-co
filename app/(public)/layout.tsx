@@ -1,13 +1,17 @@
+import { cookies } from "next/headers";
 import { PublicHeader } from "./public-header";
 
-export default function PublicLayout({
+export default async function PublicLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const cookieStore = await cookies();
+  const lang = cookieStore.get("site_lang")?.value === "ar" ? "ar" : "en";
+
   return (
     <>
-      <PublicHeader />
+      <PublicHeader lang={lang} />
 
       <main className="min-h-screen bg-[#f8f6f2]">
         <div className="mx-auto max-w-6xl px-6 py-10">{children}</div>
