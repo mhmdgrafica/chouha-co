@@ -8,8 +8,9 @@ import {
   listPublishedProducts,
 } from "../../../../lib/products/product-repository";
 import { createClient } from "../../../../lib/supabase-server";
-import { ProductOverview } from "./product-overview";
 import { productDetailsCopy } from "../../copy/product-details-copy";
+import { PUBLIC_LANGUAGE_COOKIE, resolvePublicLang } from "../../copy/shared";
+import { ProductOverview } from "./product-overview";
 
 type ProductPageProps = {
   params: Promise<{ slug: string }>;
@@ -19,7 +20,7 @@ export default async function ProductDetailsPage({ params }: ProductPageProps) {
   const { slug } = await params;
 
   const cookieStore = await cookies();
-  const lang = cookieStore.get("site_lang")?.value === "ar" ? "ar" : "en";
+  const lang = resolvePublicLang(cookieStore.get(PUBLIC_LANGUAGE_COOKIE)?.value);
   const isArabic = lang === "ar";
   const t = productDetailsCopy[lang];
 
@@ -109,7 +110,6 @@ export default async function ProductDetailsPage({ params }: ProductPageProps) {
         stockStatus={productRecord.product.stock_status}
         fallbackProductCode={productRecord.product.product_code}
         isArabic={isArabic}
-        lang={lang}
         copy={{
           availableColors: t.availableColors,
           noColors: t.noColors,
