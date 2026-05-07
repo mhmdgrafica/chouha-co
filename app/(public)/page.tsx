@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import {
   ArrowRight,
   BadgeHelp,
@@ -13,17 +14,15 @@ import { createClient } from "../../lib/supabase-server";
 import { HomeBrandsCarousel } from "./home-brands-carousel";
 import { HomeProductsCarousel } from "./home-products-carousel";
 import { homePageCopy } from "./copy/home-copy";
-import { appendPublicLang, resolvePublicLang } from "./copy/shared";
+import {
+  appendPublicLang,
+  PUBLIC_LANGUAGE_COOKIE,
+  resolvePublicLang,
+} from "./copy/shared";
 
-type HomePageProps = {
-  searchParams?: Promise<{
-    lang?: string;
-  }>;
-};
-
-export default async function HomePage({ searchParams }: HomePageProps) {
-  const resolvedSearchParams = searchParams ? await searchParams : undefined;
-  const lang = resolvePublicLang(resolvedSearchParams?.lang);
+export default async function HomePage() {
+  const cookieStore = await cookies();
+  const lang = resolvePublicLang(cookieStore.get(PUBLIC_LANGUAGE_COOKIE)?.value);
   const isArabic = lang === "ar";
   const t = homePageCopy[lang];
 
@@ -60,25 +59,25 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     {
       title: t.inquiryTitle,
       text: t.inquiryText,
-      href: appendPublicLang("/products", lang),
+      href: appendPublicLang("/products"),
       icon: <MessageSquareMore className="h-5 w-5" />,
     },
     {
       title: t.brandSupportTitle,
       text: t.brandSupportText,
-      href: appendPublicLang("/products", lang),
+      href: appendPublicLang("/products"),
       icon: <BadgeHelp className="h-5 w-5" />,
     },
     {
       title: t.contactCardTitle,
       text: t.contactCardText,
-      href: appendPublicLang("/contact", lang),
+      href: appendPublicLang("/contact"),
       icon: <PhoneCall className="h-5 w-5" />,
     },
     {
       title: t.corporateTitle,
       text: t.corporateText,
-      href: appendPublicLang("/contact", lang),
+      href: appendPublicLang("/contact"),
       icon: <BriefcaseBusiness className="h-5 w-5" />,
     },
   ];
@@ -101,7 +100,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
           <div className={`mt-8 flex flex-wrap gap-3 ${isArabic ? "justify-end" : ""}`}>
             <Link
-              href={appendPublicLang("/products", lang)}
+              href={appendPublicLang("/products")}
               className="inline-flex items-center gap-2 rounded-full bg-[#243b6b] px-5 py-3 text-sm font-medium text-white transition hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(36,59,107,0.2)]"
             >
               {t.exploreProducts}
@@ -109,7 +108,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             </Link>
 
             <Link
-              href={appendPublicLang("/contact", lang)}
+              href={appendPublicLang("/contact")}
               className="rounded-full border border-[#cfd6df] bg-white px-5 py-3 text-sm font-medium text-[#243b6b] transition hover:border-[#243b6b]/35 hover:bg-[#f7f9fc]"
             >
               {t.contactUs}
@@ -177,7 +176,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
               <h2 className="mt-2 text-3xl font-semibold text-[#1f2f4d]">{t.familiesTitle}</h2>
             </div>
 
-            <Link href={appendPublicLang("/products", lang)} className="text-sm font-medium text-[#243b6b] hover:underline">
+            <Link href={appendPublicLang("/products")} className="text-sm font-medium text-[#243b6b] hover:underline">
               {t.familiesAction}
             </Link>
           </div>
@@ -186,7 +185,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             {featuredCategories.map((category) => (
               <Link
                 key={category.id}
-                href={`/products?category=${category.slug}&lang=${lang}`}
+                href={`/products?category=${category.slug}`}
                 className="group rounded-[24px] border border-[#e6dfd3] bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-2 hover:shadow-[0_24px_60px_rgba(31,47,77,0.12)]"
               >
                 <div className="flex items-start justify-between gap-4">
@@ -264,7 +263,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             {t.contactBody}
           </p>
           <Link
-            href={appendPublicLang("/contact", lang)}
+            href={appendPublicLang("/contact")}
             className="mt-6 inline-flex w-fit rounded-full bg-[#243b6b] px-5 py-3 text-sm font-medium text-white transition hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(36,59,107,0.2)]"
           >
             {t.contactAction}
