@@ -4,11 +4,10 @@ import { useState } from "react";
 import { Globe } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { languageSwitcherCopy } from "./copy/header-copy";
-
-type Language = "en" | "ar";
+import { buildPublicLangCookie, type PublicLang } from "./copy/shared";
 
 type LanguageSwitcherProps = {
-  lang: Language;
+  lang: PublicLang;
 };
 
 const languages = [
@@ -21,8 +20,8 @@ export function LanguageSwitcher({ lang }: LanguageSwitcherProps) {
   const [isOpen, setIsOpen] = useState(false);
   const t = languageSwitcherCopy[lang];
 
-  function changeLanguage(nextLang: Language) {
-    document.cookie = `site_lang=${nextLang}; path=/; max-age=31536000; SameSite=Lax`;
+  function changeLanguage(nextLang: PublicLang) {
+    document.cookie = buildPublicLangCookie(nextLang);
     setIsOpen(false);
     router.refresh();
   }
