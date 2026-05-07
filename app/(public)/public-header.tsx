@@ -6,11 +6,10 @@ import { Menu, X } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { LanguageSwitcher } from "./language-switcher";
 import { languageSwitcherCopy, publicHeaderNavigation } from "./copy/header-copy";
-
-type Language = "en" | "ar";
+import { buildPublicLangCookie, type PublicLang } from "./copy/shared";
 
 type PublicHeaderProps = {
-  lang: Language;
+  lang: PublicLang;
 };
 
 export function PublicHeader({ lang }: PublicHeaderProps) {
@@ -34,8 +33,8 @@ export function PublicHeader({ lang }: PublicHeaderProps) {
     [isArabic, pathname]
   );
 
-  function changeMobileLanguage(nextLang: Language) {
-    document.cookie = `site_lang=${nextLang}; path=/; max-age=31536000; SameSite=Lax`;
+  function changeMobileLanguage(nextLang: PublicLang) {
+    document.cookie = buildPublicLangCookie(nextLang);
     setIsMenuOpen(false);
     router.refresh();
   }
