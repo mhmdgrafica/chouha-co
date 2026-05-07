@@ -74,7 +74,7 @@ export function HomeProductsCarousel({
         </div>
 
         <div className="flex items-center justify-between gap-3">
-          <Link href={`/products?lang=${lang}`} className="text-sm font-medium text-[#243b6b] hover:underline">
+          <Link href="/products" className="text-sm font-medium text-[#243b6b] hover:underline">
             {copy.action}
           </Link>
 
@@ -173,7 +173,7 @@ export function HomeProductsCarousel({
                 </span>
 
                 <Link
-                  href={`/products/${product.slug}?lang=${lang}`}
+                  href={`/products/${product.slug}`}
                   className="inline-flex rounded-full border border-[#d7dfe8] bg-[#f8fbff] px-4 py-2 text-sm font-medium text-[#243b6b] transition hover:bg-[#eef3f8]"
                 >
                   {copy.viewProduct}
