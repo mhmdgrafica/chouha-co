@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { createClient } from "../../../lib/supabase-server";
 import { listPublishedProducts } from "../../../lib/products/product-repository";
 import { productsPageCopy } from "../copy/products-copy";
+import { PUBLIC_LANGUAGE_COOKIE, resolvePublicLang } from "../copy/shared";
 
 type ProductsPageProps = {
   searchParams?: Promise<{
@@ -17,7 +18,7 @@ export default async function ProductsPage({
   let products: Awaited<ReturnType<typeof listPublishedProducts>> = [];
 
   const cookieStore = await cookies();
-  const lang = cookieStore.get("site_lang")?.value === "ar" ? "ar" : "en";
+  const lang = resolvePublicLang(cookieStore.get(PUBLIC_LANGUAGE_COOKIE)?.value);
   const isArabic = lang === "ar";
   const t = productsPageCopy[lang];
 
