@@ -10,15 +10,21 @@ export const languageSwitcherCopy = {
   en: {
     english: "English",
     arabic: "العربية",
+    language: "Language",
     changeLanguage: "Change language",
   },
   ar: {
     english: "English",
     arabic: "العربية",
+    language: "اللغة",
     changeLanguage: "تغيير اللغة",
   },
-} as const satisfies Record<PublicLang, {
-  english: string;
-  arabic: string;
-  changeLanguage: string;
-}>;
+} as const satisfies Record<
+  PublicLang,
+  {
+    english: string;
+    arabic: string;
+    language: string;
+    changeLanguage: string;
+  }
+>;
