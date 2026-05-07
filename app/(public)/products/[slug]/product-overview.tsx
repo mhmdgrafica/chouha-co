@@ -40,7 +40,6 @@ type ProductOverviewProps = {
   stockStatus: ProductStockStatus;
   fallbackProductCode: string;
   isArabic: boolean;
-  lang: "en" | "ar";
   copy: OverviewCopy;
 };
 
@@ -59,7 +58,6 @@ export function ProductOverview({
   stockStatus,
   fallbackProductCode,
   isArabic,
-  lang,
   copy,
 }: ProductOverviewProps) {
   const defaultColor = colors.find((item) => item.isDefault) ?? colors[0] ?? null;
