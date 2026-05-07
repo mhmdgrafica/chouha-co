@@ -107,7 +107,7 @@ export function PublicHeader({ lang }: PublicHeaderProps) {
 
             <div className="mt-2 border-t border-[#e6dfd3] pt-3">
               <p className="mb-2 text-xs font-medium uppercase tracking-[0.12em] text-[#7b8796]">
-                {languageCopy.language}
+                {languageCopy.changeLanguage}
               </p>
 
               <div className="flex gap-2">

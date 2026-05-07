@@ -35,18 +35,16 @@ export default async function HomePage() {
       listCatalogItems(supabase, "categories"),
     ]);
   } catch (error) {
-    loadError =
-      error instanceof Error ? error.message : t.loadErrorFallback;
+    loadError = error instanceof Error ? error.message : t.loadErrorFallback;
   }
 
   const featuredCategories = categories
     .map((category) => {
-      const count = products.filter((product) => product.category_slug === category.slug).length;
+      const count = products.filter(
+        (product) => product.category_slug === category.slug
+      ).length;
 
-      return {
-        ...category,
-        count,
-      };
+      return { ...category, count };
     })
     .filter((category) => category.count > 0)
     .slice(0, 4);
@@ -81,12 +79,12 @@ export default async function HomePage() {
   return (
     <div className="space-y-10 md:space-y-14">
       <section className="grid gap-6 overflow-hidden rounded-[30px] bg-[#f2ede3] p-5 md:grid-cols-[1.05fr_0.95fr] md:p-8 lg:p-10">
-        <div className={`flex flex-col justify-center ${isArabic ? "text-right" : ""}`}>
-          <span className="inline-flex w-fit rounded-full border border-[#d8d1c4] bg-white px-3 py-1 text-xs font-medium tracking-[0.16em] text-[#243b6b]">
+        <div className="flex flex-col justify-center">
+          <span className="inline-flex w-fit rounded-full border border-[#d8d1c4] bg-white px-3 py-1 text-xs font-medium tracking-[0.16em] text-[#003b51]">
             {t.heroBadge}
           </span>
 
-          <h1 className="mt-5 max-w-2xl text-4xl font-semibold leading-tight text-[#1f2f4d] md:text-5xl">
+          <h1 className="mt-5 max-w-2xl text-4xl font-semibold leading-tight text-[#003b51] md:text-5xl">
             {t.heroTitle}
           </h1>
 
@@ -94,18 +92,18 @@ export default async function HomePage() {
             {t.heroBody}
           </p>
 
-          <div className={`mt-8 flex flex-wrap gap-3 ${isArabic ? "justify-end" : ""}`}>
+          <div className="mt-8 flex flex-wrap gap-3">
             <Link
               href="/products"
-              className="inline-flex items-center gap-2 rounded-full bg-[#243b6b] px-5 py-3 text-sm font-medium text-white transition hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(36,59,107,0.2)]"
+              className="inline-flex items-center gap-2 rounded-full bg-[#003b51] px-5 py-3 text-sm font-medium text-white transition hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(0,59,81,0.2)]"
             >
               {t.exploreProducts}
-              <ArrowRight className={`h-4 w-4 ${isArabic ? "rotate-180" : ""}`} />
+              <ArrowRight className="h-4 w-4" />
             </Link>
 
             <Link
               href="/contact"
-              className="rounded-full border border-[#cfd6df] bg-white px-5 py-3 text-sm font-medium text-[#243b6b] transition hover:border-[#243b6b]/35 hover:bg-[#f7f9fc]"
+              className="rounded-full border border-[#cfd6df] bg-white px-5 py-3 text-sm font-medium text-[#003b51] transition hover:border-[#003b51]/35 hover:bg-[#f7f9fc]"
             >
               {t.contactUs}
             </Link>
@@ -113,7 +111,7 @@ export default async function HomePage() {
         </div>
 
         <div className="relative min-h-[360px] overflow-hidden rounded-[28px] bg-[linear-gradient(135deg,#f8f5ef_0%,#e5ebf3_55%,#d7e1ee_100%)] p-6 md:min-h-[440px]">
-          <div className="absolute inset-x-0 bottom-0 h-40 bg-[linear-gradient(180deg,rgba(255,255,255,0)_0%,rgba(31,47,77,0.12)_100%)]" />
+          <div className="absolute inset-x-0 bottom-0 h-40 bg-[linear-gradient(180deg,rgba(255,255,255,0)_0%,rgba(0,59,81,0.12)_100%)]" />
           <div className="absolute left-8 top-8 h-28 w-28 rounded-full bg-white/45 blur-2xl" />
           <div className="absolute right-10 top-12 h-24 w-24 rounded-[28px] bg-[#d5dfec]/70" />
 
@@ -123,29 +121,39 @@ export default async function HomePage() {
                 <p className="text-xs font-medium uppercase tracking-[0.16em] text-[#7b8796]">
                   {t.totalProducts}
                 </p>
-                <p className="mt-3 text-3xl font-semibold text-[#1f2f4d]">{products.length}</p>
+                <p className="mt-3 text-3xl font-semibold text-[#003b51]">
+                  {products.length}
+                </p>
               </div>
+
               <div className="rounded-[22px] bg-white/72 p-4 shadow-sm backdrop-blur">
                 <p className="text-xs font-medium uppercase tracking-[0.16em] text-[#7b8796]">
                   {t.totalBrands}
                 </p>
-                <p className="mt-3 text-3xl font-semibold text-[#1f2f4d]">{brands.length}</p>
+                <p className="mt-3 text-3xl font-semibold text-[#003b51]">
+                  {brands.length}
+                </p>
               </div>
+
               <div className="rounded-[22px] bg-white/72 p-4 shadow-sm backdrop-blur">
                 <p className="text-xs font-medium uppercase tracking-[0.16em] text-[#7b8796]">
                   {t.totalCategories}
                 </p>
-                <p className="mt-3 text-3xl font-semibold text-[#1f2f4d]">{categories.length}</p>
+                <p className="mt-3 text-3xl font-semibold text-[#003b51]">
+                  {categories.length}
+                </p>
               </div>
             </div>
 
-            <div className="relative mt-6 rounded-[28px] bg-[#1f2f4d] p-6 text-white shadow-[0_24px_60px_rgba(31,47,77,0.18)]">
+            <div className="relative mt-6 rounded-[28px] bg-[#003b51] p-6 text-white shadow-[0_24px_60px_rgba(0,59,81,0.18)]">
               <p className="text-xs font-medium uppercase tracking-[0.18em] text-white/60">
                 Chouha Catalog
               </p>
+
               <h2 className="mt-3 max-w-sm text-3xl font-semibold leading-tight">
                 {t.productsTitle}
               </h2>
+
               <p className="mt-3 max-w-md text-sm leading-7 text-white/78">
                 {products.length > 0
                   ? `${products.length} ${t.productCountSuffix}`
@@ -165,14 +173,20 @@ export default async function HomePage() {
       {featuredCategories.length > 0 && (
         <section className="space-y-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div className={isArabic ? "sm:text-right" : ""}>
+            <div>
               <p className="text-sm font-medium uppercase tracking-[0.15em] text-[#7b8796]">
                 {t.familiesBadge}
               </p>
-              <h2 className="mt-2 text-3xl font-semibold text-[#1f2f4d]">{t.familiesTitle}</h2>
+
+              <h2 className="mt-2 text-3xl font-semibold text-[#003b51]">
+                {t.familiesTitle}
+              </h2>
             </div>
 
-            <Link href="/products" className="text-sm font-medium text-[#243b6b] hover:underline">
+            <Link
+              href="/products"
+              className="text-sm font-medium text-[#003b51] hover:underline"
+            >
               {t.familiesAction}
             </Link>
           </div>
@@ -182,20 +196,22 @@ export default async function HomePage() {
               <Link
                 key={category.id}
                 href={`/products?category=${category.slug}`}
-                className="group rounded-[24px] border border-[#e6dfd3] bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-2 hover:shadow-[0_24px_60px_rgba(31,47,77,0.12)]"
+                className="group rounded-[24px] border border-[#e6dfd3] bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-2 hover:shadow-[0_24px_60px_rgba(0,59,81,0.12)]"
               >
                 <div className="flex items-start justify-between gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eef3f8] text-[#243b6b] transition group-hover:bg-[#243b6b] group-hover:text-white">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eaf4f3] text-[#003b51] transition group-hover:bg-[#003b51] group-hover:text-white">
                     <FolderKanban className="h-5 w-5" />
                   </div>
+
                   <span className="rounded-full bg-[#f8f6f2] px-3 py-1 text-xs font-medium text-[#7b8796]">
                     {category.count}
                   </span>
                 </div>
 
-                <h3 className="mt-5 text-lg font-semibold text-[#1f2f4d]">
+                <h3 className="mt-5 text-lg font-semibold text-[#003b51]">
                   {isArabic ? category.name_ar : category.name_en}
                 </h3>
+
                 <p className="mt-2 text-sm leading-6 text-[#5b6472]">
                   {category.count} {t.productCountSuffix}
                 </p>
@@ -241,24 +257,28 @@ export default async function HomePage() {
       )}
 
       <section className="grid gap-6 rounded-[30px] bg-[#dde7df] p-6 md:grid-cols-[0.94fr_1.06fr] md:p-8">
-        <div className={`flex flex-col justify-center ${isArabic ? "text-right" : ""}`}>
+        <div className="flex flex-col justify-center">
           <div className="space-y-2">
             <p className="text-sm font-medium uppercase tracking-[0.15em] text-[#7b8796]">
               {t.contactBadge}
             </p>
+
             <p className="text-sm font-medium uppercase tracking-[0.15em] text-[#7b8796]">
               {t.supportBadge}
             </p>
           </div>
-          <h2 className="mt-2 text-3xl font-semibold leading-tight text-[#1f2f4d]">
+
+          <h2 className="mt-2 text-3xl font-semibold leading-tight text-[#003b51]">
             {t.contactTitle}
           </h2>
+
           <p className="mt-4 text-sm leading-7 text-[#5b6472]">
             {t.contactBody}
           </p>
+
           <Link
             href="/contact"
-            className="mt-6 inline-flex w-fit rounded-full bg-[#243b6b] px-5 py-3 text-sm font-medium text-white transition hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(36,59,107,0.2)]"
+            className="mt-6 inline-flex w-fit rounded-full bg-[#003b51] px-5 py-3 text-sm font-medium text-white transition hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(0,59,81,0.2)]"
           >
             {t.contactAction}
           </Link>
@@ -269,16 +289,23 @@ export default async function HomePage() {
             <Link
               key={item.title}
               href={item.href}
-              className="group rounded-[24px] border border-white/50 bg-white/80 p-5 shadow-sm backdrop-blur transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_50px_rgba(31,47,77,0.12)]"
+              className="group rounded-[24px] border border-white/50 bg-white/80 p-5 shadow-sm backdrop-blur transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_50px_rgba(0,59,81,0.12)]"
             >
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eef3f8] text-[#243b6b] transition group-hover:bg-[#243b6b] group-hover:text-white">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eaf4f3] text-[#003b51] transition group-hover:bg-[#003b51] group-hover:text-white">
                 {item.icon}
               </div>
-              <h3 className="mt-5 text-lg font-semibold text-[#1f2f4d]">{item.title}</h3>
-              <p className="mt-2 text-sm leading-6 text-[#5b6472]">{item.text}</p>
-              <span className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-[#243b6b]">
+
+              <h3 className="mt-5 text-lg font-semibold text-[#003b51]">
+                {item.title}
+              </h3>
+
+              <p className="mt-2 text-sm leading-6 text-[#5b6472]">
+                {item.text}
+              </p>
+
+              <span className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-[#003b51]">
                 {t.supportAction}
-                <ArrowRight className={`h-4 w-4 ${isArabic ? "rotate-180" : ""}`} />
+                <ArrowRight className="h-4 w-4" />
               </span>
             </Link>
           ))}

@@ -3,6 +3,7 @@ import type { PublicLang } from "./shared";
 export const publicHeaderNavigation = [
   { href: "/", labelEn: "Home", labelAr: "الرئيسية" },
   { href: "/products", labelEn: "Products", labelAr: "المنتجات" },
+  { href: "/about", labelEn: "About Us", labelAr: "عنا" },
   { href: "/contact", labelEn: "Contact Us", labelAr: "تواصل معنا" },
 ] as const;
 
