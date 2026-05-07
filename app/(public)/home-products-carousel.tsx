@@ -7,7 +7,6 @@ import type { PublicProductListItem } from "../../lib/products/product-repositor
 
 type HomeProductsCarouselProps = {
   products: PublicProductListItem[];
-  lang: "en" | "ar";
   isArabic: boolean;
   copy: {
     title: string;
@@ -21,7 +20,6 @@ type HomeProductsCarouselProps = {
 
 export function HomeProductsCarousel({
   products,
-  lang,
   isArabic,
   copy,
 }: HomeProductsCarouselProps) {
