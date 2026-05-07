@@ -208,7 +208,6 @@ export default async function HomePage() {
       {products.length > 0 ? (
         <HomeProductsCarousel
           products={products.slice(0, 10)}
-          lang={lang}
           isArabic={isArabic}
           copy={{
             title: t.productsTitle,
@@ -228,7 +227,6 @@ export default async function HomePage() {
       {brands.length > 0 ? (
         <HomeBrandsCarousel
           brands={brands}
-          lang={lang}
           isArabic={isArabic}
           copy={{
             title: t.brandTitle,
