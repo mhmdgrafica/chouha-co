@@ -71,7 +71,7 @@ export function HomeBrandsCarousel({
         </h2>
 
         <div className="flex items-center justify-between gap-3">
-          <Link href={`/products?lang=${lang}`} className="text-sm font-medium text-[#243b6b] hover:underline">
+          <Link href="/products" className="text-sm font-medium text-[#243b6b] hover:underline">
             {copy.action}
           </Link>
 
@@ -105,7 +105,7 @@ export function HomeBrandsCarousel({
         {brands.map((brand) => (
           <Link
             key={brand.id}
-            href={`/products?brand=${brand.slug}&lang=${lang}`}
+            href={`/products?brand=${brand.slug}`}
             className="group flex min-w-[180px] snap-start items-center justify-center rounded-[24px] px-5 py-6 transition duration-300 hover:-translate-y-1 hover:bg-[#f8f6f2]"
           >
             {brand.logo_url ? (
