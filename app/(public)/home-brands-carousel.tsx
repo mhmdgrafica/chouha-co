@@ -7,7 +7,6 @@ import type { CatalogItem } from "../../lib/catalog/catalog.types";
 
 type HomeBrandsCarouselProps = {
   brands: CatalogItem[];
-  lang: "en" | "ar";
   isArabic: boolean;
   copy: {
     title: string;
@@ -18,7 +17,6 @@ type HomeBrandsCarouselProps = {
 
 export function HomeBrandsCarousel({
   brands,
-  lang,
   isArabic,
   copy,
 }: HomeBrandsCarouselProps) {
