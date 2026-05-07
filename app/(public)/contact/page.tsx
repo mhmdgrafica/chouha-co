@@ -1,15 +1,13 @@
+import { cookies } from "next/headers";
 import { contactPageCopy } from "../copy/contact-copy";
-import { resolvePublicLang } from "../copy/shared";
+import {
+  PUBLIC_LANGUAGE_COOKIE,
+  resolvePublicLang,
+} from "../copy/shared";
 
-type ContactPageProps = {
-  searchParams?: Promise<{
-    lang?: string;
-  }>;
-};
-
-export default async function ContactPage({ searchParams }: ContactPageProps) {
-  const resolvedSearchParams = searchParams ? await searchParams : undefined;
-  const lang = resolvePublicLang(resolvedSearchParams?.lang);
+export default async function ContactPage() {
+  const cookieStore = await cookies();
+  const lang = resolvePublicLang(cookieStore.get(PUBLIC_LANGUAGE_COOKIE)?.value);
   const isArabic = lang === "ar";
   const t = contactPageCopy[lang];
 
