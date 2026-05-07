@@ -14,11 +14,7 @@ import { createClient } from "../../lib/supabase-server";
 import { HomeBrandsCarousel } from "./home-brands-carousel";
 import { HomeProductsCarousel } from "./home-products-carousel";
 import { homePageCopy } from "./copy/home-copy";
-import {
-  appendPublicLang,
-  PUBLIC_LANGUAGE_COOKIE,
-  resolvePublicLang,
-} from "./copy/shared";
+import { PUBLIC_LANGUAGE_COOKIE, resolvePublicLang } from "./copy/shared";
 
 export default async function HomePage() {
   const cookieStore = await cookies();
@@ -59,25 +55,25 @@ export default async function HomePage() {
     {
       title: t.inquiryTitle,
       text: t.inquiryText,
-      href: appendPublicLang("/products"),
+      href: "/products",
       icon: <MessageSquareMore className="h-5 w-5" />,
     },
     {
       title: t.brandSupportTitle,
       text: t.brandSupportText,
-      href: appendPublicLang("/products"),
+      href: "/products",
       icon: <BadgeHelp className="h-5 w-5" />,
     },
     {
       title: t.contactCardTitle,
       text: t.contactCardText,
-      href: appendPublicLang("/contact"),
+      href: "/contact",
       icon: <PhoneCall className="h-5 w-5" />,
     },
     {
       title: t.corporateTitle,
       text: t.corporateText,
-      href: appendPublicLang("/contact"),
+      href: "/contact",
       icon: <BriefcaseBusiness className="h-5 w-5" />,
     },
   ];
@@ -100,7 +96,7 @@ export default async function HomePage() {
 
           <div className={`mt-8 flex flex-wrap gap-3 ${isArabic ? "justify-end" : ""}`}>
             <Link
-              href={appendPublicLang("/products")}
+              href="/products"
               className="inline-flex items-center gap-2 rounded-full bg-[#243b6b] px-5 py-3 text-sm font-medium text-white transition hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(36,59,107,0.2)]"
             >
               {t.exploreProducts}
@@ -108,7 +104,7 @@ export default async function HomePage() {
             </Link>
 
             <Link
-              href={appendPublicLang("/contact")}
+              href="/contact"
               className="rounded-full border border-[#cfd6df] bg-white px-5 py-3 text-sm font-medium text-[#243b6b] transition hover:border-[#243b6b]/35 hover:bg-[#f7f9fc]"
             >
               {t.contactUs}
@@ -176,7 +172,7 @@ export default async function HomePage() {
               <h2 className="mt-2 text-3xl font-semibold text-[#1f2f4d]">{t.familiesTitle}</h2>
             </div>
 
-            <Link href={appendPublicLang("/products")} className="text-sm font-medium text-[#243b6b] hover:underline">
+            <Link href="/products" className="text-sm font-medium text-[#243b6b] hover:underline">
               {t.familiesAction}
             </Link>
           </div>
@@ -263,7 +259,7 @@ export default async function HomePage() {
             {t.contactBody}
           </p>
           <Link
-            href={appendPublicLang("/contact")}
+            href="/contact"
             className="mt-6 inline-flex w-fit rounded-full bg-[#243b6b] px-5 py-3 text-sm font-medium text-white transition hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(36,59,107,0.2)]"
           >
             {t.contactAction}
