@@ -33,6 +33,8 @@ export function ProductLivePreview({ form, selectedColor }: Props) {
   );
 
   useEffect(() => {
+    // This effect reconciles persisted selections when option groups change.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedOptionValues((currentValues) => {
       const nextValues = Object.fromEntries(
         activeOptionGroups.map((group) => {
@@ -64,6 +66,7 @@ export function ProductLivePreview({ form, selectedColor }: Props) {
     });
   }, [activeOptionGroups]);
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const selectedVariantImage = useMemo(() => {
     for (const group of activeOptionGroups) {
       const selectedValueId =
@@ -112,6 +115,8 @@ export function ProductLivePreview({ form, selectedColor }: Props) {
   }, [form.galleryImages, selectedColor, selectedVariantImage]);
 
   useEffect(() => {
+    // Reset the gallery when the selected product variant changes.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setActiveImageIndex(0);
   }, [selectedColor?.id, selectedVariantImage?.id]);
 

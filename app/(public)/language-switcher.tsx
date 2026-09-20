@@ -21,6 +21,8 @@ export function LanguageSwitcher({ lang }: LanguageSwitcherProps) {
   const t = languageSwitcherCopy[lang];
 
   function changeLanguage(nextLang: PublicLang) {
+    // The cookie is the persistence mechanism for the server-rendered language.
+    // eslint-disable-next-line react-hooks/immutability
     document.cookie = buildPublicLangCookie(nextLang);
     setIsOpen(false);
     router.refresh();

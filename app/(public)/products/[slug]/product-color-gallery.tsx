@@ -72,11 +72,15 @@ export function ProductColorGallery({
   }, [colorFallback, galleryItems, isArabic, selectedColor, selectedVariantImage]);
 
   useEffect(() => {
+    // Reset the gallery when the selected product variant changes.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setActiveImageIndex(0);
   }, [selectedColorId, selectedVariantImage?.id]);
 
   useEffect(() => {
     if (activeImageIndex > displayImages.length - 1) {
+      // Keep the active index valid when the gallery shrinks.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setActiveImageIndex(0);
     }
   }, [activeImageIndex, displayImages.length]);

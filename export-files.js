@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const fs = require("fs");
 const path = require("path");
 
@@ -22,7 +23,7 @@ ${content}
 
 `
         );
-      } catch (err) {
+      } catch {
         output.push(
 `===== ${relativePath} =====
 [Cannot read file]

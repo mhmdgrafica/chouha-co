@@ -45,7 +45,7 @@ export async function listCatalogItems(
     throw error;
   }
 
-  return (data ?? []) as CatalogItem[];
+  return (data ?? []) as unknown as CatalogItem[];
 }
 
 export async function createCatalogItem(
@@ -79,7 +79,7 @@ export async function createCatalogItem(
     throw error;
   }
 
-  return data as CatalogItem;
+  return data as unknown as CatalogItem;
 }
 
 export async function updateCatalogItem(
@@ -114,7 +114,7 @@ export async function updateCatalogItem(
     throw error;
   }
 
-  return data as CatalogItem;
+  return data as unknown as CatalogItem;
 }
 
 export async function deleteCatalogItem(

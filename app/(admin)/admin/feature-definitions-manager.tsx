@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { FeatureIcon } from "../../../components/feature-icon";
 import { featureIconOptions } from "../../../lib/features/feature-icon-options";
+import type { FeatureIconName } from "../../../lib/features/feature-icon-options";
 import type { ProductFeatureDefinition } from "../../../lib/products/product.types";
 
 type Props = {
@@ -16,7 +17,7 @@ export function FeatureDefinitionsManager({ items: initialItems, loadError }: Pr
   const [keyValue, setKeyValue] = useState("");
   const [labelEn, setLabelEn] = useState("");
   const [labelAr, setLabelAr] = useState("");
-  const [iconName, setIconName] = useState(featureIconOptions[0]);
+  const [iconName, setIconName] = useState<FeatureIconName>(featureIconOptions[0]);
   const [descriptionEn, setDescriptionEn] = useState("");
   const [descriptionAr, setDescriptionAr] = useState("");
   const [isActive, setIsActive] = useState(true);
@@ -50,7 +51,7 @@ export function FeatureDefinitionsManager({ items: initialItems, loadError }: Pr
     setKeyValue(item.key);
     setLabelEn(item.label_en);
     setLabelAr(item.label_ar);
-    setIconName(item.icon_name as (typeof featureIconOptions)[number]);
+    setIconName(item.icon_name as FeatureIconName);
     setDescriptionEn(item.description_en ?? "");
     setDescriptionAr(item.description_ar ?? "");
     setIsActive(item.is_active);

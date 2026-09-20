@@ -165,17 +165,15 @@ export default async function ProductsPage({
                   </div>
 
                   <div className="p-5">
-                    <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex min-h-7 flex-wrap items-center gap-3">
                       {product.brand_logo_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={product.brand_logo_url}
                           alt={product.brand_name_en || "Brand logo"}
-                          className="h-8 max-w-[110px] object-contain"
+                          className="h-5 max-w-[72px] object-contain"
                         />
-                      ) : null}
-
-                      {brandName ? (
+                      ) : brandName ? (
                         <span className="rounded-full bg-[#eaf4f3] px-3 py-1 text-xs font-medium text-[#003b51]">
                           {brandName}
                         </span>

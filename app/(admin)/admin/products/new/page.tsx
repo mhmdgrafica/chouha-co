@@ -4,9 +4,9 @@ import { createAdminClient } from "../../../../../lib/supabase-server";
 import { ProductFormShell } from "./product-form-shell";
 
 export default async function NewProductPage() {
-  let brandOptions = [];
-  let categoryOptions = [];
-  let featureOptions = [];
+  let brandOptions: CatalogItem[] = [];
+  let categoryOptions: CatalogItem[] = [];
+  let featureOptions: ProductFeatureIcon[] = [];
 
   try {
     const supabase = await createAdminClient();
@@ -37,3 +37,5 @@ export default async function NewProductPage() {
     </section>
   );
 }
+import type { CatalogItem } from "../../../../../lib/catalog/catalog.types";
+import type { ProductFeatureIcon } from "../../../../../lib/products/product.types";

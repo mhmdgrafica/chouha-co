@@ -14,7 +14,7 @@ export default async function RootLayout({
   const lang = resolvePublicLang(cookieStore.get(PUBLIC_LANGUAGE_COOKIE)?.value);
 
   return (
-    <html lang={lang} dir={lang === "ar" ? "rtl" : "ltr"}>
+    <html lang={lang} dir="ltr">
       <body>{children}</body>
     </html>
   );

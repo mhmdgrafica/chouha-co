@@ -5,7 +5,6 @@ import type {
   ProductHighlightRow,
   ProductMediaRow,
   ProductOptionGroupRow,
-  ProductOptionValueRow,
   ProductPublishStatus,
   ProductRecord,
   ProductRow,
@@ -565,10 +564,10 @@ export async function getProductRecordById(
     media: (media ?? []) as ProductMediaRow[],
     optionGroups: mappedOptionGroups as ProductOptionGroupRow[],
     brands: toSingleObject(
-      (product as ProductQueryRow & { brands?: ProductQueryRow["brands"] }).brands
+      (product as unknown as Pick<ProductQueryRow, "brands">).brands
     ),
     categories: toSingleObject(
-      (product as ProductQueryRow & { categories?: ProductQueryRow["categories"] }).categories
+      (product as unknown as Pick<ProductQueryRow, "categories">).categories
     ),
   };
 }

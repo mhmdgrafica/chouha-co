@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import type {
   ProductColorOption,
@@ -76,6 +77,7 @@ export function ProductOverview({
     [colors, defaultColor, selectedColorId]
   );
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const selectedVariantImage = useMemo(() => {
     for (const group of optionGroups) {
       const selectedValueId = selectedOptionValues[group.id] ?? group.options[0]?.id ?? null;
@@ -327,12 +329,12 @@ export function ProductOverview({
             {copy.inquiry}
           </a>
 
-          <a
+          <Link
             href="/products"
             className="rounded-xl border border-[#d8d1c4] bg-white px-5 py-3 text-sm font-medium text-[#003b51] transition hover:bg-[#f8f6f2]"
           >
             {copy.back}
-          </a>
+          </Link>
         </div>
       </div>
     </section>

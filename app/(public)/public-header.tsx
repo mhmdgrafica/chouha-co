@@ -34,6 +34,8 @@ export function PublicHeader({ lang }: PublicHeaderProps) {
   );
 
   function changeMobileLanguage(nextLang: PublicLang) {
+    // The cookie is the persistence mechanism for the server-rendered language.
+    // eslint-disable-next-line react-hooks/immutability
     document.cookie = buildPublicLangCookie(nextLang);
     setIsMenuOpen(false);
     router.refresh();

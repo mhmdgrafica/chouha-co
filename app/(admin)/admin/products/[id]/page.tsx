@@ -6,6 +6,8 @@ import { ProductFormShell } from "../new/product-form-shell";
 import { createAdminClient, createClient } from "../../../../../lib/supabase-server";
 import { mapProductRecordToForm } from "../../../../../lib/products/product-mappers";
 import { getProductRecordById } from "../../../../../lib/products/product-repository";
+import type { CatalogItem } from "../../../../../lib/catalog/catalog.types";
+import type { ProductFeatureIcon } from "../../../../../lib/products/product.types";
 
 type EditProductPageProps = {
   params: Promise<{
@@ -17,9 +19,9 @@ export default async function EditProductPage({
   params,
 }: EditProductPageProps) {
   const { id } = await params;
-  let brandOptions = [];
-  let categoryOptions = [];
-  let featureOptions = [];
+  let brandOptions: CatalogItem[] = [];
+  let categoryOptions: CatalogItem[] = [];
+  let featureOptions: ProductFeatureIcon[] = [];
   const supabase = await createClient();
   const productRecord = await getProductRecordById(supabase, id);
 
