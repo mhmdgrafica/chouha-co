@@ -25,6 +25,7 @@ type ProductFormShellProps = {
   initialProductId?: string | null;
   brandOptions?: CatalogItem[];
   categoryOptions?: CatalogItem[];
+  groupOptions?: CatalogItem[];
   featureOptions?: ProductFeatureIcon[];
 };
 
@@ -33,6 +34,7 @@ export function ProductFormShell({
   initialProductId = null,
   brandOptions = [],
   categoryOptions = [],
+  groupOptions = [],
   featureOptions = [],
 }: ProductFormShellProps) {
   const router = useRouter();
@@ -181,8 +183,9 @@ export function ProductFormShell({
       <div className="space-y-6">
         <ProductBasicInfo
           form={form}
-          brandOptions={brandOptions}
-          categoryOptions={categoryOptions}
+        brandOptions={brandOptions}
+        categoryOptions={categoryOptions}
+        groupOptions={groupOptions}
           updateField={updateField}
         />
 

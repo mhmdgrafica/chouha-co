@@ -5,6 +5,7 @@ import { createCatalogItem } from "../../../../lib/catalog/catalog-repository";
 type CreateCategoryRequestBody = {
   nameEn?: string;
   nameAr?: string;
+  parentId?: string | null;
 };
 
 export async function POST(request: Request) {
@@ -15,6 +16,7 @@ export async function POST(request: Request) {
       table: "categories",
       nameEn: body.nameEn ?? "",
       nameAr: body.nameAr ?? "",
+      parentId: body.parentId ?? null,
     });
 
     return NextResponse.json(category, { status: 201 });

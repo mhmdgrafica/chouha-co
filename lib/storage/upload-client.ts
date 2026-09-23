@@ -9,6 +9,17 @@ export async function uploadPublicFile(
   folder: string,
   file: File
 ) {
+  const { data: sessionData, error: sessionError } =
+    await supabase.auth.refreshSession();
+
+  if (sessionError || !sessionData.session) {
+    throw new Error("Your admin session expired. Please sign in again.");
+  }
+
+  if (sessionData.session.user.app_metadata?.role !== "admin") {
+    throw new Error("Admin permission is required to upload files.");
+  }
+
   const extension = file.name.split(".").pop() || "bin";
   const path = `${folder}/${crypto.randomUUID()}-${sanitizeFileName(
     file.name.replace(new RegExp(`\\.${extension}$`), "")

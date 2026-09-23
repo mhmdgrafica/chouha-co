@@ -2,6 +2,8 @@ import { listCatalogItems } from "../../../../../lib/catalog/catalog-repository"
 import { listActiveFeatureIcons } from "../../../../../lib/features/feature-definitions-repository";
 import { createAdminClient } from "../../../../../lib/supabase-server";
 import { ProductFormShell } from "./product-form-shell";
+import type { CatalogItem } from "../../../../../lib/catalog/catalog.types";
+import type { ProductFeatureIcon } from "../../../../../lib/products/product.types";
 
 export default async function NewProductPage() {
   let brandOptions: CatalogItem[] = [];
@@ -31,11 +33,10 @@ export default async function NewProductPage() {
 
       <ProductFormShell
         brandOptions={brandOptions}
-        categoryOptions={categoryOptions}
+        categoryOptions={categoryOptions.filter((category) => !category.parent_id)}
+        groupOptions={categoryOptions.filter((category) => Boolean(category.parent_id))}
         featureOptions={featureOptions}
       />
     </section>
   );
 }
-import type { CatalogItem } from "../../../../../lib/catalog/catalog.types";
-import type { ProductFeatureIcon } from "../../../../../lib/products/product.types";

@@ -8,6 +8,7 @@ type CreateCatalogItemInput = {
   nameEn: string;
   nameAr: string;
   logoUrl?: string | null;
+  parentId?: string | null;
 };
 
 type UpdateCatalogItemInput = CreateCatalogItemInput & {
@@ -29,7 +30,7 @@ function buildCatalogSlug(nameEn: string) {
 function getCatalogSelect(table: CatalogTable) {
   return table === "brands"
     ? "id, name_en, name_ar, slug, logo_url, created_at"
-    : "id, name_en, name_ar, slug, created_at";
+    : "id, name_en, name_ar, slug, parent_id, created_at";
 }
 
 export async function listCatalogItems(
@@ -67,6 +68,7 @@ export async function createCatalogItem(
       name_ar: nameAr,
       slug,
       ...(input.table === "brands" ? { logo_url: input.logoUrl ?? null } : {}),
+      ...(input.table === "categories" ? { parent_id: input.parentId ?? null } : {}),
     })
     .select(getCatalogSelect(input.table))
     .single();
@@ -101,6 +103,7 @@ export async function updateCatalogItem(
       name_ar: nameAr,
       slug,
       ...(input.table === "brands" ? { logo_url: input.logoUrl ?? null } : {}),
+      ...(input.table === "categories" ? { parent_id: input.parentId ?? null } : {}),
     })
     .eq("id", input.id)
     .select(getCatalogSelect(input.table))

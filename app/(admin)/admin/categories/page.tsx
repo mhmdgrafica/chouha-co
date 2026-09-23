@@ -32,9 +32,10 @@ export default async function AdminCategoriesPage() {
       </div>
 
       <CatalogItemManager
-        table="categories"
-        items={categories}
-        loadError={loadError}
+      table="categories"
+      items={categories}
+      parentOptions={categories.filter((category) => !category.parent_id)}
+      loadError={loadError}
       />
     </section>
   );

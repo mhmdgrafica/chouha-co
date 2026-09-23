@@ -61,7 +61,8 @@ export default async function EditProductPage({
         initialForm={form}
         initialProductId={id}
         brandOptions={brandOptions}
-        categoryOptions={categoryOptions}
+        categoryOptions={categoryOptions.filter((category) => !category.parent_id)}
+        groupOptions={categoryOptions.filter((category) => Boolean(category.parent_id))}
         featureOptions={featureOptions}
       />
     </section>

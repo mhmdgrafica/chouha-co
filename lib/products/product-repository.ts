@@ -44,9 +44,14 @@ export type PublicProductListItem = {
   slug: string;
   name_en: string;
   name_ar: string;
+  product_code: string;
   short_description_en: string;
   short_description_ar: string;
   stock_status: "in_stock" | "out_of_stock";
+  is_best_seller: boolean;
+  is_featured: boolean;
+  display_order: number;
+  created_at: string;
   brand_slug: string | null;
   brand_name_en: string | null;
   brand_name_ar: string | null;
@@ -54,6 +59,9 @@ export type PublicProductListItem = {
   category_slug: string | null;
   category_name_en: string | null;
   category_name_ar: string | null;
+  group_slug: string | null;
+  group_name_en: string | null;
+  group_name_ar: string | null;
   card_image_url: string | null;
   color_thumbnail_url: string | null;
 };
@@ -68,6 +76,10 @@ type ProductQueryRow = {
   short_description_ar: string;
   stock_status: "in_stock" | "out_of_stock";
   is_active: boolean;
+  is_best_seller: boolean;
+  is_featured: boolean;
+  display_order: number;
+  created_at: string;
   brands:
     | {
         slug: string | null;
@@ -83,6 +95,18 @@ type ProductQueryRow = {
       }[]
     | null;
   categories:
+    | {
+        slug: string | null;
+        name_en: string | null;
+        name_ar: string | null;
+      }
+    | {
+        slug: string | null;
+        name_en: string | null;
+        name_ar: string | null;
+      }[]
+    | null;
+  groups:
     | {
         slug: string | null;
         name_en: string | null;
@@ -169,6 +193,7 @@ function mapAdminListItem(item: ProductQueryRow): AdminProductListItem {
 function mapPublicListItem(item: ProductQueryRow): PublicProductListItem {
   const brand = toSingleObject(item.brands);
   const category = toSingleObject(item.categories);
+  const group = toSingleObject(item.groups);
   const defaultColor = sortColors(item.product_colors)[0] ?? null;
 
   return {
@@ -176,9 +201,14 @@ function mapPublicListItem(item: ProductQueryRow): PublicProductListItem {
     slug: item.slug,
     name_en: item.name_en,
     name_ar: item.name_ar,
+    product_code: item.product_code,
     short_description_en: item.short_description_en,
     short_description_ar: item.short_description_ar,
     stock_status: item.stock_status,
+    is_best_seller: item.is_best_seller,
+    is_featured: item.is_featured,
+    display_order: item.display_order,
+    created_at: item.created_at,
     brand_slug: brand?.slug ?? null,
     brand_name_en: brand?.name_en ?? null,
     brand_name_ar: brand?.name_ar ?? null,
@@ -186,6 +216,9 @@ function mapPublicListItem(item: ProductQueryRow): PublicProductListItem {
     category_slug: category?.slug ?? null,
     category_name_en: category?.name_en ?? null,
     category_name_ar: category?.name_ar ?? null,
+    group_slug: group?.slug ?? null,
+    group_name_en: group?.name_en ?? null,
+    group_name_ar: group?.name_ar ?? null,
     card_image_url: defaultColor?.main_image_url ?? null,
     color_thumbnail_url: defaultColor?.thumbnail_url ?? null,
   };
@@ -390,7 +423,7 @@ export async function listAdminProducts(
   const { data, error } = await supabase
     .from("products")
     .select(
-      "id, slug, name_en, name_ar, product_code, short_description_en, short_description_ar, stock_status, is_active, brands(name_en, name_ar, logo_url), categories(name_en, name_ar), product_colors(main_image_url, thumbnail_url, position, is_default)"
+      "id, slug, name_en, name_ar, product_code, short_description_en, short_description_ar, stock_status, is_active, brands(name_en, name_ar, logo_url), categories:categories!products_category_id_fkey(name_en, name_ar), product_colors(main_image_url, thumbnail_url, position, is_default)"
     )
     .order("created_at", { ascending: false });
 
@@ -430,7 +463,7 @@ export async function listPublishedProducts(
   const { data, error } = await supabase
     .from("products")
     .select(
-      "id, slug, name_en, name_ar, short_description_en, short_description_ar, stock_status, is_active, brands(slug, name_en, name_ar, logo_url), categories(slug, name_en, name_ar), product_colors(main_image_url, thumbnail_url, position, is_default)"
+      "id, slug, name_en, name_ar, product_code, short_description_en, short_description_ar, stock_status, is_active, is_best_seller, is_featured, display_order, created_at, brands(slug, name_en, name_ar, logo_url), categories:categories!products_category_id_fkey(slug, name_en, name_ar), groups:categories!products_group_id_fkey(slug, name_en, name_ar), product_colors(main_image_url, thumbnail_url, position, is_default)"
     )
     .eq("is_active", true)
     .order("name_en", { ascending: true });
@@ -449,7 +482,7 @@ export async function getProductRecordById(
   const { data: product, error: productError } = await supabase
     .from("products")
     .select(
-      "id, slug, name_en, name_ar, product_code, brand_id, category_id, short_description_en, short_description_ar, full_description_en, full_description_ar, stock_status, is_active, is_featured, brands(name_en, name_ar, logo_url), categories(name_en, name_ar)"
+      "id, slug, name_en, name_ar, product_code, brand_id, category_id, group_id, short_description_en, short_description_ar, full_description_en, full_description_ar, usage_instructions_en, usage_instructions_ar, seo_title_en, seo_title_ar, seo_description_en, seo_description_ar, stock_status, is_active, is_featured, is_best_seller, display_order, brands(name_en, name_ar, logo_url), categories:categories!products_category_id_fkey(name_en, name_ar), groups:categories!products_group_id_fkey(name_en, name_ar)"
     )
     .eq("id", productId)
     .maybeSingle();

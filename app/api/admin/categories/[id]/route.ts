@@ -14,6 +14,7 @@ type CategoryRouteContext = {
 type UpdateCategoryRequestBody = {
   nameEn?: string;
   nameAr?: string;
+  parentId?: string | null;
 };
 
 export async function PATCH(request: Request, context: CategoryRouteContext) {
@@ -26,6 +27,7 @@ export async function PATCH(request: Request, context: CategoryRouteContext) {
       table: "categories",
       nameEn: body.nameEn ?? "",
       nameAr: body.nameAr ?? "",
+      parentId: body.parentId ?? null,
     });
 
     return NextResponse.json(category);

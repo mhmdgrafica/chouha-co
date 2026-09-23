@@ -8,6 +8,7 @@ import { uploadPublicFile } from "../../../lib/storage/upload-client";
 type CatalogItemManagerProps = {
   table: CatalogTable;
   items: CatalogItem[];
+  parentOptions?: CatalogItem[];
   loadError?: string | null;
 };
 
@@ -28,6 +29,7 @@ function readFileAsDataUrl(file: File) {
 export function CatalogItemManager({
   table,
   items: initialItems,
+  parentOptions = [],
   loadError = null,
 }: CatalogItemManagerProps) {
   const inputId = useId();
@@ -37,6 +39,7 @@ export function CatalogItemManager({
   const [nameEn, setNameEn] = useState("");
   const [nameAr, setNameAr] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
+  const [parentId, setParentId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [message, setMessage] = useState<MessageState>(null);
@@ -62,6 +65,7 @@ export function CatalogItemManager({
     setNameEn("");
     setNameAr("");
     setLogoUrl("");
+    setParentId("");
   };
 
   const handleSelectFile = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -95,6 +99,7 @@ export function CatalogItemManager({
     setNameEn(item.name_en);
     setNameAr(item.name_ar);
     setLogoUrl(item.logo_url ?? "");
+    setParentId(item.parent_id ?? "");
     setMessage(null);
   };
 
@@ -154,6 +159,7 @@ export function CatalogItemManager({
             nameEn,
             nameAr,
             logoUrl: isBrandTable ? logoUrl : undefined,
+            parentId: !isBrandTable ? parentId || null : undefined,
           }),
         }
       );
@@ -278,6 +284,31 @@ export function CatalogItemManager({
               )}
             </div>
           )}
+
+          {!isBrandTable && (
+            <div>
+              <label className="text-sm font-medium text-slate-600">
+                Parent Category
+              </label>
+              <select
+                value={parentId}
+                onChange={(event) => setParentId(event.target.value)}
+                className="mt-1 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-slate-400"
+              >
+                <option value="">Main category</option>
+                {parentOptions
+                  .filter((item) => item.id !== editingItemId)
+                  .map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.name_en} / {item.name_ar}
+                    </option>
+                  ))}
+              </select>
+              <p className="mt-1 text-xs text-slate-500">
+                Leave empty for a main category; choose one to create a group.
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
@@ -346,6 +377,11 @@ export function CatalogItemManager({
                 <th className="border-b border-slate-200 px-4 py-4 text-left text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
                   Slug
                 </th>
+                {!isBrandTable && (
+                  <th className="border-b border-slate-200 px-4 py-4 text-left text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                    Type
+                  </th>
+                )}
                 <th className="border-b border-slate-200 px-4 py-4 text-right text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
                   Actions
                 </th>
@@ -379,6 +415,19 @@ export function CatalogItemManager({
                   <td className="border-b border-slate-100 px-4 py-4 text-sm text-slate-500">
                     {item.slug}
                   </td>
+                  {!isBrandTable && (
+                    <td className="border-b border-slate-100 px-4 py-4 text-sm text-slate-500">
+                      {item.parent_id ? (
+                        <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
+                          Group
+                        </span>
+                      ) : (
+                        <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
+                          Main category
+                        </span>
+                      )}
+                    </td>
+                  )}
                   <td className="border-b border-slate-100 px-4 py-4">
                     <div className="flex justify-end gap-2">
                       <button
@@ -404,7 +453,7 @@ export function CatalogItemManager({
               {items.length === 0 && !loadError && (
                 <tr>
                   <td
-                    colSpan={isBrandTable ? 5 : 4}
+                    colSpan={isBrandTable ? 5 : 5}
                     className="px-4 py-12 text-center text-sm text-slate-500"
                   >
                     No {table} found yet.

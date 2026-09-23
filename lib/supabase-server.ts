@@ -10,6 +10,20 @@ export const createClient = async () => {
     {
       cookies: {
         get: (name: string) => cookieStore.get(name)?.value,
+        set: (name: string, value: string, options: Record<string, unknown>) => {
+          try {
+            cookieStore.set({ name, value, ...options });
+          } catch {
+            // Server Components cannot always write cookies; middleware refreshes sessions.
+          }
+        },
+        remove: (name: string, options: Record<string, unknown>) => {
+          try {
+            cookieStore.set({ name, value: "", ...options });
+          } catch {
+            // Server Components cannot always write cookies; middleware refreshes sessions.
+          }
+        },
       },
     }
   );

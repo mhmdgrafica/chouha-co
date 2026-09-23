@@ -15,6 +15,7 @@ type HomeProductsCarouselProps = {
     inStock: string;
     outOfStock: string;
     fallbackDescription: string;
+    actionHref?: string;
   };
 };
 
@@ -72,7 +73,7 @@ export function HomeProductsCarousel({
         </div>
 
         <div className="flex items-center justify-between gap-3">
-          <Link href="/products" className="text-sm font-medium text-[#243b6b] hover:underline">
+          <Link href={copy.actionHref ?? "/products"} className="text-sm font-medium text-[#243b6b] hover:underline">
             {copy.action}
           </Link>
 

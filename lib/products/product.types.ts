@@ -61,11 +61,20 @@ export type ProductFormValues = {
   productCode: string;
   brandId: string;
   categoryId: string;
+  groupId: string;
   shortDescriptionEn: string;
   shortDescriptionAr: string;
   fullDescriptionEn: string;
   fullDescriptionAr: string;
+  usageInstructionsEn: string;
+  usageInstructionsAr: string;
+  seoTitleEn: string;
+  seoTitleAr: string;
+  seoDescriptionEn: string;
+  seoDescriptionAr: string;
   stockStatus: ProductStockStatus;
+  isBestSeller: boolean;
+  displayOrder: number;
   highlights: ProductHighlight[];
   featureIcons: ProductFeatureIcon[];
   colors: ProductColorOption[];
@@ -83,13 +92,22 @@ export type ProductRow = {
   product_code: string;
   brand_id: string | null;
   category_id: string | null;
+  group_id: string | null;
   short_description_en: string;
   short_description_ar: string;
   full_description_en: string;
   full_description_ar: string;
+  usage_instructions_en: string;
+  usage_instructions_ar: string;
+  seo_title_en: string;
+  seo_title_ar: string;
+  seo_description_en: string;
+  seo_description_ar: string;
   stock_status: ProductStockStatus;
   is_active: boolean;
   is_featured: boolean;
+  is_best_seller: boolean;
+  display_order: number;
 };
 
 export type ProductHighlightRow = {

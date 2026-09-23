@@ -5,6 +5,7 @@ export type CatalogItem = {
   name_en: string;
   name_ar: string;
   slug: string;
+  parent_id?: string | null;
   logo_url?: string | null;
   created_at?: string;
 };

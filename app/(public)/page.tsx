@@ -39,6 +39,7 @@ export default async function HomePage() {
   }
 
   const featuredCategories = categories
+    .filter((category) => !category.parent_id)
     .map((category) => {
       const count = products.filter(
         (product) => product.category_slug === category.slug
@@ -48,6 +49,16 @@ export default async function HomePage() {
     })
     .filter((category) => category.count > 0)
     .slice(0, 4);
+
+  const bestSellerProducts = products
+    .filter((product) => product.is_best_seller)
+    .sort((a, b) => a.display_order - b.display_order || a.name_en.localeCompare(b.name_en))
+    .slice(0, 10);
+
+  const featuredProducts = products
+    .filter((product) => product.is_featured)
+    .sort((a, b) => a.display_order - b.display_order || a.name_en.localeCompare(b.name_en))
+    .slice(0, 10);
 
   const supportCards = [
     {
@@ -221,9 +232,25 @@ export default async function HomePage() {
         </section>
       )}
 
-      {products.length > 0 ? (
+      {bestSellerProducts.length > 0 && (
         <HomeProductsCarousel
-          products={products.slice(0, 10)}
+          products={bestSellerProducts}
+          isArabic={isArabic}
+          copy={{
+            title: t.bestSellerTitle,
+            action: t.bestSellerAction,
+            viewProduct: t.viewProduct,
+            inStock: t.inStock,
+            outOfStock: t.outOfStock,
+            fallbackDescription: t.fallbackDescription,
+            actionHref: "/products?bestSeller=true",
+          }}
+        />
+      )}
+
+      {featuredProducts.length > 0 ? (
+        <HomeProductsCarousel
+          products={featuredProducts}
           isArabic={isArabic}
           copy={{
             title: t.productsTitle,
